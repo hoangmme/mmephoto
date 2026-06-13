@@ -126,8 +126,9 @@ class PhotoTuneApp {
       this.fileInput.setAttribute('multiple', 'true');
       this.fileInput.click();
     });
-    this.fileInput.addEventListener('change', (e) => {
-      this._handleFiles(Array.from(e.target.files));
+    this.fileInput.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      await this._handleFiles(files);
       e.target.value = ''; // Reset to allow selecting the same files again
     });
 
@@ -376,26 +377,38 @@ class PhotoTuneApp {
       }
 
       let firstNewId = null;
+      let loadedCount = 0;
 
       for (const file of files) {
-        const id = 'photo_' + (++this.photoIdCounter);
-        const objectUrl = URL.createObjectURL(file);
-        
-        // Parse imageData (blocks sequentially, can be optimized later but fine for now)
-        const imgData = await this.processor.loadImage(file);
-        
-        const photo = {
-          id,
-          file,
-          objectUrl,
-          imageData: imgData,
-          params: { ...DEFAULT_PARAMS },
-          activePreset: null,
-          activeLutId: null,
-          lutIntensity: 100
-        };
-        this.photos.push(photo);
-        if (!firstNewId) firstNewId = id;
+        try {
+          const id = 'photo_' + (++this.photoIdCounter);
+          const objectUrl = URL.createObjectURL(file);
+          
+          // Parse imageData
+          const imgData = await this.processor.loadImage(file);
+          
+          const photo = {
+            id,
+            file,
+            objectUrl,
+            imageData: imgData,
+            params: { ...DEFAULT_PARAMS },
+            activePreset: null,
+            activeLutId: null,
+            lutIntensity: 100
+          };
+          this.photos.push(photo);
+          if (!firstNewId) firstNewId = id;
+          loadedCount++;
+        } catch (err) {
+          console.error('Skipping file due to error:', file.name, err);
+        }
+      }
+
+      if (loadedCount === 0) {
+        alert('No valid images were loaded.');
+        this._showProcessing(false);
+        return;
       }
 
       this.thumbnailSidebar.style.display = 'flex';
