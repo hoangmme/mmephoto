@@ -348,28 +348,13 @@ class PhotoTuneApp {
     });
   }
 
-  _saveCurrentPhotoState() {
-    if (!this.activePhotoId) return;
-    const p = this.photos.find(x => x.id === this.activePhotoId);
-    if (p) {
-      p.params = { ...this.params };
-      p.activePreset = this.activePreset;
-      p.activeLutId = this.activeLutId;
-      p.lutIntensity = this.lutIntensity;
-    }
-  }
-
   _selectPhoto(id) {
-    this._saveCurrentPhotoState();
-    
     const photo = this.photos.find(x => x.id === id);
     if (!photo) return;
 
     this.activePhotoId = id;
-    this.params = { ...photo.params };
-    this.activePreset = photo.activePreset;
-    this.activeLutId = photo.activeLutId;
-    this.lutIntensity = photo.lutIntensity;
+    // We intentionally do not override params, activePreset, etc.
+    // so that the style applies globally to all photos.
     this.imageData = photo.imageData;
 
     this._renderThumbnails();
