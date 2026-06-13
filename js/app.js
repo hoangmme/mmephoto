@@ -610,7 +610,13 @@ class PhotoTuneApp {
   }
 
   _applyPresetStrength(strength) {
-    if (!this.activePresetValues) return;
+    if (!this.activePresetValues) {
+      alert("Vui lòng chọn một Preset trước khi chỉnh Strength.");
+      this.presetStrengthInput.value = 100;
+      this.presetStrengthDisplay.textContent = 100;
+      this._updateSliderFill(this.presetStrengthInput);
+      return;
+    }
     const ratio = strength / 100;
     
     // Interpolate between DEFAULT_PARAMS and this.activePresetValues
