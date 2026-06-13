@@ -85,7 +85,7 @@ class PhotoTuneApp {
   _bindEvents() {
     // File open
     document.getElementById('btnOpen').addEventListener('click', () => {
-      this.fileInput.removeAttribute('multiple');
+      this.fileInput.setAttribute('multiple', 'true');
       this.fileInput.click();
     });
     this.btnAddMore.addEventListener('click', () => {
