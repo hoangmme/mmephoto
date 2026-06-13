@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PhotoTune Pro — Lightroom-style Web Editor</title>
+  <title>MME Color Lab — Lightroom-style Web Editor</title>
   <meta name="description" content="Professional photo editing tool for product, real estate, food, and lifestyle photography. Lightroom-style adjustments in your browser.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,7 +25,7 @@
               <stop stop-color="#38bdf8"/><stop offset="1" stop-color="#818cf8"/>
             </linearGradient></defs>
           </svg>
-          <span>PhotoTune <em>Pro</em></span>
+          <span>MME <em>Color Lab</em></span>
         </div>
       </div>
       <div class="header-center">
@@ -98,6 +98,13 @@
               <button id="btnImportPreset" class="lut-import-btn" style="flex:1; padding: 6px;">Import</button>
             </div>
             <div class="preset-grid" id="presetGrid"></div>
+            
+            <!-- Preset Strength -->
+            <div class="slider-row" id="presetStrengthRow" style="margin-top: 16px; opacity: 0.4; pointer-events: none;">
+              <label>Strength</label>
+              <input type="range" id="presetStrength" min="0" max="200" value="100" step="1">
+              <span class="value" id="presetStrengthValue">100</span>
+            </div>
           </div>
         </section>
 
@@ -304,7 +311,7 @@
               Download
             </button>
             <div class="sidebar-footer">
-              Powered by <strong>MMe</strong> (MMe.vn)
+              <a href="https://mme.vn" target="_blank" style="color: inherit; text-decoration: none;">Powered by <strong>MME Digital</strong></a>
             </div>
           </div>
         </section>

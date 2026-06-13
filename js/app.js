@@ -78,6 +78,11 @@ class PhotoTuneApp {
     this.btnImportPreset = document.getElementById('btnImportPreset');
     this.presetFileInput = document.getElementById('presetFileInput');
 
+    this.presetStrengthInput = document.getElementById('presetStrength');
+    this.presetStrengthDisplay = document.getElementById('presetStrengthValue');
+    this.presetStrengthRow = document.getElementById('presetStrengthRow');
+    this.activePresetValues = null;
+
     // HSL DOM
     this.hslBtns = document.querySelectorAll('.hsl-color-btn');
     this.hslSliders = document.querySelectorAll('.slider-row[data-hsl]');
@@ -225,6 +230,13 @@ class PhotoTuneApp {
     this.btnExportPreset.addEventListener('click', () => this._exportPreset());
     this.btnImportPreset.addEventListener('click', () => this.presetFileInput.click());
     this.presetFileInput.addEventListener('change', (e) => this._importPresetFile(e.target.files[0]));
+
+    // Preset Strength
+    this.presetStrengthInput.addEventListener('input', () => {
+      this.presetStrengthDisplay.textContent = this.presetStrengthInput.value;
+      this._updateSliderFill(this.presetStrengthInput);
+      this._applyPresetStrength(parseInt(this.presetStrengthInput.value));
+    });
 
     // HSL Mixer interactions
     this.hslBtns.forEach(btn => {
@@ -544,6 +556,15 @@ class PhotoTuneApp {
     const preset = PRESETS[presetKey];
     if (!preset) return;
 
+    this.activePresetValues = { ...preset.values };
+    this.presetStrengthInput.value = 100;
+    this.presetStrengthDisplay.textContent = 100;
+    this._updateSliderFill(this.presetStrengthInput);
+    if (this.presetStrengthRow) {
+      this.presetStrengthRow.style.opacity = '1';
+      this.presetStrengthRow.style.pointerEvents = 'auto';
+    }
+
     // Reset all to defaults first
     this.params = { ...DEFAULT_PARAMS };
 
@@ -568,6 +589,15 @@ class PhotoTuneApp {
     const preset = this.userPresets.find(p => p.id === id);
     if (!preset) return;
 
+    this.activePresetValues = { ...preset.values };
+    this.presetStrengthInput.value = 100;
+    this.presetStrengthDisplay.textContent = 100;
+    this._updateSliderFill(this.presetStrengthInput);
+    if (this.presetStrengthRow) {
+      this.presetStrengthRow.style.opacity = '1';
+      this.presetStrengthRow.style.pointerEvents = 'auto';
+    }
+
     this.params = { ...DEFAULT_PARAMS };
     Object.entries(preset.values).forEach(([key, val]) => {
       this.params[key] = val;
@@ -584,6 +614,21 @@ class PhotoTuneApp {
       btn.classList.toggle('active', btn.dataset.userPreset === id);
     });
     this.activePreset = id;
+    this._scheduleProcess();
+  }
+
+  _applyPresetStrength(strength) {
+    if (!this.activePresetValues) return;
+    const ratio = strength / 100;
+    
+    // Interpolate between DEFAULT_PARAMS and this.activePresetValues
+    Object.keys(this.activePresetValues).forEach(key => {
+      const defaultVal = DEFAULT_PARAMS[key] || 0;
+      const targetVal = this.activePresetValues[key];
+      this.params[key] = Math.round(defaultVal + (targetVal - defaultVal) * ratio);
+    });
+
+    this._syncSlidersToParams();
     this._scheduleProcess();
   }
 
@@ -690,6 +735,11 @@ class PhotoTuneApp {
   // ── Clear active preset highlight ──
   _clearActivePreset() {
     this.activePreset = null;
+    this.activePresetValues = null;
+    if (this.presetStrengthRow) {
+      this.presetStrengthRow.style.opacity = '0.4';
+      this.presetStrengthRow.style.pointerEvents = 'none';
+    }
     this.presetGrid.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
   }
 
