@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhotoTune Pro — Photobooth Print Tool</title>
+  <link rel="stylesheet" href="webtool2.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Sidebar: Images & QR -->
+  <aside class="sidebar-left">
+    <div class="sidebar-header">
+      <h2>Session Images</h2>
+    </div>
+    
+    <div class="qr-container" id="qrContainer">
+      <img id="qrCodeImg" src="" alt="Session QR" style="display: none;">
+      <p>Scan to download photos</p>
+    </div>
+
+    <div class="image-list" id="imageList">
+      <div class="loading-text">Loading session...</div>
+      <!-- Images injected here -->
+    </div>
+  </aside>
+
+  <!-- Main Canvas Area -->
+  <main class="main-content">
+    <header class="main-header">
+      <div class="frame-selector">
+        <label>Select Frame:</label>
+        <select id="frameSelect">
+          <option value="strip_1x3">1x3 Strip</option>
+          <option value="grid_2x2">2x2 Grid</option>
+        </select>
+      </div>
+      <button class="btn-print" id="btnPrint">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"></path></svg>
+        Print
+      </button>
+    </header>
+
+    <div class="canvas-container">
+      <div class="print-frame frame-strip_1x3" id="printFrame">
+        <!-- Slots injected here by JS based on frame selection -->
+      </div>
+    </div>
+  </main>
+
+  <script src="webtool2.js"></script>
+</body>
+</html>
