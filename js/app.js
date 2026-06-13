@@ -560,10 +560,6 @@ class PhotoTuneApp {
     this.presetStrengthInput.value = 100;
     this.presetStrengthDisplay.textContent = 100;
     this._updateSliderFill(this.presetStrengthInput);
-    if (this.presetStrengthRow) {
-      this.presetStrengthRow.style.opacity = '1';
-      this.presetStrengthRow.style.pointerEvents = 'auto';
-    }
 
     // Reset all to defaults first
     this.params = { ...DEFAULT_PARAMS };
@@ -593,10 +589,6 @@ class PhotoTuneApp {
     this.presetStrengthInput.value = 100;
     this.presetStrengthDisplay.textContent = 100;
     this._updateSliderFill(this.presetStrengthInput);
-    if (this.presetStrengthRow) {
-      this.presetStrengthRow.style.opacity = '1';
-      this.presetStrengthRow.style.pointerEvents = 'auto';
-    }
 
     this.params = { ...DEFAULT_PARAMS };
     Object.entries(preset.values).forEach(([key, val]) => {
@@ -735,11 +727,6 @@ class PhotoTuneApp {
   // ── Clear active preset highlight ──
   _clearActivePreset() {
     this.activePreset = null;
-    this.activePresetValues = null;
-    if (this.presetStrengthRow) {
-      this.presetStrengthRow.style.opacity = '0.4';
-      this.presetStrengthRow.style.pointerEvents = 'none';
-    }
     this.presetGrid.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
   }
 
