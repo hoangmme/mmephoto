@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Powered by MMe — Lightroom-style Web Editor</title>
+  <title>PhotoTune Pro — Lightroom-style Web Editor</title>
   <meta name="description" content="Professional photo editing tool for product, real estate, food, and lifestyle photography. Lightroom-style adjustments in your browser.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,7 +23,7 @@
               <stop stop-color="#38bdf8"/><stop offset="1" stop-color="#818cf8"/>
             </linearGradient></defs>
           </svg>
-          <span>Powered by MMe <em>(MMe.vn)</em></span>
+          <span>PhotoTune <em>Pro</em></span>
         </div>
       </div>
       <div class="header-center">
@@ -51,6 +51,19 @@
 
     <!-- Main Content -->
     <main class="main">
+      <!-- Thumbnail Sidebar -->
+      <aside class="sidebar-left" id="thumbnailSidebar" style="display: none;">
+        <div class="sidebar-header">
+          <h3>Photos</h3>
+          <button id="btnAddMore" class="btn-icon" title="Add more photos">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="thumbnail-list" id="thumbnailList">
+          <!-- Thumbnails injected here -->
+        </div>
+      </aside>
+
       <!-- Preview Area -->
       <div class="preview-area" id="previewArea">
         <div class="drop-zone" id="dropZone">
@@ -245,13 +258,16 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
               Download
             </button>
+            <div class="sidebar-footer">
+              Powered by <strong>MMe</strong> (MMe.vn)
+            </div>
           </div>
         </section>
       </aside>
     </main>
 
     <!-- Hidden file input -->
-    <input type="file" id="fileInput" accept="image/*" hidden>
+    <input type="file" id="fileInput" accept="image/*" multiple hidden>
     <input type="file" id="lutFileInput" accept=".cube,.CUBE" hidden>
 
     <!-- Processing indicator -->

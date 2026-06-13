@@ -23,6 +23,11 @@ class PhotoTuneApp {
     this.activeLutId = null;     // Currently active LUT id
     this.lutIntensity = 100;     // 0-100
     this.lutCategory = 'all';    // Current filter category
+    // Photo queue state
+    this.photos = [];            // Array of { id, file, objectUrl, imageData, params, activePreset, activeLutId, lutIntensity }
+    this.activePhotoId = null;
+    this.photoIdCounter = 0;
+
     this.db = null;              // IndexedDB reference
 
     this._cacheDOM();
@@ -57,6 +62,11 @@ class PhotoTuneApp {
     this.lutIntensityRow = document.getElementById('lutIntensityRow');
     this.lutIntensityInput = this.lutIntensityRow.querySelector('input[type="range"]');
     this.lutIntensityDisplay = this.lutIntensityRow.querySelector('.value');
+
+    // Sidebar DOM
+    this.thumbnailSidebar = document.getElementById('thumbnailSidebar');
+    this.thumbnailList = document.getElementById('thumbnailList');
+    this.btnAddMore = document.getElementById('btnAddMore');
   }
 
   // ── Build preset buttons ──
@@ -74,8 +84,15 @@ class PhotoTuneApp {
   // ── Event Bindings ──
   _bindEvents() {
     // File open
-    document.getElementById('btnOpen').addEventListener('click', () => this.fileInput.click());
-    this.fileInput.addEventListener('change', (e) => this._handleFile(e.target.files[0]));
+    document.getElementById('btnOpen').addEventListener('click', () => {
+      this.fileInput.removeAttribute('multiple');
+      this.fileInput.click();
+    });
+    this.btnAddMore.addEventListener('click', () => {
+      this.fileInput.setAttribute('multiple', 'true');
+      this.fileInput.click();
+    });
+    this.fileInput.addEventListener('change', (e) => this._handleFiles(Array.from(e.target.files)));
 
     // Drag and drop
     this.dropZone.addEventListener('click', () => this.fileInput.click());
@@ -89,12 +106,13 @@ class PhotoTuneApp {
     this.dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
       this.dropZone.classList.remove('drag-over');
-      const file = e.dataTransfer.files[0];
-      if (file) {
-        if (file.name.toLowerCase().endsWith('.cube')) {
-          this._importLUT(file);
-        } else if (file.type.startsWith('image/')) {
-          this._handleFile(file);
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) {
+        if (files[0].name.toLowerCase().endsWith('.cube')) {
+          this._importLUT(files[0]);
+        } else {
+          const imageFiles = files.filter(f => f.type.startsWith('image/'));
+          if (imageFiles.length > 0) this._handleFiles(imageFiles);
         }
       }
     });
@@ -113,12 +131,13 @@ class PhotoTuneApp {
     document.addEventListener('paste', (e) => {
       const items = e.clipboardData?.items;
       if (!items) return;
+      const imageFiles = [];
       for (const item of items) {
         if (item.type.startsWith('image/')) {
-          this._handleFile(item.getAsFile());
-          break;
+          imageFiles.push(item.getAsFile());
         }
       }
+      if (imageFiles.length > 0) this._handleFiles(imageFiles);
     });
 
     // Slider changes
@@ -256,47 +275,159 @@ class PhotoTuneApp {
     });
   }
 
-  // ── Handle loaded file ──
-  async _handleFile(file) {
-    if (!file) return;
+  // ── Handle loaded files ──
+  async _handleFiles(files) {
+    if (!files || files.length === 0) return;
     this._showProcessing(true);
 
     try {
-      this.imageData = await this.processor.loadImage(file);
+      let firstNewId = null;
 
-      // Show canvas, hide drop zone
+      for (const file of files) {
+        const id = 'photo_' + (++this.photoIdCounter);
+        const objectUrl = URL.createObjectURL(file);
+        
+        // Parse imageData (blocks sequentially, can be optimized later but fine for now)
+        const imgData = await this.processor.loadImage(file);
+        
+        const photo = {
+          id,
+          file,
+          objectUrl,
+          imageData: imgData,
+          params: { ...DEFAULT_PARAMS },
+          activePreset: null,
+          activeLutId: null,
+          lutIntensity: 100
+        };
+        this.photos.push(photo);
+        if (!firstNewId) firstNewId = id;
+      }
+
+      this.thumbnailSidebar.style.display = 'flex';
       this.dropZone.classList.add('hidden');
       this.canvas.style.display = 'block';
 
-      // Set canvas size to preview
-      this.canvas.width = this.imageData.previewWidth;
-      this.canvas.height = this.imageData.previewHeight;
-
-      // Update file info
-      const sizeKB = (file.size / 1024).toFixed(0);
-      const sizeMB = (file.size / 1024 / 1024).toFixed(1);
-      const sizeStr = file.size > 1024 * 1024 ? `${sizeMB} MB` : `${sizeKB} KB`;
-      this.fileInfo.textContent = `${file.name} — ${this.imageData.fullWidth}×${this.imageData.fullHeight} — ${sizeStr}`;
-
-      // Update preview info
-      this.previewInfo.style.display = 'block';
-      this.previewInfo.textContent = `${this.imageData.fullWidth} × ${this.imageData.fullHeight}`;
-
-      // Populate resize defaults
-      this.resizeW.placeholder = this.imageData.fullWidth;
-      this.resizeH.placeholder = this.imageData.fullHeight;
-
-      // Enable export
-      this.btnExport.disabled = false;
-
-      // Apply current params
-      this._processPreview();
+      this._renderThumbnails();
+      
+      if (firstNewId && !this.activePhotoId) {
+        this._selectPhoto(firstNewId);
+      } else if (firstNewId) {
+        this._selectPhoto(firstNewId);
+      }
     } catch (err) {
-      console.error('Failed to load image:', err);
-      alert('Failed to load image. Please try another file.');
+      console.error('Failed to load images:', err);
+      alert('Failed to load some images.');
     }
 
     this._showProcessing(false);
+  }
+
+  _renderThumbnails() {
+    this.thumbnailList.innerHTML = '';
+    this.photos.forEach(photo => {
+      const item = document.createElement('div');
+      item.className = 'thumbnail-item' + (photo.id === this.activePhotoId ? ' active' : '');
+      item.onclick = () => this._selectPhoto(photo.id);
+
+      const img = document.createElement('img');
+      img.src = photo.objectUrl;
+      item.appendChild(img);
+
+      const btnRemove = document.createElement('button');
+      btnRemove.className = 'btn-remove';
+      btnRemove.innerHTML = '×';
+      btnRemove.title = 'Remove';
+      btnRemove.onclick = (e) => {
+        e.stopPropagation();
+        this._removePhoto(photo.id);
+      };
+      item.appendChild(btnRemove);
+
+      this.thumbnailList.appendChild(item);
+    });
+  }
+
+  _saveCurrentPhotoState() {
+    if (!this.activePhotoId) return;
+    const p = this.photos.find(x => x.id === this.activePhotoId);
+    if (p) {
+      p.params = { ...this.params };
+      p.activePreset = this.activePreset;
+      p.activeLutId = this.activeLutId;
+      p.lutIntensity = this.lutIntensity;
+    }
+  }
+
+  _selectPhoto(id) {
+    this._saveCurrentPhotoState();
+    
+    const photo = this.photos.find(x => x.id === id);
+    if (!photo) return;
+
+    this.activePhotoId = id;
+    this.params = { ...photo.params };
+    this.activePreset = photo.activePreset;
+    this.activeLutId = photo.activeLutId;
+    this.lutIntensity = photo.lutIntensity;
+    this.imageData = photo.imageData;
+
+    this._renderThumbnails();
+    this._updateAllUI();
+    
+    // Set canvas size
+    this.canvas.width = this.imageData.previewWidth;
+    this.canvas.height = this.imageData.previewHeight;
+
+    // Update info
+    const sizeKB = (photo.file.size / 1024).toFixed(0);
+    const sizeMB = (photo.file.size / 1024 / 1024).toFixed(1);
+    const sizeStr = photo.file.size > 1024 * 1024 ? `${sizeMB} MB` : `${sizeKB} KB`;
+    this.fileInfo.textContent = `${photo.file.name} — ${this.imageData.fullWidth}×${this.imageData.fullHeight} — ${sizeStr}`;
+    this.previewInfo.style.display = 'block';
+    this.previewInfo.textContent = `${this.imageData.fullWidth} × ${this.imageData.fullHeight}`;
+    
+    this.resizeW.placeholder = this.imageData.fullWidth;
+    this.resizeH.placeholder = this.imageData.fullHeight;
+    this.btnExport.disabled = false;
+
+    this._processPreview();
+  }
+
+  _removePhoto(id) {
+    this.photos = this.photos.filter(p => p.id !== id);
+    if (this.photos.length === 0) {
+      this.activePhotoId = null;
+      this.imageData = null;
+      this.thumbnailSidebar.style.display = 'none';
+      this.dropZone.classList.remove('hidden');
+      this.canvas.style.display = 'none';
+      this.previewInfo.style.display = 'none';
+      this.fileInfo.textContent = 'No image loaded';
+      this.btnExport.disabled = true;
+    } else if (this.activePhotoId === id) {
+      this._selectPhoto(this.photos[0].id);
+    } else {
+      this._renderThumbnails();
+    }
+  }
+
+  _updateAllUI() {
+    this._updateAllSliderFills();
+    // Update LUT intensity slider UI
+    this.lutIntensityInput.value = this.lutIntensity;
+    this.lutIntensityDisplay.textContent = this.lutIntensity;
+    this._updateSliderFill(this.lutIntensityInput);
+    
+    // Update preset buttons
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.preset === this.activePreset);
+    });
+
+    // Update LUT list
+    document.querySelectorAll('.lut-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.id === this.activeLutId);
+    });
   }
 
   // ── Process and display preview ──
