@@ -117,17 +117,26 @@ class PhotoTuneApp {
   _bindEvents() {
     // File open
     document.getElementById('btnOpen').addEventListener('click', () => {
+      this.clearOnNextFiles = true;
       this.fileInput.setAttribute('multiple', 'true');
       this.fileInput.click();
     });
     this.btnAddMore.addEventListener('click', () => {
+      this.clearOnNextFiles = false;
       this.fileInput.setAttribute('multiple', 'true');
       this.fileInput.click();
     });
-    this.fileInput.addEventListener('change', (e) => this._handleFiles(Array.from(e.target.files)));
+    this.fileInput.addEventListener('change', (e) => {
+      this._handleFiles(Array.from(e.target.files));
+      e.target.value = ''; // Reset to allow selecting the same files again
+    });
 
     // Drag and drop
-    this.dropZone.addEventListener('click', () => this.fileInput.click());
+    this.dropZone.addEventListener('click', () => {
+      this.clearOnNextFiles = true;
+      this.fileInput.setAttribute('multiple', 'true');
+      this.fileInput.click();
+    });
     this.dropZone.addEventListener('dragover', (e) => {
       e.preventDefault();
       this.dropZone.classList.add('drag-over');
@@ -138,6 +147,7 @@ class PhotoTuneApp {
     this.dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
       this.dropZone.classList.remove('drag-over');
+      this.clearOnNextFiles = false; // Drag drop always appends
       const files = Array.from(e.dataTransfer.files);
       if (files.length > 0) {
         if (files[0].name.toLowerCase().endsWith('.cube')) {
@@ -358,6 +368,13 @@ class PhotoTuneApp {
     this._showProcessing(true);
 
     try {
+      if (this.clearOnNextFiles) {
+        this.photos = [];
+        this.thumbnailList.innerHTML = '';
+        this.activePhotoId = null;
+        this.clearOnNextFiles = false;
+      }
+
       let firstNewId = null;
 
       for (const file of files) {

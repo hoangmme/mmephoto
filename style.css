@@ -986,11 +986,10 @@ input[type="range"].has-fill {
   margin-bottom: 12px;
 }
 .hsl-color-btn {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   border: 2px solid transparent;
-  background-color: var(--hsl-color);
   cursor: pointer;
   transition: transform 0.2s, border-color 0.2s;
   padding: 0;
@@ -1001,5 +1000,6 @@ input[type="range"].has-fill {
 .hsl-color-btn.active {
   border-color: #fff;
   transform: scale(1.2);
-  box-shadow: 0 0 0 1px var(--hsl-color);
+  /* Use box-shadow to simulate an outer ring */
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
 }
