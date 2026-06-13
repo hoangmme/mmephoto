@@ -126,6 +126,26 @@ export class ImageProcessor {
     const vibAmt = p.vibrance / 100;
     const satFactor = 1 + p.saturation / 100;
     const hueShift = p.hue;
+    
+    // Check if we need HSL conversion
+    let needHSL = p.vibrance !== 0 || p.saturation !== 0 || p.hue !== 0;
+    
+    // HSL Bands setup
+    const hslBands = [
+      { name: 'red', h: 0 }, { name: 'orange', h: 30 }, { name: 'yellow', h: 60 },
+      { name: 'green', h: 120 }, { name: 'aqua', h: 180 }, { name: 'blue', h: 240 },
+      { name: 'purple', h: 280 }, { name: 'magenta', h: 320 }
+    ];
+    let activeBands = [];
+    for (const band of hslBands) {
+      const dh = p[`hsl_${band.name}_h`] || 0;
+      const ds = p[`hsl_${band.name}_s`] || 0;
+      const dl = p[`hsl_${band.name}_l`] || 0;
+      if (dh !== 0 || ds !== 0 || dl !== 0) {
+        activeBands.push({ ...band, dh, ds, dl });
+        needHSL = true;
+      }
+    }
 
     for (let i = 0; i < len; i += 4) {
       let r = data[i];
@@ -205,24 +225,65 @@ export class ImageProcessor {
       g = Math.max(0, Math.min(255, g));
       b = Math.max(0, Math.min(255, b));
 
-      // ── Vibrance, Saturation, Hue (operate in HSL) ──
-      if (p.vibrance !== 0 || p.saturation !== 0 || p.hue !== 0) {
+      // ── Vibrance, Saturation, Global Hue & Selective HSL ──
+      if (needHSL) {
         let [hh, ss, ll] = rgbToHsl(r, g, b);
 
-        // Vibrance: boost low-saturation colors more
+        // Global Vibrance
         if (p.vibrance !== 0) {
           const boost = vibAmt * (1 - ss);
           ss = Math.max(0, Math.min(1, ss + boost * 0.5));
         }
 
-        // Saturation
+        // Global Saturation
         if (p.saturation !== 0) {
           ss = Math.max(0, Math.min(1, ss * satFactor));
         }
 
-        // Hue
+        // Global Hue
         if (p.hue !== 0) {
           hh = (hh + hueShift / 360 + 1) % 1;
+        }
+
+        // Selective HSL (Color Mixer)
+        if (activeBands.length > 0 && ss > 0.01) {
+          let hueDeg = hh * 360;
+          let shiftH = 0, shiftS = 0, shiftL = 0;
+
+          for (const band of activeBands) {
+            let dist = Math.abs(hueDeg - band.h);
+            if (dist > 180) dist = 360 - dist;
+            
+            // Falloff width: 45 degrees
+            if (dist < 45) {
+              // Weight from 1 (center) to 0 (edge)
+              // Smoothstep for better blending
+              let norm = dist / 45;
+              let weight = 1 - (3 * norm * norm - 2 * norm * norm * norm);
+              
+              shiftH += (band.dh) * weight;
+              shiftS += (band.ds / 100) * weight;
+              shiftL += (band.dl / 100) * weight;
+            }
+          }
+
+          if (shiftH !== 0 || shiftS !== 0 || shiftL !== 0) {
+            hh = (hh + shiftH / 360 + 1) % 1;
+            // Additive/multiplicative saturation
+            if (shiftS > 0) {
+              ss = ss + (1 - ss) * shiftS; 
+            } else {
+              ss = ss * (1 + shiftS);
+            }
+            // Luminance
+            if (shiftL > 0) {
+              ll = ll + (1 - ll) * shiftL;
+            } else {
+              ll = ll * (1 + shiftL);
+            }
+            ss = Math.max(0, Math.min(1, ss));
+            ll = Math.max(0, Math.min(1, ll));
+          }
         }
 
         [r, g, b] = hslToRgb(hh, ss, ll);

@@ -23,6 +23,10 @@ class PhotoTuneApp {
     this.activeLutId = null;     // Currently active LUT id
     this.lutIntensity = 100;     // 0-100
     this.lutCategory = 'all';    // Current filter category
+    
+    // User Presets
+    this.userPresets = [];
+    this._loadUserPresets();
     // Photo queue state
     this.photos = [];            // Array of { id, file, objectUrl, imageData, params, activePreset, activeLutId, lutIntensity }
     this.activePhotoId = null;
@@ -67,16 +71,44 @@ class PhotoTuneApp {
     this.thumbnailSidebar = document.getElementById('thumbnailSidebar');
     this.thumbnailList = document.getElementById('thumbnailList');
     this.btnAddMore = document.getElementById('btnAddMore');
+
+    // Preset DOM
+    this.btnSavePreset = document.getElementById('btnSavePreset');
+    this.btnExportPreset = document.getElementById('btnExportPreset');
+    this.btnImportPreset = document.getElementById('btnImportPreset');
+    this.presetFileInput = document.getElementById('presetFileInput');
+
+    // HSL DOM
+    this.hslBtns = document.querySelectorAll('.hsl-color-btn');
+    this.hslSliders = document.querySelectorAll('.slider-row[data-hsl]');
+    this.activeHslColor = 'red';
   }
 
   // ── Build preset buttons ──
+  _loadUserPresets() {
+    try {
+      const stored = localStorage.getItem('phototune_user_presets');
+      if (stored) this.userPresets = JSON.parse(stored);
+    } catch(e) { console.warn('Failed to load user presets', e); }
+  }
+
   _buildPresets() {
+    this.presetGrid.innerHTML = '';
     Object.entries(PRESETS).forEach(([key, preset]) => {
       const btn = document.createElement('button');
       btn.className = 'preset-btn';
       btn.dataset.preset = key;
       btn.innerHTML = `${preset.icon} ${preset.name}`;
       btn.title = preset.desc;
+      this.presetGrid.appendChild(btn);
+    });
+    
+    this.userPresets.forEach(preset => {
+      const btn = document.createElement('button');
+      btn.className = 'preset-btn user-preset';
+      btn.dataset.userPreset = preset.id;
+      btn.innerHTML = `👤 ${preset.name}`;
+      btn.title = 'User Preset';
       this.presetGrid.appendChild(btn);
     });
   }
@@ -166,11 +198,56 @@ class PhotoTuneApp {
       });
     });
 
-    // Presets
+    // Presets click
     this.presetGrid.addEventListener('click', (e) => {
       const btn = e.target.closest('.preset-btn');
       if (!btn) return;
-      this._applyPreset(btn.dataset.preset);
+      if (btn.dataset.preset) {
+        this._applyPreset(btn.dataset.preset);
+      } else if (btn.dataset.userPreset) {
+        this._applyUserPreset(btn.dataset.userPreset);
+      }
+    });
+
+    // Preset Management actions
+    this.btnSavePreset.addEventListener('click', () => this._savePreset());
+    this.btnExportPreset.addEventListener('click', () => this._exportPreset());
+    this.btnImportPreset.addEventListener('click', () => this.presetFileInput.click());
+    this.presetFileInput.addEventListener('change', (e) => this._importPresetFile(e.target.files[0]));
+
+    // HSL Mixer interactions
+    this.hslBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.hslBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.activeHslColor = btn.dataset.color;
+        this._updateHslSliders();
+      });
+    });
+
+    this.hslSliders.forEach(row => {
+      const hslProp = row.dataset.hsl; // h, s, or l
+      const input = row.querySelector('input[type="range"]');
+      const valueDisplay = row.querySelector('.value');
+
+      input.addEventListener('input', () => {
+        const val = parseInt(input.value);
+        const paramKey = `hsl_${this.activeHslColor}_${hslProp}`;
+        this.params[paramKey] = val;
+        valueDisplay.textContent = val;
+        this._updateSliderFill(input);
+        this._clearActivePreset();
+        this._scheduleProcess();
+      });
+
+      row.querySelector('label').addEventListener('dblclick', () => {
+        const paramKey = `hsl_${this.activeHslColor}_${hslProp}`;
+        input.value = 0;
+        this.params[paramKey] = 0;
+        valueDisplay.textContent = 0;
+        this._updateSliderFill(input);
+        this._scheduleProcess();
+      });
     });
 
     // Section toggles
@@ -457,12 +534,99 @@ class PhotoTuneApp {
     this._scheduleProcess();
   }
 
+  _applyUserPreset(id) {
+    const preset = this.userPresets.find(p => p.id === id);
+    if (!preset) return;
+
+    this.params = { ...DEFAULT_PARAMS };
+    Object.entries(preset.values).forEach(([key, val]) => {
+      this.params[key] = val;
+    });
+
+    if (preset.activeLutId !== undefined) {
+      this.activeLutId = preset.activeLutId;
+      this.lutIntensity = preset.lutIntensity || 100;
+      this._updateLutUI();
+    }
+
+    this._syncSlidersToParams();
+    this.presetGrid.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.userPreset === id);
+    });
+    this.activePreset = id;
+    this._scheduleProcess();
+  }
+
+  // ── Preset Management ──
+  _savePreset() {
+    const name = prompt("Enter a name for your preset:", "My Preset");
+    if (!name) return;
+
+    const newPreset = {
+      id: "usr_" + Date.now(),
+      name: name,
+      values: { ...this.params },
+      activeLutId: this.activeLutId,
+      lutIntensity: this.lutIntensity
+    };
+
+    this.userPresets.push(newPreset);
+    localStorage.setItem('phototune_user_presets', JSON.stringify(this.userPresets));
+    this._buildPresets();
+  }
+
+  _exportPreset() {
+    const presetData = {
+      name: "PhotoTune Preset",
+      values: { ...this.params },
+      activeLutId: this.activeLutId,
+      lutIntensity: this.lutIntensity
+    };
+    const blob = new Blob([JSON.stringify(presetData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `phototune_preset_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  _importPresetFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (data && data.values) {
+          const name = prompt("Name for imported preset:", data.name || "Imported Preset");
+          if (!name) return;
+          const newPreset = {
+            id: "usr_" + Date.now(),
+            name: name,
+            values: data.values,
+            activeLutId: data.activeLutId || null,
+            lutIntensity: data.lutIntensity || 100
+          };
+          this.userPresets.push(newPreset);
+          localStorage.setItem('phototune_user_presets', JSON.stringify(this.userPresets));
+          this._buildPresets();
+        }
+      } catch (err) {
+        alert("Invalid preset file!");
+      }
+    };
+    reader.readAsText(file);
+    this.presetFileInput.value = ''; // Reset
+  }
+
   // ── Reset all parameters ──
   _resetAll() {
     this.params = { ...DEFAULT_PARAMS };
     this._syncSlidersToParams();
+    this.activeLutId = null;
+    this.lutIntensity = 100;
+    this._updateLutUI();
     this._clearActivePreset();
-    this._deactivateLUT();
     this._scheduleProcess();
   }
 
@@ -473,6 +637,20 @@ class PhotoTuneApp {
       const input = row.querySelector('input[type="range"]');
       const display = row.querySelector('.value');
       const val = this.params[param] ?? 0;
+      input.value = val;
+      display.textContent = val;
+      this._updateSliderFill(input);
+    });
+    this._updateHslSliders();
+  }
+
+  _updateHslSliders() {
+    this.hslSliders.forEach(row => {
+      const hslProp = row.dataset.hsl;
+      const paramKey = `hsl_${this.activeHslColor}_${hslProp}`;
+      const input = row.querySelector('input[type="range"]');
+      const display = row.querySelector('.value');
+      const val = this.params[paramKey] ?? 0;
       input.value = val;
       display.textContent = val;
       this._updateSliderFill(input);
@@ -515,27 +693,63 @@ class PhotoTuneApp {
       const quality = parseInt(
         document.querySelector('[data-param="exportQuality"] input').value
       );
-      const rw = parseInt(this.resizeW.value) || this.imageData.fullWidth;
-      const rh = parseInt(this.resizeH.value) || this.imageData.fullHeight;
-
-      const dataUrl = this.processor.exportImage(
-        this.imageData.originalData,
-        this.params,
-        this.selectedFormat,
-        quality,
-        rw, rh,
-        this._getActiveLut(),
-        this.lutIntensity
-      );
-
-      // Trigger download
-      const link = document.createElement('a');
       const ext = this.selectedFormat === 'jpeg' ? 'jpg' : this.selectedFormat;
-      link.download = `phototune-export.${ext}`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+
+      if (this.photos.length > 1 && typeof JSZip !== 'undefined') {
+        // Export ALL as ZIP
+        const zip = new JSZip();
+        for (let i = 0; i < this.photos.length; i++) {
+          const photo = this.photos[i];
+          // For batch export, use original dimensions to prevent aspect ratio distortion
+          const rw = photo.imageData.fullWidth;
+          const rh = photo.imageData.fullHeight;
+          const dataUrl = this.processor.exportImage(
+            photo.imageData.originalData,
+            this.params, // Global params
+            this.selectedFormat,
+            quality,
+            rw, rh,
+            this._getActiveLut(),
+            this.lutIntensity
+          );
+          
+          const base64Data = dataUrl.split(',')[1];
+          const originalName = photo.file.name.replace(/\.[^/.]+$/, "");
+          zip.file(`${originalName}_phototune.${ext}`, base64Data, {base64: true});
+        }
+        
+        const zipBlob = await zip.generateAsync({type: "blob"});
+        const link = document.createElement('a');
+        link.download = `PhotoTune_Export_${Date.now()}.zip`;
+        link.href = URL.createObjectURL(zipBlob);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+
+      } else {
+        // Export Single Image
+        const rw = parseInt(this.resizeW.value) || this.imageData.fullWidth;
+        const rh = parseInt(this.resizeH.value) || this.imageData.fullHeight;
+
+        const dataUrl = this.processor.exportImage(
+          this.imageData.originalData,
+          this.params,
+          this.selectedFormat,
+          quality,
+          rw, rh,
+          this._getActiveLut(),
+          this.lutIntensity
+        );
+
+        // Trigger download
+        const link = document.createElement('a');
+        link.download = `phototune-export.${ext}`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     } catch (err) {
       console.error('Export failed:', err);
       alert('Export failed. The image may be too large for browser processing.');

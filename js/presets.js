@@ -112,5 +112,14 @@ export const DEFAULT_PARAMS = {
   clarity: 0,
   dehaze: 0,
   sharpness: 0,
-  noiseReduction: 0
+  noiseReduction: 0,
+  // HSL Mixer
+  hsl_red_h: 0, hsl_red_s: 0, hsl_red_l: 0,
+  hsl_orange_h: 0, hsl_orange_s: 0, hsl_orange_l: 0,
+  hsl_yellow_h: 0, hsl_yellow_s: 0, hsl_yellow_l: 0,
+  hsl_green_h: 0, hsl_green_s: 0, hsl_green_l: 0,
+  hsl_aqua_h: 0, hsl_aqua_s: 0, hsl_aqua_l: 0,
+  hsl_blue_h: 0, hsl_blue_s: 0, hsl_blue_l: 0,
+  hsl_purple_h: 0, hsl_purple_s: 0, hsl_purple_l: 0,
+  hsl_magenta_h: 0, hsl_magenta_s: 0, hsl_magenta_l: 0
 };

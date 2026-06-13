@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <!-- JSZip for exporting all images -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
   <div class="app" id="app">
@@ -90,6 +92,11 @@
             <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div class="section-body" id="presetsBody">
+            <div class="preset-actions" style="display: flex; gap: 8px; margin-bottom: 12px;">
+              <button id="btnSavePreset" class="lut-import-btn" style="flex:1; padding: 6px;">Save</button>
+              <button id="btnExportPreset" class="lut-import-btn" style="flex:1; padding: 6px;">Export</button>
+              <button id="btnImportPreset" class="lut-import-btn" style="flex:1; padding: 6px;">Import</button>
+            </div>
             <div class="preset-grid" id="presetGrid"></div>
           </div>
         </section>
@@ -191,6 +198,44 @@
           </div>
         </section>
 
+        <!-- Color Mixer (HSL) -->
+        <section class="panel-section">
+          <div class="section-header" data-toggle="hsl">
+            <h3>🌈 Color Mixer</h3>
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="section-body hsl-body">
+            <div class="hsl-color-picker">
+              <button class="hsl-color-btn active" data-color="red" style="--hsl-color: #ef4444;" title="Red"></button>
+              <button class="hsl-color-btn" data-color="orange" style="--hsl-color: #f97316;" title="Orange"></button>
+              <button class="hsl-color-btn" data-color="yellow" style="--hsl-color: #eab308;" title="Yellow"></button>
+              <button class="hsl-color-btn" data-color="green" style="--hsl-color: #22c55e;" title="Green"></button>
+              <button class="hsl-color-btn" data-color="aqua" style="--hsl-color: #06b6d4;" title="Aqua"></button>
+              <button class="hsl-color-btn" data-color="blue" style="--hsl-color: #3b82f6;" title="Blue"></button>
+              <button class="hsl-color-btn" data-color="purple" style="--hsl-color: #a855f7;" title="Purple"></button>
+              <button class="hsl-color-btn" data-color="magenta" style="--hsl-color: #ec4899;" title="Magenta"></button>
+            </div>
+            <div id="hslSliders">
+              <!-- Sliders will be dynamically bound in app.js -->
+              <div class="slider-row" data-hsl="h">
+                <label>Hue</label>
+                <input type="range" min="-100" max="100" value="0" step="1">
+                <span class="value">0</span>
+              </div>
+              <div class="slider-row" data-hsl="s">
+                <label>Saturation</label>
+                <input type="range" min="-100" max="100" value="0" step="1">
+                <span class="value">0</span>
+              </div>
+              <div class="slider-row" data-hsl="l">
+                <label>Luminance</label>
+                <input type="range" min="-100" max="100" value="0" step="1">
+                <span class="value">0</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Detail -->
         <section class="panel-section">
           <div class="section-header" data-toggle="detail">
@@ -266,9 +311,10 @@
       </aside>
     </main>
 
-    <!-- Hidden file input -->
+    <!-- Hidden file inputs -->
     <input type="file" id="fileInput" accept="image/*" multiple hidden>
     <input type="file" id="lutFileInput" accept=".cube,.CUBE" hidden>
+    <input type="file" id="presetFileInput" accept=".json" hidden>
 
     <!-- Processing indicator -->
     <div class="processing-overlay" id="processingOverlay">
