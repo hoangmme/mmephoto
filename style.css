@@ -881,6 +881,42 @@ input[type="range"].has-fill {
 @media (max-width: 900px) {
   .main {
     flex-direction: column;
+    position: relative;
+  }
+
+  .sidebar-left {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 44px;
+    height: calc(40vh - 20px);
+    background: transparent;
+    border: none;
+    z-index: 10;
+  }
+  
+  .sidebar-left .sidebar-header {
+    padding: 4px;
+    border: none;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    flex-direction: column;
+  }
+
+  .sidebar-left .sidebar-header h3 {
+    display: none;
+  }
+
+  .thumbnail-list {
+    padding: 0;
+    gap: 6px;
+    overflow-y: auto;
+  }
+
+  .thumbnail-item {
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
 
   .controls-panel {
