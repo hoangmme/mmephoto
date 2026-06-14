@@ -577,6 +577,18 @@ class PhotoTuneApp {
       btn.classList.toggle('active', btn.dataset.preset === presetKey);
     });
     this.activePreset = presetKey;
+    
+    // Auto-select LUT if preset includes it
+    if (preset.activeLutId) {
+      this.activeLutId = preset.activeLutId;
+      this.lutIntensity = preset.lutIntensity || 100;
+      this.activePresetLutIntensity = this.lutIntensity;
+      this._updateLutUI();
+    } else {
+      this.activeLutId = null;
+      this.activePresetLutIntensity = 0;
+      this._updateLutUI();
+    }
 
     this._scheduleProcess();
   }
@@ -595,13 +607,22 @@ class PhotoTuneApp {
       this.params[key] = val;
     });
 
-    if (preset.activeLutId !== undefined) {
+    this._syncSlidersToParams();
+    
+    // Auto-select LUT if preset includes it
+    if (preset.activeLutId) {
       this.activeLutId = preset.activeLutId;
       this.lutIntensity = preset.lutIntensity || 100;
+      this.activePresetLutIntensity = this.lutIntensity;
+      this._updateLutUI();
+    } else {
+      // Don't remove LUT if user already applied one manually?
+      // Actually standard behavior is to reset LUT
+      this.activeLutId = null;
+      this.activePresetLutIntensity = 0;
       this._updateLutUI();
     }
 
-    this._syncSlidersToParams();
     this.presetGrid.querySelectorAll('.preset-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.userPreset === id);
     });
@@ -625,6 +646,13 @@ class PhotoTuneApp {
       const targetVal = this.activePresetValues[key];
       this.params[key] = Math.round(defaultVal + (targetVal - defaultVal) * ratio);
     });
+
+    if (this.activeLutId && this.activePresetLutIntensity !== undefined) {
+      this.lutIntensity = Math.round(this.activePresetLutIntensity * ratio);
+      this.lutIntensityInput.value = this.lutIntensity;
+      this.lutIntensityDisplay.textContent = this.lutIntensity;
+      this._updateSliderFill(this.lutIntensityInput);
+    }
 
     this._syncSlidersToParams();
     this._scheduleProcess();
