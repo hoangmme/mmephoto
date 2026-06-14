@@ -127,6 +127,10 @@ html, body {
   white-space: nowrap;
 }
 
+.toolbar-btn svg {
+  pointer-events: none;
+}
+
 .toolbar-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
@@ -448,6 +452,7 @@ html, body {
   cursor: pointer;
   transition: all var(--transition);
   text-align: center;
+  touch-action: manipulation;
   line-height: 1.3;
 }
 
