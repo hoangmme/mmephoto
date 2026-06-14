@@ -758,6 +758,13 @@ class PhotoTuneApp {
     });
   }
 
+  _updateLutUI() {
+    this.lutIntensityRow.style.display = this.activeLutId ? 'grid' : 'none';
+    this.lutList.querySelectorAll('.lut-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.id === this.activeLutId);
+    });
+  }
+
   // ── Clear active preset highlight ──
   _clearActivePreset() {
     this.activePreset = null;
