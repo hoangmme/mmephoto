@@ -886,13 +886,16 @@ input[type="range"].has-fill {
   .controls-panel {
     width: 100%;
     min-width: unset;
-    max-height: 50vh;
+    max-height: unset;
+    flex: 1;
     border-left: none;
     border-top: 1px solid var(--border);
   }
 
   .preview-area {
-    min-height: 40vh;
+    height: 40vh;
+    min-height: unset;
+    flex: none;
   }
 
   .toolbar-btn span {
