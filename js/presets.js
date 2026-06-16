@@ -92,6 +92,17 @@ export const PRESETS = {
       exposure: 25, highlights: 10, shadows: 10, whites: 35,
       blacks: -5, saturation: -3
     }
+  },
+  koreaPortrait: {
+    name: 'Korea Portrait',
+    desc: 'Studio Hàn Quốc — da sáng mịn, tông lạnh pastel',
+    icon: '🇰🇷',
+    values: {
+      exposure: 8, contrast: -12, highlights: -15, shadows: 13,
+      whites: 8, blacks: 5, temperature: -5, tint: 4,
+      vibrance: 8, saturation: 0, texture: -22, clarity: -18,
+      sharpness: 10, noiseReduction: 10
+    }
   }
 };
 

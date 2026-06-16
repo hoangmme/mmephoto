@@ -1,11 +1,12 @@
 // ============================================
-// PhotoTune Pro — Main Application
+// MME Color Lab — Main Application
 // ============================================
 
 import { PRESETS, DEFAULT_PARAMS } from './presets.js';
 import { ImageProcessor } from './processor.js';
 import { parseCubeLUT, serializeLUT, deserializeLUT } from './lut-parser.js';
 import { BUILTIN_LUTS, LUT_CATEGORIES } from './builtin-luts.js';
+import { SkinRetoucher, RETOUCH_PRESETS, DEFAULT_RETOUCH } from './skin-retouch.js';
 
 class PhotoTuneApp {
   constructor() {
@@ -33,6 +34,12 @@ class PhotoTuneApp {
     this.photoIdCounter = 0;
 
     this.db = null;              // IndexedDB reference
+
+    // Skin Retouch state
+    this.skinRetoucher = new SkinRetoucher();
+    this.retouchParams = { ...DEFAULT_RETOUCH };
+    this.activeRetouchLevel = null;
+    this.faceDetected = false;
 
     this._cacheDOM();
     this._buildPresets();
@@ -87,6 +94,11 @@ class PhotoTuneApp {
     this.hslBtns = document.querySelectorAll('.hsl-color-btn');
     this.hslSliders = document.querySelectorAll('.slider-row[data-hsl]');
     this.activeHslColor = 'red';
+
+    // Retouch DOM
+    this.retouchSliders = document.querySelectorAll('.slider-row[data-retouch]');
+    this.retouchPresetBtns = document.querySelectorAll('.retouch-preset-btn');
+    this.retouchStatus = document.getElementById('retouchStatus');
   }
 
   // ── Build preset buttons ──
@@ -236,6 +248,39 @@ class PhotoTuneApp {
       this.presetStrengthDisplay.textContent = this.presetStrengthInput.value;
       this._updateSliderFill(this.presetStrengthInput);
       this._applyPresetStrength(parseInt(this.presetStrengthInput.value));
+    });
+
+    // Retouch preset buttons
+    this.retouchPresetBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const level = btn.dataset.level;
+        this._applyRetouchPreset(level);
+      });
+    });
+
+    // Retouch sliders
+    this.retouchSliders.forEach(row => {
+      const param = row.dataset.retouch;
+      const input = row.querySelector('input[type="range"]');
+      const valueDisplay = row.querySelector('.value');
+
+      input.addEventListener('input', () => {
+        const val = parseInt(input.value);
+        this.retouchParams[param] = val;
+        valueDisplay.textContent = val;
+        this._updateSliderFill(input);
+        this._clearActiveRetouchLevel();
+        this._scheduleProcess();
+      });
+
+      row.querySelector('label').addEventListener('dblclick', () => {
+        input.value = 0;
+        this.retouchParams[param] = 0;
+        valueDisplay.textContent = 0;
+        this._updateSliderFill(input);
+        this._clearActiveRetouchLevel();
+        this._scheduleProcess();
+      });
     });
 
     // HSL Mixer interactions
@@ -535,20 +580,38 @@ class PhotoTuneApp {
   }
 
   // ── Process and display preview ──
-  _processPreview() {
+  async _processPreview() {
     if (!this.imageData) return;
 
     const activeLut = this._getActiveLut();
-    const processed = this.processor.process(
+    let processed = this.processor.process(
       this.imageData.previewData, this.params, activeLut, this.lutIntensity
     );
+
+    // Apply skin retouch if any param is active
+    if (this.skinRetoucher.isActive(this.retouchParams)) {
+      this._updateRetouchStatus('loading', '⏳ Detecting faces...');
+      const retouchResult = await this.skinRetoucher.process(processed, this.retouchParams);
+      processed = retouchResult.result;
+      this.faceDetected = retouchResult.faceDetected;
+
+      if (retouchResult.faceDetected) {
+        this._updateRetouchStatus('detected', '✅ Face detected — retouch applied');
+      } else {
+        this._updateRetouchStatus('not-detected', '⚠️ No face detected — color only');
+      }
+    } else {
+      this._updateRetouchStatus('', '');
+    }
+
     this.ctx.putImageData(processed, 0, 0);
   }
 
   // ── Debounced processing ──
   _scheduleProcess() {
     clearTimeout(this.processTimer);
-    this.processTimer = setTimeout(() => this._processPreview(), 30);
+    const delay = this.skinRetoucher.isActive(this.retouchParams) ? 150 : 30;
+    this.processTimer = setTimeout(() => this._processPreview(), delay);
   }
 
   // ── Apply preset ──
@@ -728,7 +791,52 @@ class PhotoTuneApp {
     this.lutIntensity = 100;
     this._updateLutUI();
     this._clearActivePreset();
+    // Reset retouch
+    this.retouchParams = { ...DEFAULT_RETOUCH };
+    this.activeRetouchLevel = null;
+    this._syncRetouchSliders();
+    this._clearActiveRetouchLevel();
+    this._updateRetouchStatus('', '');
     this._scheduleProcess();
+  }
+
+  // ── Retouch helpers ──
+  _applyRetouchPreset(level) {
+    const preset = RETOUCH_PRESETS[level];
+    if (!preset) return;
+
+    this.retouchParams = { ...preset };
+    this.activeRetouchLevel = level;
+    this._syncRetouchSliders();
+
+    // Highlight active button
+    this.retouchPresetBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.level === level);
+    });
+
+    this._scheduleProcess();
+  }
+
+  _syncRetouchSliders() {
+    this.retouchSliders.forEach(row => {
+      const param = row.dataset.retouch;
+      const input = row.querySelector('input[type="range"]');
+      const display = row.querySelector('.value');
+      const val = this.retouchParams[param] ?? 0;
+      input.value = val;
+      display.textContent = val;
+      this._updateSliderFill(input);
+    });
+  }
+
+  _clearActiveRetouchLevel() {
+    this.activeRetouchLevel = null;
+    this.retouchPresetBtns.forEach(btn => btn.classList.remove('active'));
+  }
+
+  _updateRetouchStatus(className, text) {
+    this.retouchStatus.className = 'retouch-status' + (className ? ' ' + className : '');
+    this.retouchStatus.textContent = text;
   }
 
   // ── Sync UI sliders to current params ──
@@ -806,29 +914,53 @@ class PhotoTuneApp {
       if (this.photos.length > 1 && typeof JSZip !== 'undefined') {
         // Export ALL as ZIP
         const zip = new JSZip();
+        const hasRetouch = this.skinRetoucher.isActive(this.retouchParams);
+
         for (let i = 0; i < this.photos.length; i++) {
           const photo = this.photos[i];
-          // For batch export, use original dimensions to prevent aspect ratio distortion
           const rw = photo.imageData.fullWidth;
           const rh = photo.imageData.fullHeight;
-          const dataUrl = this.processor.exportImage(
+
+          // Color grading + LUT
+          let processed = this.processor.process(
             photo.imageData.originalData,
-            this.params, // Global params
-            this.selectedFormat,
-            quality,
-            rw, rh,
+            this.params,
             this._getActiveLut(),
             this.lutIntensity
           );
-          
+
+          // Apply retouch at full resolution
+          if (hasRetouch) {
+            const retouchResult = await this.skinRetoucher.process(processed, this.retouchParams);
+            processed = retouchResult.result;
+          }
+
+          // Draw to canvas for export
+          this.processor.offscreen.width = processed.width;
+          this.processor.offscreen.height = processed.height;
+          this.processor.offCtx.putImageData(processed, 0, 0);
+
+          let exportCanvas = this.processor.offscreen;
+          if (rw !== processed.width || rh !== processed.height) {
+            this.processor.tempCanvas.width = rw;
+            this.processor.tempCanvas.height = rh;
+            this.processor.tempCtx.drawImage(this.processor.offscreen, 0, 0, rw, rh);
+            exportCanvas = this.processor.tempCanvas;
+          }
+
+          const mimeType = this.selectedFormat === 'png' ? 'image/png' :
+                           this.selectedFormat === 'webp' ? 'image/webp' : 'image/jpeg';
+          const q = this.selectedFormat === 'png' ? undefined : quality / 100;
+          const dataUrl = exportCanvas.toDataURL(mimeType, q);
+
           const base64Data = dataUrl.split(',')[1];
           const originalName = photo.file.name.replace(/\.[^/.]+$/, "");
-          zip.file(`${originalName}_phototune.${ext}`, base64Data, {base64: true});
+          zip.file(`${originalName}_mmecolor.${ext}`, base64Data, {base64: true});
         }
         
         const zipBlob = await zip.generateAsync({type: "blob"});
         const link = document.createElement('a');
-        link.download = `PhotoTune_Export_${Date.now()}.zip`;
+        link.download = `MMEColorLab_Export_${Date.now()}.zip`;
         link.href = URL.createObjectURL(zipBlob);
         document.body.appendChild(link);
         link.click();
@@ -839,24 +971,61 @@ class PhotoTuneApp {
         // Export Single Image
         const rw = parseInt(this.resizeW.value) || this.imageData.fullWidth;
         const rh = parseInt(this.resizeH.value) || this.imageData.fullHeight;
+        const hasRetouch = this.skinRetoucher.isActive(this.retouchParams);
 
-        const dataUrl = this.processor.exportImage(
-          this.imageData.originalData,
-          this.params,
-          this.selectedFormat,
-          quality,
-          rw, rh,
-          this._getActiveLut(),
-          this.lutIntensity
-        );
+        if (hasRetouch) {
+          // Process with retouch at full res
+          let processed = this.processor.process(
+            this.imageData.originalData,
+            this.params,
+            this._getActiveLut(),
+            this.lutIntensity
+          );
+          const retouchResult = await this.skinRetoucher.process(processed, this.retouchParams);
+          processed = retouchResult.result;
 
-        // Trigger download
-        const link = document.createElement('a');
-        link.download = `phototune-export.${ext}`;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+          this.processor.offscreen.width = processed.width;
+          this.processor.offscreen.height = processed.height;
+          this.processor.offCtx.putImageData(processed, 0, 0);
+
+          let exportCanvas = this.processor.offscreen;
+          if (rw && rh && (rw !== processed.width || rh !== processed.height)) {
+            this.processor.tempCanvas.width = rw;
+            this.processor.tempCanvas.height = rh;
+            this.processor.tempCtx.drawImage(this.processor.offscreen, 0, 0, rw, rh);
+            exportCanvas = this.processor.tempCanvas;
+          }
+
+          const mimeType = this.selectedFormat === 'png' ? 'image/png' :
+                           this.selectedFormat === 'webp' ? 'image/webp' : 'image/jpeg';
+          const q = this.selectedFormat === 'png' ? undefined : quality / 100;
+          const dataUrl = exportCanvas.toDataURL(mimeType, q);
+
+          const link = document.createElement('a');
+          link.download = `mmecolor-export.${ext}`;
+          link.href = dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          // Standard export (no retouch)
+          const dataUrl = this.processor.exportImage(
+            this.imageData.originalData,
+            this.params,
+            this.selectedFormat,
+            quality,
+            rw, rh,
+            this._getActiveLut(),
+            this.lutIntensity
+          );
+
+          const link = document.createElement('a');
+          link.download = `mmecolor-export.${ext}`;
+          link.href = dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
       }
     } catch (err) {
       console.error('Export failed:', err);
