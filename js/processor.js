@@ -8,7 +8,7 @@
 
 import { applyLUT } from './lut-parser.js';
 
-const MAX_PREVIEW = 1400; // Max preview dimension
+const MAX_PREVIEW = 4000; // Increased max preview dimension for higher sharpness
 
 export class ImageProcessor {
   constructor() {
