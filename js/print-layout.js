@@ -114,6 +114,10 @@ class PrintLayoutApp {
 
     this.mainSwiper = document.getElementById('mainSwiper');
     this.canvas = document.getElementById('printCanvas');
+    if (!this.canvas) {
+      this.canvas = document.createElement('canvas');
+      this.canvas.id = 'printCanvas';
+    }
     this.ctx = this.canvas.getContext('2d');
 
     this._initMainSwiper();
