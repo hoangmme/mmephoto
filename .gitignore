@@ -4,3 +4,4 @@ test_photo.png
 .DS_Store
 deploy.sh
 .env
+data/

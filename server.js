@@ -37,11 +37,19 @@ app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ limit: '200mb', extended: true }));
 app.use(express.static(__dirname)); // Serve static files from root
 
-// Ensure uploads dir exists
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
+// Ensure data and uploads dirs exist
+const DATA_DIR = path.join(__dirname, 'data');
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
+
+// Serve the uploads directory correctly
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 // Multer setup (store files in memory temporarily to process them)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -181,7 +189,7 @@ app.get('/api/sessions/:id', (req, res) => {
 });
 
 // 3. Templates API
-const TEMPLATES_FILE = path.join(__dirname, 'templates.json');
+const TEMPLATES_FILE = path.join(DATA_DIR, 'templates.json');
 
 app.get('/api/templates', (req, res) => {
   if (!fs.existsSync(TEMPLATES_FILE)) {
