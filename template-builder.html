@@ -58,13 +58,24 @@
             <small>Khổ A5 300DPI mặc định là 1748×2480</small>
           </div>
           <div class="tb-group">
-            <label>Frame Overlay (PNG trong suốt)</label>
-            <button class="tb-btn tb-btn-full" id="btnUploadFrame">Tải lên PNG...</button>
-            <input type="file" id="frameInput" accept="image/png" hidden>
+            <label>Frame Overlay (PNG/JPG)</label>
+            <button class="tb-btn tb-btn-full" id="btnUploadFrame">Tải lên Ảnh Khung...</button>
+            <input type="file" id="frameInput" accept="image/png,image/jpeg" hidden>
             <div id="framePreview" class="tb-frame-preview" style="display:none;">
               <img id="frameImg" src="">
               <button class="tb-btn-icon tb-danger" id="btnRemoveFrame" title="Xóa frame">✕</button>
             </div>
+          </div>
+          
+          <div class="tb-group tb-magic-tool" id="magicDetectTool" style="display:none;">
+            <label style="color:var(--tb-accent); font-weight:600;">🪄 Magic Detect Slot</label>
+            <small style="margin-bottom:8px;">Nhập mã màu của khối màu trên ảnh để tự động tạo Slot & xoá nền khối màu đó.</small>
+            <div class="tb-flex-row">
+              <input type="color" id="magicColorPicker" value="#ff0000" style="width: 32px; height: 32px; padding: 0; border: none; cursor: pointer; border-radius: 4px;">
+              <input type="text" id="magicColorHex" class="tb-input" value="#ff0000" placeholder="#RRGGBB" style="flex:1;">
+            </div>
+            <button class="tb-btn tb-btn-full" id="btnMagicDetect" style="margin-top:8px;">🔍 Quét & Đục lỗ</button>
+            <small id="magicDetectStatus" style="color:#22c55e; display:none; margin-top:4px;">✓ Đã tạo 1 Slot mới!</small>
           </div>
           
           <div class="tb-divider"></div>
@@ -108,6 +119,6 @@
   
   <input type="file" id="jsonInput" accept=".json" hidden>
 
-  <script type="module" src="js/template-builder.js?v=1"></script>
+  <script type="module" src="js/template-builder.js?v=2"></script>
 </body>
 </html>

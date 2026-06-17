@@ -40,6 +40,13 @@ class TemplateBuilderApp {
     // Slots
     this.btnAddSlot = document.getElementById('btnAddSlot');
     this.slotsList = document.getElementById('slotsList');
+
+    // Magic Detect
+    this.magicDetectTool = document.getElementById('magicDetectTool');
+    this.magicColorPicker = document.getElementById('magicColorPicker');
+    this.magicColorHex = document.getElementById('magicColorHex');
+    this.btnMagicDetect = document.getElementById('btnMagicDetect');
+    this.magicDetectStatus = document.getElementById('magicDetectStatus');
     
     // Workspace
     this.canvasWrapper = document.getElementById('canvasWrapper');
@@ -111,11 +118,124 @@ class TemplateBuilderApp {
     document.addEventListener('mousemove', this._onWorkspaceMouseMove.bind(this));
     document.addEventListener('mouseup', this._onWorkspaceMouseUp.bind(this));
 
+    // Magic Detect
+    this.magicColorPicker.addEventListener('input', (e) => this.magicColorHex.value = e.target.value);
+    this.magicColorHex.addEventListener('input', (e) => this.magicColorPicker.value = e.target.value);
+    this.btnMagicDetect.addEventListener('click', () => this._magicDetectAndPunch(this.magicColorHex.value));
+
     // Save/Export/Import
     this.btnSaveTemplate.addEventListener('click', () => this._saveToLocal());
     this.btnExportJson.addEventListener('click', () => this._exportJson());
     this.btnImportJson.addEventListener('click', () => this.jsonInput.click());
     this.jsonInput.addEventListener('change', this._importJson.bind(this));
+  }
+
+  // ── Magic Detect ──
+  _hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+
+  _magicDetectAndPunch(hexColor) {
+    if (!this.template.frame_url) return;
+
+    const targetColor = this._hexToRgb(hexColor);
+    if (!targetColor) {
+      alert('Mã màu không hợp lệ!');
+      return;
+    }
+
+    this.btnMagicDetect.textContent = 'Đang xử lý...';
+    this.btnMagicDetect.disabled = true;
+
+    // We must render the image at its natural resolution onto an offscreen canvas
+    const img = new Image();
+    img.onload = () => {
+      // Use template size instead of img.naturalWidth in case they differ, 
+      // but usually they should be the same.
+      const w = this.template.canvas_width;
+      const h = this.template.canvas_height;
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+
+      let minX = w, minY = h, maxX = 0, maxY = 0;
+      let foundPixels = 0;
+
+      // Tolerance for color matching
+      const tolerance = 15;
+
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const idx = (y * w + x) * 4;
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+          const a = data[idx + 3];
+
+          if (a > 0) { // Ignore transparent pixels
+            const rDiff = Math.abs(r - targetColor.r);
+            const gDiff = Math.abs(g - targetColor.g);
+            const bDiff = Math.abs(b - targetColor.b);
+
+            if (rDiff <= tolerance && gDiff <= tolerance && bDiff <= tolerance) {
+              // Match found
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
+              
+              // Punch hole (make transparent)
+              data[idx + 3] = 0;
+              foundPixels++;
+            }
+          }
+        }
+      }
+
+      if (foundPixels > 50) { // arbitrary threshold to avoid noise
+        // Put data back and get new base64
+        ctx.putImageData(imgData, 0, 0);
+        this.template.frame_url = canvas.toDataURL('image/png');
+        this._updateFrameUI(); // Refresh the image in the UI
+
+        // Calculate slot boundaries
+        const slotW = maxX - minX + 1;
+        const slotH = maxY - minY + 1;
+
+        const id = 'slot_' + (this.template.slots.length + 1) + '_' + Date.now().toString().slice(-4);
+        this.template.slots.push({
+          id: id,
+          x: minX,
+          y: minY,
+          width: slotW,
+          height: slotH
+        });
+        
+        this.activeSlotId = id;
+        this._renderSlotsList();
+        this._renderWorkspace();
+
+        this.magicDetectStatus.style.display = 'block';
+        setTimeout(() => this.magicDetectStatus.style.display = 'none', 3000);
+      } else {
+        alert('Không tìm thấy vùng màu ' + hexColor + ' trên ảnh!');
+      }
+
+      this.btnMagicDetect.textContent = '🔍 Quét & Đục lỗ';
+      this.btnMagicDetect.disabled = false;
+    };
+    img.src = this.template.frame_url;
   }
 
   // ── Frame UI ──
@@ -124,12 +244,14 @@ class TemplateBuilderApp {
       this.frameImg.src = this.template.frame_url;
       this.framePreview.style.display = 'block';
       this.btnUploadFrame.style.display = 'none';
+      this.magicDetectTool.style.display = 'block';
       
       this.workspaceFrameImg.src = this.template.frame_url;
       this.workspaceFrameImg.style.display = 'block';
     } else {
       this.framePreview.style.display = 'none';
       this.btnUploadFrame.style.display = 'block';
+      this.magicDetectTool.style.display = 'none';
       this.workspaceFrameImg.style.display = 'none';
     }
   }
