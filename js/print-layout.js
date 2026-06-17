@@ -67,14 +67,13 @@ class PrintLayoutApp {
     this._imageCache = {};     // id -> HTMLImageElement
 
     // Canvas
-    this.canvas = document.getElementById('printCanvas');
-    this.ctx = this.canvas.getContext('2d');
+    // Not needed in Main Swiper logic: this.canvas = document.getElementById('printCanvas');
+    // this.ctx = this.canvas.getContext('2d');
 
     // DOM
     this.imageList = document.getElementById('imageList');
     this.imageCount = document.getElementById('imageCount');
-    this.templateSlider = document.getElementById('templateSlider');
-    this.templateSelect = null; // Removed
+    this.mainSwiper = document.getElementById('mainSwiper');
     this.slotProps = document.getElementById('slotProps');
     this.exportOverlay = document.getElementById('exportOverlay');
 
@@ -113,28 +112,33 @@ class PrintLayoutApp {
       console.error("Error fetching templates from server", e);
     }
 
-    this._initTemplateSlider();
+    this.mainSwiper = document.getElementById('mainSwiper');
+    this.canvas = document.getElementById('printCanvas');
+    this.ctx = this.canvas.getContext('2d');
+
+    this._initMainSwiper();
     this._bindEvents();
     this._initTemplate();
     this._loadBatch();
   }
 
-  _initTemplateSlider() {
-    if (!this.templateSlider) return;
-    this.templateSlider.innerHTML = '';
+  _initMainSwiper() {
+    if (!this.mainSwiper) return;
+    this.mainSwiper.innerHTML = '';
     
     Object.keys(ALL_TEMPLATES).forEach(k => {
       const t = ALL_TEMPLATES[k];
-      const item = document.createElement('div');
-      item.className = 'pl-template-item' + (this.currentTemplate === k ? ' active' : '');
-      item.dataset.id = k;
+      const slide = document.createElement('div');
+      slide.className = 'pl-slide';
+      slide.dataset.id = k;
       
+      const preview = document.createElement('div');
+      preview.className = 'pl-slide-preview';
       if (t.frame_url) {
         const img = document.createElement('img');
         img.src = t.frame_url;
-        item.appendChild(img);
+        preview.appendChild(img);
       } else {
-        // Draw mini canvas
         const cvs = document.createElement('canvas');
         cvs.width = 174;
         cvs.height = 248;
@@ -143,45 +147,115 @@ class PrintLayoutApp {
         ctx.fillRect(0, 0, 174, 248);
         ctx.fillStyle = '#eee';
         t.slots.forEach(s => {
-          const w = s.w * 0.1;
-          const h = s.h * 0.1;
-          const cx = s.cx * 0.1;
-          const cy = s.cy * 0.1;
+          const w = s.w * 0.1; const h = s.h * 0.1;
+          const cx = s.cx * 0.1; const cy = s.cy * 0.1;
           ctx.save();
           ctx.translate(cx, cy);
           ctx.rotate(s.rotation || 0);
           ctx.fillRect(-w/2, -h/2, w, h);
           ctx.restore();
         });
-        item.appendChild(cvs);
+        preview.appendChild(cvs);
       }
+      slide.appendChild(preview);
       
-      const label = document.createElement('span');
-      label.textContent = t.name;
-      item.appendChild(label);
-      
-      item.addEventListener('click', () => {
+      slide.addEventListener('click', () => {
         if (this.currentTemplate !== k) {
-          this.currentTemplate = k;
-          this._initTemplateSlider(); // Re-render to update active class
-          this._initTemplate();
-          this._renderCanvas();
-          this._renderImageList();
-          this._renderSlotProps();
-          
-          // Scroll item into view
-          item.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+           this._selectSlide(k);
         }
       });
       
-      this.templateSlider.appendChild(item);
+      this.mainSwiper.appendChild(slide);
+    });
+
+    // Padding to center first/last
+    const updatePadding = () => {
+       if (this.mainSwiper.children.length > 0) {
+         const slideWidth = this.mainSwiper.children[0].offsetWidth;
+         const pad = (this.mainSwiper.offsetWidth - slideWidth) / 2;
+         this.mainSwiper.style.paddingLeft = `${pad}px`;
+         this.mainSwiper.style.paddingRight = `${pad}px`;
+       }
+    };
+    window.addEventListener('resize', updatePadding);
+    setTimeout(updatePadding, 50);
+
+    // Auto select on scroll
+    let scrollTimeout;
+    this.mainSwiper.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      
+      // Update visual scaling
+      const center = this.mainSwiper.scrollLeft + this.mainSwiper.offsetWidth / 2;
+      Array.from(this.mainSwiper.children).forEach(slide => {
+         if (slide.classList.contains('active')) {
+            slide.style.transform = '';
+            slide.style.opacity = '';
+            return;
+         }
+         const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+         const diff = Math.abs(center - slideCenter);
+         const progress = Math.min(1, diff / (slide.offsetWidth * 1.5));
+         const scale = 0.8 - (progress * 0.1); 
+         const opacity = 0.5 - (progress * 0.2);
+         slide.style.transform = `scale(${scale})`;
+         slide.style.opacity = opacity;
+      });
+
+      scrollTimeout = setTimeout(() => {
+        let closest = null;
+        let minDiff = Infinity;
+        Array.from(this.mainSwiper.children).forEach(slide => {
+           const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+           const diff = Math.abs(center - slideCenter);
+           if (diff < minDiff) {
+              minDiff = diff;
+              closest = slide;
+           }
+        });
+        
+        if (closest && closest.dataset.id !== this.currentTemplate) {
+           this._selectSlide(closest.dataset.id);
+        }
+      }, 150);
     });
     
-    // Set initial currentTemplate if invalid
+    // Set initial
     if (!ALL_TEMPLATES[this.currentTemplate]) {
       this.currentTemplate = Object.keys(ALL_TEMPLATES)[0];
-      this._initTemplateSlider();
     }
+    
+    // Force select first without scrolling animation
+    this._selectSlide(this.currentTemplate, true);
+  }
+
+  _selectSlide(id, instant = false) {
+     this.currentTemplate = id;
+     const targetSlide = Array.from(this.mainSwiper.children).find(s => s.dataset.id === id);
+     if (!targetSlide) return;
+     
+     Array.from(this.mainSwiper.children).forEach(s => {
+        s.classList.remove('active');
+        s.style.transform = '';
+        s.style.opacity = '';
+        if (s.contains(this.canvas)) {
+           s.removeChild(this.canvas);
+        }
+     });
+     
+     targetSlide.classList.add('active');
+     targetSlide.appendChild(this.canvas);
+     
+     this._initTemplate();
+     this._renderCanvas();
+     this._renderImageList();
+     this._renderSlotProps();
+     
+     const pad = (this.mainSwiper.offsetWidth - targetSlide.offsetWidth) / 2;
+     this.mainSwiper.scrollTo({ 
+       left: targetSlide.offsetLeft - pad, 
+       behavior: instant ? 'auto' : 'smooth' 
+     });
   }
 
   // ── Event Bindings ──
@@ -515,7 +589,7 @@ class PrintLayoutApp {
 
           // Reload UI
           this.currentTemplate = t.id;
-          this._initTemplateSlider();
+          this._initMainSwiper();
           this._initTemplate();
           this._renderCanvas();
         } else {
