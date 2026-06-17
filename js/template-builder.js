@@ -2,6 +2,8 @@
 // MME Color Lab — Admin Template Builder
 // ============================================
 
+const MAGIC_COLORS = ['#01bf63', '#7ed957', '#c1ff72', '#ffde59', '#ffbd59', '#ff914d', '#ff751f'];
+
 class TemplateBuilderApp {
   constructor() {
     this.template = {
@@ -225,6 +227,11 @@ class TemplateBuilderApp {
         this.activeSlotId = id;
         this._renderSlotsList();
         this._renderWorkspace();
+
+        // Advance magic color to next default
+        const nextColorIndex = this.template.slots.length % MAGIC_COLORS.length;
+        this.magicColorHex.value = MAGIC_COLORS[nextColorIndex];
+        this.magicColorPicker.value = MAGIC_COLORS[nextColorIndex];
 
         this.magicDetectStatus.style.display = 'block';
         setTimeout(() => this.magicDetectStatus.style.display = 'none', 3000);
