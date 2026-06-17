@@ -120,6 +120,7 @@ class PrintLayoutApp {
   }
 
   _initTemplateSlider() {
+    if (!this.templateSlider) return;
     this.templateSlider.innerHTML = '';
     
     Object.keys(ALL_TEMPLATES).forEach(k => {
