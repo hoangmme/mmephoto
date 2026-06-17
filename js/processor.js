@@ -8,8 +8,8 @@
 
 import { applyLUT } from './lut-parser.js';
 
-const MAX_PREVIEW = 1200; // Fast preview (10x faster)
-const MAX_ORIGINAL = 2500; // A5 max print size (saves 4x RAM)
+const MAX_PREVIEW = 1200; // Fast proxy preview (10x faster)
+const THUMB_SIZE = 300; // Thumbnail size
 
 export class ImageProcessor {
   constructor() {
@@ -20,7 +20,7 @@ export class ImageProcessor {
   }
 
   /**
-   * Load an image file and return { original, preview, width, height }
+   * Load an image file and return { original, preview, thumbDataUrl, width, height }
    */
   async loadImage(file) {
     return new Promise((resolve, reject) => {
@@ -29,23 +29,13 @@ export class ImageProcessor {
         let w = img.naturalWidth;
         let h = img.naturalHeight;
 
-        // Scale down original to save massive RAM (A5 print only needs max 2500px)
-        if (Math.max(w, h) > MAX_ORIGINAL) {
-          const scale = MAX_ORIGINAL / Math.max(w, h);
-          w = Math.round(w * scale);
-          h = Math.round(h * scale);
-        }
-
-        // Full-resolution original (now capped at MAX_ORIGINAL)
+        // Full-resolution original (kept at 100% size for High-Res zoom)
         this.offscreen.width = w;
         this.offscreen.height = h;
-        // High quality downscaling
-        this.offCtx.imageSmoothingEnabled = true;
-        this.offCtx.imageSmoothingQuality = 'high';
-        this.offCtx.drawImage(img, 0, 0, w, h);
+        this.offCtx.drawImage(img, 0, 0);
         const originalData = this.offCtx.getImageData(0, 0, w, h);
 
-        // Preview (downscaled heavily for real-time slider performance)
+        // Preview (downscaled heavily for real-time proxy slider performance)
         let pw = w, ph = h;
         if (Math.max(w, h) > MAX_PREVIEW) {
           const scale = MAX_PREVIEW / Math.max(w, h);
@@ -60,10 +50,23 @@ export class ImageProcessor {
         this.tempCtx.drawImage(this.offscreen, 0, 0, pw, ph);
         const previewData = this.tempCtx.getImageData(0, 0, pw, ph);
 
+        // Thumbnail (300px WebP)
+        let tw = w, th = h;
+        if (Math.max(w, h) > THUMB_SIZE) {
+          const scale = THUMB_SIZE / Math.max(w, h);
+          tw = Math.round(w * scale);
+          th = Math.round(h * scale);
+        }
+        this.tempCanvas.width = tw;
+        this.tempCanvas.height = th;
+        this.tempCtx.drawImage(this.offscreen, 0, 0, tw, th);
+        const thumbDataUrl = this.tempCanvas.toDataURL('image/webp', 0.8);
+
         URL.revokeObjectURL(img.src);
         resolve({
           originalData,
           previewData,
+          thumbDataUrl,
           fullWidth: w,
           fullHeight: h,
           previewWidth: pw,

@@ -504,7 +504,7 @@ class PhotoTuneApp {
       item.onclick = () => this._selectPhoto(photo.id);
 
       const img = document.createElement('img');
-      img.src = photo.objectUrl;
+      img.src = photo.imageData.thumbDataUrl || photo.objectUrl;
       item.appendChild(img);
 
       const btnRemove = document.createElement('button');
@@ -533,9 +533,7 @@ class PhotoTuneApp {
     this._renderThumbnails();
     this._updateAllUI();
     
-    // Set canvas size
-    this.canvas.width = this.imageData.previewWidth;
-    this.canvas.height = this.imageData.previewHeight;
+    // Canvas size will be dynamically set by _processPreview based on Proxy or High-Res mode
 
     // Update info
     const sizeKB = (photo.file.size / 1024).toFixed(0);
@@ -550,7 +548,7 @@ class PhotoTuneApp {
     this.btnExport.disabled = false;
     this.btnPrintLayout.disabled = false;
 
-    this._processPreview();
+    this._scheduleProcess();
   }
 
   _removePhoto(id) {
@@ -590,38 +588,59 @@ class PhotoTuneApp {
   }
 
   // ── Process and display preview ──
-  async _processPreview() {
+  async _processPreview(isProxy = true) {
     if (!this.imageData) return;
 
+    if (!isProxy) {
+      this._updateRetouchStatus('loading', '⏳ Rendering High-Res...');
+      // Yield to browser to update the UI text before freezing for heavy processing
+      await new Promise(r => setTimeout(r, 50));
+    }
+
+    const sourceData = isProxy ? this.imageData.previewData : this.imageData.originalData;
     const activeLut = this._getActiveLut();
     let processed = this.processor.process(
-      this.imageData.previewData, this.params, activeLut, this.lutIntensity
+      sourceData, this.params, activeLut, this.lutIntensity
     );
 
     // Apply skin retouch if any param is active
     if (this.skinRetoucher.isActive(this.retouchParams)) {
-      this._updateRetouchStatus('loading', '⏳ Detecting faces...');
+      if (!isProxy) {
+        this._updateRetouchStatus('loading', '⏳ Detecting faces (High-Res)...');
+        await new Promise(r => setTimeout(r, 50));
+      }
       const retouchResult = await this.skinRetoucher.process(processed, this.retouchParams);
       processed = retouchResult.result;
       this.faceDetected = retouchResult.faceDetected;
 
-      if (retouchResult.faceDetected) {
-        this._updateRetouchStatus('detected', '✅ Face detected — retouch applied');
-      } else {
-        this._updateRetouchStatus('not-detected', '⚠️ No face detected — color only');
+      if (!isProxy) {
+        if (retouchResult.faceDetected) {
+          this._updateRetouchStatus('detected', '✅ High-Res Ready (Face detected)');
+        } else {
+          this._updateRetouchStatus('not-detected', '⚠️ High-Res Ready (No face)');
+        }
       }
     } else {
-      this._updateRetouchStatus('', '');
+      if (!isProxy) this._updateRetouchStatus('detected', '✨ High-Res Color Ready');
     }
 
+    this.canvas.width = processed.width;
+    this.canvas.height = processed.height;
     this.ctx.putImageData(processed, 0, 0);
   }
 
   // ── Debounced processing ──
   _scheduleProcess() {
+    // 1. Real-time proxy processing (fast)
     clearTimeout(this.processTimer);
-    const delay = this.skinRetoucher.isActive(this.retouchParams) ? 150 : 30;
-    this.processTimer = setTimeout(() => this._processPreview(), delay);
+    const proxyDelay = this.skinRetoucher.isActive(this.retouchParams) ? 50 : 0;
+    this.processTimer = setTimeout(() => this._processPreview(true), proxyDelay);
+
+    // 2. Schedule high-res process after slider stops
+    clearTimeout(this.highResTimer);
+    this.highResTimer = setTimeout(() => {
+       this._processPreview(false);
+    }, 400);
   }
 
   // ── Apply preset ──
@@ -895,9 +914,11 @@ class PhotoTuneApp {
     this.isShowingOriginal = show;
 
     if (show) {
-      this.ctx.putImageData(this.imageData.previewData, 0, 0);
+      this.canvas.width = this.imageData.originalData.width;
+      this.canvas.height = this.imageData.originalData.height;
+      this.ctx.putImageData(this.imageData.originalData, 0, 0);
     } else {
-      this._processPreview();
+      this._processPreview(false); // Restore high-res
     }
   }
 
