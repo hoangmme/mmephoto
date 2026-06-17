@@ -58,7 +58,7 @@
             <small>Khổ A5 300DPI mặc định là 1748×2480</small>
           </div>
           <div class="tb-group">
-            <label>Frame Overlay (PNG/JPG)</label>
+            <label>Frame Overlay (PNG/JPG có chứa các khối màu Slot)</label>
             <button class="tb-btn tb-btn-full" id="btnUploadFrame">Tải lên Ảnh Khung...</button>
             <input type="file" id="frameInput" accept="image/png,image/jpeg" hidden>
             <div id="framePreview" class="tb-frame-preview" style="display:none;">
@@ -67,26 +67,16 @@
             </div>
           </div>
           
-          <div class="tb-group tb-magic-tool" id="magicDetectTool" style="display:none;">
-            <label style="color:var(--tb-accent); font-weight:600;">🪄 Magic Detect Slot</label>
-            <small style="margin-bottom:8px;">Nhập mã màu của khối màu trên ảnh để tự động tạo Slot & xoá nền khối màu đó.</small>
-            <div class="tb-flex-row">
-              <input type="color" id="magicColorPicker" value="#01bf63" style="width: 32px; height: 32px; padding: 0; border: none; cursor: pointer; border-radius: 4px;">
-              <input type="text" id="magicColorHex" class="tb-input" value="#01bf63" placeholder="#RRGGBB" style="flex:1;">
-            </div>
-            <button class="tb-btn tb-btn-full" id="btnMagicDetect" style="margin-top:8px;">🔍 Quét & Đục lỗ</button>
-            <small id="magicDetectStatus" style="color:#22c55e; display:none; margin-top:4px;">✓ Đã tạo 1 Slot mới!</small>
-          </div>
-          
           <div class="tb-divider"></div>
           
           <div class="tb-panel-header" style="padding:0 0 10px 0; border:none;">
-            <h3>Slots (Vùng chứa ảnh)</h3>
-            <button class="tb-btn-icon" id="btnAddSlot" title="Thêm Slot mới">+</button>
+            <h3>Slots theo màu sắc</h3>
           </div>
           
-          <div id="slotsList" class="tb-slots-list">
-            <!-- Slots listed here -->
+          <button class="tb-btn tb-btn-primary tb-btn-full" id="btnAutoScan" style="margin-bottom: 12px;">🪄 Tự động quét & Xóa nền</button>
+          
+          <div id="slotsColorList" class="tb-slots-list">
+            <!-- Slots will be generated here -->
           </div>
         </div>
       </aside>
@@ -94,7 +84,7 @@
       <!-- Center: Workspace -->
       <div class="tb-workspace">
         <div class="tb-toolbar">
-          <span>Công cụ: Kéo thả slot trên canvas để di chuyển, kéo góc để đổi kích thước.</span>
+          <span>Khung sẽ được hiển thị ở đây. Bấm nút Quét để hệ thống tự tìm các khối màu và tạo slot.</span>
           <button class="tb-btn tb-btn-sm" id="btnZoomIn">🔍+</button>
           <button class="tb-btn tb-btn-sm" id="btnZoomOut">🔍-</button>
         </div>
@@ -119,6 +109,6 @@
   
   <input type="file" id="jsonInput" accept=".json" hidden>
 
-  <script type="module" src="js/template-builder.js?v=2"></script>
+  <script type="module" src="js/template-builder.js?v=3"></script>
 </body>
 </html>
