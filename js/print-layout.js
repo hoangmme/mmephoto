@@ -73,7 +73,8 @@ class PrintLayoutApp {
     // DOM
     this.imageList = document.getElementById('imageList');
     this.imageCount = document.getElementById('imageCount');
-    this.templateSelect = document.getElementById('templateSelect');
+    this.templateSlider = document.getElementById('templateSlider');
+    this.templateSelect = null; // Removed
     this.slotProps = document.getElementById('slotProps');
     this.exportOverlay = document.getElementById('exportOverlay');
 
@@ -112,55 +113,78 @@ class PrintLayoutApp {
       console.error("Error fetching templates from server", e);
     }
 
-    this._initTemplateSelect();
+    this._initTemplateSlider();
     this._bindEvents();
     this._initTemplate();
     this._loadBatch();
   }
 
-  _initTemplateSelect() {
-    this.templateSelect.innerHTML = '';
+  _initTemplateSlider() {
+    this.templateSlider.innerHTML = '';
     
-    const optGroupDefault = document.createElement('optgroup');
-    optGroupDefault.label = "Mặc định";
-    Object.keys(TEMPLATES).forEach(k => {
-      const opt = document.createElement('option');
-      opt.value = k;
-      opt.textContent = TEMPLATES[k].name;
-      optGroupDefault.appendChild(opt);
-    });
-    this.templateSelect.appendChild(optGroupDefault);
-
-    if (Object.keys(customTemplates).length > 0) {
-      const optGroupCustom = document.createElement('optgroup');
-      optGroupCustom.label = "Custom";
-      Object.keys(customTemplates).forEach(k => {
-        const opt = document.createElement('option');
-        opt.value = k;
-        opt.textContent = customTemplates[k].name;
-        optGroupCustom.appendChild(opt);
+    Object.keys(ALL_TEMPLATES).forEach(k => {
+      const t = ALL_TEMPLATES[k];
+      const item = document.createElement('div');
+      item.className = 'pl-template-item' + (this.currentTemplate === k ? ' active' : '');
+      item.dataset.id = k;
+      
+      if (t.frame_url) {
+        const img = document.createElement('img');
+        img.src = t.frame_url;
+        item.appendChild(img);
+      } else {
+        // Draw mini canvas
+        const cvs = document.createElement('canvas');
+        cvs.width = 174;
+        cvs.height = 248;
+        const ctx = cvs.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, 174, 248);
+        ctx.fillStyle = '#eee';
+        t.slots.forEach(s => {
+          const w = s.w * 0.1;
+          const h = s.h * 0.1;
+          const cx = s.cx * 0.1;
+          const cy = s.cy * 0.1;
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(s.rotation || 0);
+          ctx.fillRect(-w/2, -h/2, w, h);
+          ctx.restore();
+        });
+        item.appendChild(cvs);
+      }
+      
+      const label = document.createElement('span');
+      label.textContent = t.name;
+      item.appendChild(label);
+      
+      item.addEventListener('click', () => {
+        if (this.currentTemplate !== k) {
+          this.currentTemplate = k;
+          this._initTemplateSlider(); // Re-render to update active class
+          this._initTemplate();
+          this._renderCanvas();
+          this._renderImageList();
+          this._renderSlotProps();
+          
+          // Scroll item into view
+          item.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
       });
-      this.templateSelect.appendChild(optGroupCustom);
-    }
+      
+      this.templateSlider.appendChild(item);
+    });
     
-    // Set selected
-    if (ALL_TEMPLATES[this.currentTemplate]) {
-      this.templateSelect.value = this.currentTemplate;
-    } else {
+    // Set initial currentTemplate if invalid
+    if (!ALL_TEMPLATES[this.currentTemplate]) {
       this.currentTemplate = Object.keys(ALL_TEMPLATES)[0];
-      this.templateSelect.value = this.currentTemplate;
+      this._initTemplateSlider();
     }
   }
 
   // ── Event Bindings ──
   _bindEvents() {
-    this.templateSelect.addEventListener('change', () => {
-      this.currentTemplate = this.templateSelect.value;
-      this._initTemplate();
-      this._renderCanvas();
-      this._renderImageList();
-      this._renderSlotProps();
-    });
 
     document.getElementById('btnSelectAll').addEventListener('click', () => this._selectAll());
     document.getElementById('btnDeselectAll').addEventListener('click', () => this._deselectAll());
@@ -489,9 +513,8 @@ class PrintLayoutApp {
           ALL_TEMPLATES[t.id] = customTemplates[t.id];
 
           // Reload UI
-          this._initTemplateSelect();
-          this.templateSelect.value = t.id;
           this.currentTemplate = t.id;
+          this._initTemplateSlider();
           this._initTemplate();
           this._renderCanvas();
         } else {
