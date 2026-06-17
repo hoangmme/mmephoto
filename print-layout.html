@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MME Color Lab — A5 Print Layout</title>
+  <meta name="description" content="Tạo khung in A5 từ ảnh đã chỉnh màu. Hỗ trợ nhiều template, crop, zoom và export JPG/PDF.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="print-layout.css?v=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div class="pl-app">
+    <!-- Header -->
+    <header class="pl-header">
+      <div class="pl-header-left">
+        <a href="index.html" class="pl-back-btn" title="Quay lại Color Lab">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <div class="pl-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="url(#plGrad)" stroke-width="2"/>
+            <defs><linearGradient id="plGrad" x1="0" y1="0" x2="24" y2="24">
+              <stop stop-color="#38bdf8"/><stop offset="1" stop-color="#818cf8"/>
+            </linearGradient></defs>
+          </svg>
+          <span>Print <em>Layout</em></span>
+        </div>
+      </div>
+      <div class="pl-header-center">
+        <label class="pl-template-label">Template:</label>
+        <select id="templateSelect" class="pl-select">
+          <option value="1photo">1 Photo</option>
+          <option value="2photos" selected>2 Photos</option>
+          <option value="4photos">4 Photos</option>
+        </select>
+      </div>
+      <div class="pl-header-right">
+        <button class="pl-btn" id="btnPrint" title="In">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+          In
+        </button>
+        <button class="pl-btn" id="btnExportJPG" title="Xuất JPG">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          JPG
+        </button>
+        <button class="pl-btn pl-btn-primary" id="btnExportPDF" title="Xuất PDF">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          PDF
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pl-main">
+      <!-- Left Panel: Image List -->
+      <aside class="pl-panel pl-panel-left">
+        <div class="pl-panel-header">
+          <h3>📷 Ảnh đã xử lý</h3>
+          <span class="pl-image-count" id="imageCount">0 ảnh</span>
+        </div>
+        <div class="pl-actions">
+          <button class="pl-action-btn" id="btnSelectAll">Chọn tất cả</button>
+          <button class="pl-action-btn" id="btnDeselectAll">Bỏ chọn</button>
+          <button class="pl-action-btn pl-action-primary" id="btnAutoFill">⚡ Auto Fill</button>
+        </div>
+        <div class="pl-image-list" id="imageList">
+          <div class="pl-loading">Đang tải ảnh...</div>
+        </div>
+        <div class="pl-panel-footer">
+          <a href="https://mme.vn" target="_blank">Powered by <strong>MME Digital</strong></a>
+        </div>
+      </aside>
+
+      <!-- Center: A5 Canvas -->
+      <div class="pl-canvas-area">
+        <div class="pl-canvas-wrapper" id="canvasWrapper">
+          <canvas id="printCanvas"></canvas>
+        </div>
+        <div class="pl-canvas-info" id="canvasInfo">A5 — 1748 × 2480 px — 300 DPI</div>
+      </div>
+
+      <!-- Right Panel: Slot Properties -->
+      <aside class="pl-panel pl-panel-right">
+        <div class="pl-panel-header">
+          <h3>🔧 Slot Properties</h3>
+        </div>
+        <div class="pl-slot-props" id="slotProps">
+          <div class="pl-no-slot">Chọn một slot trên canvas để chỉnh sửa</div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Processing overlay -->
+  <div class="pl-overlay" id="exportOverlay">
+    <div class="pl-spinner"></div>
+    <span>Đang xuất...</span>
+  </div>
+
+  <script type="module" src="js/print-layout.js?v=1"></script>
+</body>
+</html>

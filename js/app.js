@@ -99,6 +99,12 @@ class PhotoTuneApp {
     this.retouchSliders = document.querySelectorAll('.slider-row[data-retouch]');
     this.retouchPresetBtns = document.querySelectorAll('.retouch-preset-btn');
     this.retouchStatus = document.getElementById('retouchStatus');
+
+    // Print Layout DOM
+    this.btnPrintLayout = document.getElementById('btnPrintLayout');
+    this.batchProgress = document.getElementById('batchProgress');
+    this.batchProgressBar = document.getElementById('batchProgressBar');
+    this.batchProgressText = document.getElementById('batchProgressText');
   }
 
   // ── Build preset buttons ──
@@ -387,6 +393,9 @@ class PhotoTuneApp {
     // Export
     this.btnExport.addEventListener('click', () => this._exportImage());
 
+    // Print Layout batch
+    this.btnPrintLayout.addEventListener('click', () => this._createPrintBatch());
+
     // LUT import
     document.getElementById('btnImportLut').addEventListener('click', () => {
       this.lutFileInput.click();
@@ -539,6 +548,7 @@ class PhotoTuneApp {
     this.resizeW.placeholder = this.imageData.fullWidth;
     this.resizeH.placeholder = this.imageData.fullHeight;
     this.btnExport.disabled = false;
+    this.btnPrintLayout.disabled = false;
 
     this._processPreview();
   }
@@ -1033,6 +1043,111 @@ class PhotoTuneApp {
     }
 
     this._showProcessing(false);
+  }
+
+  // ── Create Print Batch ──
+  async _createPrintBatch() {
+    if (!this.photos.length) return;
+
+    const batchId = `batch_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const hasRetouch = this.skinRetoucher.isActive(this.retouchParams);
+
+    // Show progress
+    this.batchProgress.style.display = '';
+    this._updateBatchProgress(0, this.photos.length);
+    this.btnPrintLayout.disabled = true;
+
+    try {
+      // Open/create IndexedDB for print batches
+      const db = await this._openPrintDB();
+
+      // Store batch metadata
+      const metaTx = db.transaction('batches', 'readwrite');
+      metaTx.objectStore('batches').put({
+        batchId,
+        createdAt: new Date().toISOString(),
+        imageCount: this.photos.length
+      });
+
+      // Process each photo
+      for (let i = 0; i < this.photos.length; i++) {
+        const photo = this.photos[i];
+
+        // Process at full resolution: color grading + LUT
+        let processed = this.processor.process(
+          photo.imageData.originalData,
+          this.params,
+          this._getActiveLut(),
+          this.lutIntensity
+        );
+
+        // Apply retouch if active
+        if (hasRetouch) {
+          const retouchResult = await this.skinRetoucher.process(processed, this.retouchParams);
+          processed = retouchResult.result;
+        }
+
+        // Draw to offscreen canvas → JPEG blob
+        this.processor.offscreen.width = processed.width;
+        this.processor.offscreen.height = processed.height;
+        this.processor.offCtx.putImageData(processed, 0, 0);
+
+        const blob = await new Promise(resolve => {
+          this.processor.offscreen.toBlob(resolve, 'image/jpeg', 0.95);
+        });
+
+        // Store in IndexedDB
+        const imgTx = db.transaction('batch_images', 'readwrite');
+        imgTx.objectStore('batch_images').put({
+          imageId: `${batchId}_img_${i}`,
+          batchId,
+          name: photo.file.name,
+          blob,
+          width: processed.width,
+          height: processed.height,
+          createdAt: new Date().toISOString()
+        });
+
+        this._updateBatchProgress(i + 1, this.photos.length);
+
+        // Allow UI to breathe
+        await new Promise(r => setTimeout(r, 30));
+      }
+
+      // Navigate to print layout
+      window.open(`print-layout.html?batch=${batchId}`, '_blank');
+
+    } catch (err) {
+      console.error('Failed to create print batch:', err);
+      alert('Lỗi tạo batch in. Vui lòng thử lại.');
+    }
+
+    this.batchProgress.style.display = 'none';
+    this.btnPrintLayout.disabled = false;
+  }
+
+  _openPrintDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('MMEPrintBatches', 1);
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('batches')) {
+          db.createObjectStore('batches', { keyPath: 'batchId' });
+        }
+        if (!db.objectStoreNames.contains('batch_images')) {
+          const store = db.createObjectStore('batch_images', { keyPath: 'imageId' });
+          store.createIndex('batchId', 'batchId', { unique: false });
+        }
+      };
+      request.onsuccess = (e) => resolve(e.target.result);
+      request.onerror = () => reject(new Error('Failed to open print DB'));
+    });
+  }
+
+  _updateBatchProgress(current, total) {
+    const pct = Math.round((current / total) * 100);
+    this.batchProgressBar.style.width = pct + '%';
+    this.batchProgressText.textContent = `${current}/${total} ảnh (${pct}%)`;
   }
 
   // ── Update slider fill gradient ──

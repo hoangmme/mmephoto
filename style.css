@@ -909,6 +909,48 @@ input[type="range"]::-moz-range-thumb {
   color: #38bdf8;
 }
 
+/* ── Print Layout Button ── */
+.print-layout-btn {
+  background: linear-gradient(135deg, #ec4899, #8b5cf6) !important;
+  border: none !important;
+  margin-top: 8px;
+}
+.print-layout-btn:hover {
+  opacity: 0.9;
+}
+.print-layout-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Batch Progress ── */
+.batch-progress {
+  position: relative;
+  height: 24px;
+  background: var(--bg-section);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-top: 8px;
+}
+.batch-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ec4899, #8b5cf6);
+  transition: width 0.2s ease;
+  border-radius: var(--radius-sm);
+}
+.batch-progress-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
 /* ── Processing Overlay ── */
 .processing-overlay {
   position: fixed;
