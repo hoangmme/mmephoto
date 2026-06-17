@@ -182,7 +182,10 @@ class PrintLayoutApp {
        }
     };
     window.addEventListener('resize', updatePadding);
-    setTimeout(updatePadding, 50);
+    setTimeout(() => {
+      updatePadding();
+      this.mainSwiper.classList.add('loaded');
+    }, 100);
 
     // Auto select on scroll
     let scrollTimeout;
@@ -492,7 +495,15 @@ class PrintLayoutApp {
       panY: 0,
       assignedAt: null
     }));
-    this.selectedSlotIndex = -1;
+    
+    // Default select first slot for easier tapping
+    this.selectedSlotIndex = 0;
+
+    // Auto-fill slots automatically for better UX
+    setTimeout(() => {
+       this._autoFill();
+       this._renderCanvas();
+    }, 50);
   }
 
   // ── Render Image List ──
@@ -575,6 +586,13 @@ class PrintLayoutApp {
     this.slots[slotIndex].panY = 0;
     this.slots[slotIndex].assignedAt = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     this.selectedImageId = null;
+    
+    // Auto-advance to next slot to make sequential swapping faster
+    const tmpl = ALL_TEMPLATES[this.currentTemplate];
+    if (tmpl && tmpl.slots.length > 1) {
+      this.selectedSlotIndex = (slotIndex + 1) % tmpl.slots.length;
+    }
+
     this._renderCanvas();
     this._renderSlotProps();
     this._renderImageList();
@@ -853,20 +871,29 @@ class PrintLayoutApp {
         ctx.fillText(`Slot ${i + 1}`, 0, 0);
       }
 
-      // Selection highlight (preview only)
-      if (isPreview && i === this.selectedSlotIndex) {
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 4;
-        ctx.setLineDash([]);
-        ctx.strokeRect(-slotDef.w/2 - 2, -slotDef.h/2 - 2, slotDef.w + 4, slotDef.h + 4);
-      }
-      
       ctx.restore();
     }
 
     // Draw Overlay Frame (layer 3)
     if (this.frameImageObj) {
       ctx.drawImage(this.frameImageObj, 0, 0, w, h);
+    }
+
+    // Draw active slot highlight OVER the frame (layer 4)
+    if (isPreview && this.selectedSlotIndex >= 0) {
+       const s = tmpl.slots[this.selectedSlotIndex];
+       if (s) {
+         ctx.save();
+         ctx.translate(s.cx, s.cy);
+         if (s.rotation) ctx.rotate(s.rotation);
+         ctx.strokeStyle = '#38bdf8';
+         ctx.lineWidth = 12; // Thicker so it's very obvious
+         ctx.strokeRect(-s.w/2, -s.h/2, s.w, s.h);
+         ctx.strokeStyle = '#fff';
+         ctx.lineWidth = 4;
+         ctx.strokeRect(-s.w/2 + 6, -s.h/2 + 6, s.w - 12, s.h - 12);
+         ctx.restore();
+       }
     }
   }
 

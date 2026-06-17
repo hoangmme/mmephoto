@@ -98,6 +98,7 @@ class TemplateBuilderApp {
     this.btnZoomOut = document.getElementById('btnZoomOut');
     
     // Header actions
+    this.btnNewTemplate = document.getElementById('btnNewTemplate');
     this.btnSaveTemplate = document.getElementById('btnSaveTemplate');
     this.btnExportJson = document.getElementById('btnExportJson');
     this.btnImportJson = document.getElementById('btnImportJson');
@@ -162,10 +163,15 @@ class TemplateBuilderApp {
     this.btnZoomIn.addEventListener('click', () => this._setZoom(this.scale + 0.1));
     this.btnZoomOut.addEventListener('click', () => this._setZoom(this.scale - 0.1));
 
-    // Save/Export/Import
+    // Header actions
+    this.btnNewTemplate.addEventListener('click', () => {
+      if(confirm('Bạn có muốn tạo Template mới không? Các thay đổi chưa lưu sẽ bị mất.')) {
+        this._createNewTemplate();
+      }
+    });
     this.btnSaveTemplate.addEventListener('click', () => this._saveToServer());
     this.btnExportJson.addEventListener('click', () => this._exportJson());
-    this.btnImportJson.addEventListener('click', () => this.jsonInput.click());
+    this.btnImportJson.addEventListener('click', () => document.getElementById('jsonInput').click());
     this.jsonInput.addEventListener('change', this._importJson.bind(this));
   }
 
@@ -557,6 +563,11 @@ class TemplateBuilderApp {
       div.style.padding = '8px 12px';
       div.style.borderRadius = '6px';
       div.style.border = '1px solid var(--tb-border)';
+      div.style.cursor = 'pointer';
+      
+      if (this.template && this.template.id === t.id) {
+        div.style.borderColor = 'var(--tb-accent)';
+      }
 
       const name = document.createElement('span');
       name.textContent = t.name;
@@ -565,6 +576,7 @@ class TemplateBuilderApp {
       name.style.overflow = 'hidden';
       name.style.textOverflow = 'ellipsis';
       name.style.whiteSpace = 'nowrap';
+      name.onclick = () => this._loadTemplate(t);
       
       const btnDel = document.createElement('button');
       btnDel.textContent = 'Xóa';
@@ -573,7 +585,10 @@ class TemplateBuilderApp {
       btnDel.style.fontSize = '11px';
       btnDel.style.padding = '4px 8px';
       btnDel.style.width = 'auto';
-      btnDel.onclick = () => this._deleteTemplate(t.id);
+      btnDel.onclick = (e) => {
+        e.stopPropagation();
+        this._deleteTemplate(t.id);
+      };
       
       div.appendChild(name);
       div.appendChild(btnDel);
@@ -634,8 +649,60 @@ class TemplateBuilderApp {
     reader.readAsText(file);
     e.target.value = '';
   }
+
+  // ── New & Load Templates ──
+  _createNewTemplate() {
+    this.template = {
+      id: 'tpl_' + Date.now(),
+      name: '',
+      canvas_width: 1748,
+      canvas_height: 2480,
+      frame_url: '',
+      slots: []
+    };
+    this.tplNameInput.value = '';
+    this.canvasWInput.value = 1748;
+    this.canvasHInput.value = 2480;
+    this.framePreview.style.display = 'none';
+    this.frameImg.src = '';
+    this.workspaceFrameImg.src = '';
+    this.workspaceFrameImg.style.display = 'none';
+    
+    this._renderWorkspace();
+    this._renderSlotsList();
+    this._renderServerTemplates();
+  }
+
+  _loadTemplate(t) {
+    // deep copy to avoid editing reference directly until save
+    this.template = JSON.parse(JSON.stringify(t));
+    this.tplNameInput.value = this.template.name || '';
+    this.canvasWInput.value = this.template.canvas_width || 1748;
+    this.canvasHInput.value = this.template.canvas_height || 2480;
+    
+    if (this.template.frame_url) {
+      this.frameImg.src = this.template.frame_url;
+      this.framePreview.style.display = 'block';
+      this.workspaceFrameImg.src = this.template.frame_url;
+      this.workspaceFrameImg.style.display = 'block';
+    } else {
+      this.framePreview.style.display = 'none';
+      this.frameImg.src = '';
+      this.workspaceFrameImg.src = '';
+      this.workspaceFrameImg.style.display = 'none';
+    }
+    
+    if (this.template.magicColors) {
+      this.magicColors = [...this.template.magicColors];
+      // update color inputs if necessary
+    }
+    
+    this._renderWorkspace();
+    this._renderSlotsList();
+    this._renderServerTemplates();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  window.tbApp = new TemplateBuilderApp();
+  new TemplateBuilderApp();
 });

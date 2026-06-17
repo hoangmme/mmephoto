@@ -316,10 +316,14 @@ body {
   height: calc(100vh - 120px);
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
   scrollbar-width: none;
   align-items: center;
   gap: 60px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.pl-swiper-container.loaded {
+  opacity: 1;
 }
 .pl-swiper-container::-webkit-scrollbar { display: none; }
 
