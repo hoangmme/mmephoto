@@ -173,19 +173,35 @@ class PrintLayoutApp {
     });
 
     // Padding to center first/last
-    const updatePadding = () => {
-       if (this.mainSwiper.children.length > 0) {
-         const slideWidth = this.mainSwiper.children[0].offsetWidth;
-         const pad = (this.mainSwiper.offsetWidth - slideWidth) / 2;
-         this.mainSwiper.style.paddingLeft = `${pad}px`;
-         this.mainSwiper.style.paddingRight = `${pad}px`;
+    this._updatePadding = () => {
+       if (this.mainSwiper.children.length > 0 && this.mainSwiper.offsetWidth > 0) {
+         // Force display block on slide to measure correctly
+         const firstSlide = this.mainSwiper.children[0];
+         const slideWidth = firstSlide.offsetWidth;
+         if (slideWidth > 0) {
+           const pad = (this.mainSwiper.offsetWidth - slideWidth) / 2;
+           this.mainSwiper.style.paddingLeft = `${pad}px`;
+           this.mainSwiper.style.paddingRight = `${pad}px`;
+           this.mainSwiper.classList.add('loaded');
+           
+           // Ensure active slide is centered after padding change
+           if (this.currentTemplate) {
+              const activeSlide = this.mainSwiper.querySelector(`[data-id="${this.currentTemplate}"]`);
+              if (activeSlide) {
+                this.mainSwiper.scrollLeft = activeSlide.offsetLeft - pad;
+              }
+           }
+         }
        }
     };
-    window.addEventListener('resize', updatePadding);
-    setTimeout(() => {
-      updatePadding();
-      this.mainSwiper.classList.add('loaded');
-    }, 100);
+
+    const ro = new ResizeObserver(() => this._updatePadding());
+    ro.observe(this.mainSwiper);
+    
+    // Also run when images inside load
+    this.mainSwiper.querySelectorAll('img').forEach(img => {
+       img.addEventListener('load', () => this._updatePadding());
+    });
 
     // Auto select on scroll
     let scrollTimeout;
