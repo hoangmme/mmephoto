@@ -8,4 +8,7 @@ services:
     ports:
       - "3005:3000"
     volumes:
-      - ./uploads:/app/uploads
+      - photo-editor-data:/app/data
+
+volumes:
+  photo-editor-data:
