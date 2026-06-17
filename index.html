@@ -79,7 +79,11 @@
             <p>or click to browse — supports JPG, PNG, WebP</p>
           </div>
         </div>
-        <canvas id="previewCanvas"></canvas>
+        <!-- Canvas and Image Overlay wrapper -->
+        <div class="canvas-wrapper" style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+          <canvas id="previewCanvas"></canvas>
+          <img id="previewImageWebp" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: auto; opacity: 0;" title="Right click to save high-res WebP" />
+        </div>
         <div class="preview-info" id="previewInfo"></div>
       </div>
 
@@ -383,6 +387,6 @@
   <script type="module" src="js/presets.js?v=4"></script>
   <script type="module" src="js/processor.js?v=7"></script>
   <script type="module" src="js/skin-retouch.js?v=2"></script>
-  <script type="module" src="js/app.js?v=9"></script>
+  <script type="module" src="js/app.js?v=10"></script>
 </body>
 </html>

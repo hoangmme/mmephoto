@@ -51,6 +51,7 @@ class PhotoTuneApp {
   // ── DOM References ──
   _cacheDOM() {
     this.canvas = document.getElementById('previewCanvas');
+    this.previewImageWebp = document.getElementById('previewImageWebp');
     this.ctx = this.canvas.getContext('2d');
     this.dropZone = document.getElementById('dropZone');
     this.fileInput = document.getElementById('fileInput');
@@ -627,6 +628,21 @@ class PhotoTuneApp {
     this.canvas.width = processed.width;
     this.canvas.height = processed.height;
     this.ctx.putImageData(processed, 0, 0);
+
+    if (isProxy) {
+      if (this.previewImageWebp) this.previewImageWebp.style.opacity = '0';
+    } else {
+      // High-Res finished: Generate WebP overlay for right-click saving
+      if (this.previewImageWebp) {
+        this.canvas.toBlob((blob) => {
+          if (this.previewImageWebp.src && this.previewImageWebp.src.startsWith('blob:')) {
+            URL.revokeObjectURL(this.previewImageWebp.src);
+          }
+          this.previewImageWebp.src = URL.createObjectURL(blob);
+          this.previewImageWebp.style.opacity = '1';
+        }, 'image/webp', 0.85); // Compress to ~1MB
+      }
+    }
   }
 
   // ── Debounced processing ──
