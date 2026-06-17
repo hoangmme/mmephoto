@@ -179,24 +179,26 @@ class PrintLayoutApp {
          const firstSlide = this.mainSwiper.children[0];
          const slideWidth = firstSlide.offsetWidth;
          if (slideWidth > 0) {
-           const pad = (parentArea.offsetWidth - slideWidth) / 2;
+           const pad = Math.max(0, (parentArea.offsetWidth - slideWidth) / 2);
            this.mainSwiper.style.paddingLeft = `${pad}px`;
            this.mainSwiper.style.paddingRight = `${pad}px`;
            this.mainSwiper.classList.add('loaded');
            
            // Ensure active slide is centered after padding change
            if (this.currentTemplate) {
-              const activeSlide = this.mainSwiper.querySelector(`[data-id="${this.currentTemplate}"]`);
-              if (activeSlide) {
-                this.mainSwiper.scrollLeft = activeSlide.offsetLeft - pad;
-              }
+              requestAnimationFrame(() => {
+                const activeSlide = this.mainSwiper.querySelector(`[data-id="${this.currentTemplate}"]`);
+                if (activeSlide) {
+                  this.mainSwiper.scrollLeft = activeSlide.offsetLeft - pad;
+                }
+              });
            }
          }
        }
     };
 
     const ro = new ResizeObserver(() => this._updatePadding());
-    ro.observe(this.mainSwiper);
+    ro.observe(this.mainSwiper.parentElement);
     
     // Also run when images inside load
     this.mainSwiper.querySelectorAll('img').forEach(img => {
