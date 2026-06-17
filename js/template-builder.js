@@ -66,6 +66,8 @@ class TemplateBuilderApp {
     } catch(e) {
       this.serverTemplates = [];
     }
+
+    this._renderServerTemplates();
   }
 
   _cacheDOM() {
@@ -73,16 +75,17 @@ class TemplateBuilderApp {
     this.canvasWInput = document.getElementById('canvasW');
     this.canvasHInput = document.getElementById('canvasH');
     
-    // Frame
-    this.btnUploadFrame = document.getElementById('btnUploadFrame');
     this.frameInput = document.getElementById('frameInput');
+    this.btnUploadFrame = document.getElementById('btnUploadFrame');
     this.framePreview = document.getElementById('framePreview');
     this.frameImg = document.getElementById('frameImg');
     this.btnRemoveFrame = document.getElementById('btnRemoveFrame');
     
-    // Slots UI
+    this.slotsList = document.getElementById('slotsList');
     this.btnAddSlot = document.getElementById('btnAddSlot');
     this.btnAutoScan = document.getElementById('btnAutoScan');
+
+    this.serverTemplateList = document.getElementById('serverTemplateList');
     this.slotsList = document.getElementById('slotsList');
     
     // Workspace
@@ -521,6 +524,7 @@ class TemplateBuilderApp {
       
       btn.textContent = '✓ Đã lưu lên Server';
       btn.style.background = '#22c55e';
+      this._renderServerTemplates();
     } catch (e) {
       console.error(e);
       alert("Lưu thất bại: " + e.message);
@@ -533,6 +537,66 @@ class TemplateBuilderApp {
       btn.style.background = '';
       btn.disabled = false;
     }, 2000);
+  }
+
+  // ── Render Server Templates ──
+  _renderServerTemplates() {
+    if (!this.serverTemplateList) return;
+    this.serverTemplateList.innerHTML = '';
+    if (this.serverTemplates.length === 0) {
+      this.serverTemplateList.innerHTML = '<span style="font-size:12px; color:var(--tb-text-muted);">Chưa có template nào.</span>';
+      return;
+    }
+    
+    this.serverTemplates.forEach(t => {
+      const div = document.createElement('div');
+      div.style.display = 'flex';
+      div.style.justifyContent = 'space-between';
+      div.style.alignItems = 'center';
+      div.style.background = 'var(--tb-bg)';
+      div.style.padding = '8px 12px';
+      div.style.borderRadius = '6px';
+      div.style.border = '1px solid var(--tb-border)';
+
+      const name = document.createElement('span');
+      name.textContent = t.name;
+      name.style.fontSize = '12px';
+      name.style.flex = '1';
+      name.style.overflow = 'hidden';
+      name.style.textOverflow = 'ellipsis';
+      name.style.whiteSpace = 'nowrap';
+      
+      const btnDel = document.createElement('button');
+      btnDel.textContent = 'Xóa';
+      btnDel.className = 'tb-btn-icon tb-danger';
+      btnDel.style.marginLeft = '8px';
+      btnDel.style.fontSize = '11px';
+      btnDel.style.padding = '4px 8px';
+      btnDel.style.width = 'auto';
+      btnDel.onclick = () => this._deleteTemplate(t.id);
+      
+      div.appendChild(name);
+      div.appendChild(btnDel);
+      this.serverTemplateList.appendChild(div);
+    });
+  }
+
+  async _deleteTemplate(id) {
+    if (!confirm('Bạn có chắc chắn muốn xóa template này không?')) return;
+    try {
+      const res = await fetch(`/api/templates/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': this.adminToken }
+      });
+      if (res.ok) {
+        this.serverTemplates = this.serverTemplates.filter(t => t.id !== id);
+        this._renderServerTemplates();
+      } else {
+        alert('Lỗi khi xóa template: ' + await res.text());
+      }
+    } catch (e) {
+      alert('Lỗi kết nối khi xóa template!');
+    }
   }
 
   _exportJson() {

@@ -211,6 +211,25 @@ app.post('/api/templates', (req, res) => {
   }
 });
 
+app.delete('/api/templates/:id', (req, res) => {
+  const auth = req.headers.authorization;
+  if (!auth || auth !== 'Bearer admin123') {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    if (!fs.existsSync(TEMPLATES_FILE)) {
+      return res.json({ success: true });
+    }
+    const data = JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
+    const filtered = data.filter(t => t.id !== req.params.id);
+    fs.writeFileSync(TEMPLATES_FILE, JSON.stringify(filtered, null, 2));
+    res.json({ success: true });
+  } catch(e) {
+    res.status(500).json({ error: 'Cannot delete template' });
+  }
+});
+
 app.listen(port, () => {
   console.log(`PhotoTune Backend running at http://localhost:${port}`);
   console.log(`Webtool 2 available at http://localhost:${port}/webtool2.html`);

@@ -379,6 +379,7 @@ class PrintLayoutApp {
         this.imageCount.textContent = `${this.images.length} ảnh`;
         this._renderImageList();
         this._renderCanvas();
+        this._startTimer();
       };
 
       request.onerror = () => {
@@ -388,6 +389,58 @@ class PrintLayoutApp {
       console.error('Failed to load batch:', err);
       this.imageList.innerHTML = '<div class="pl-loading">Lỗi kết nối IndexedDB.</div>';
     }
+  }
+
+  // ── Countdown Timer ──
+  _startTimer() {
+    this.timerEl = document.getElementById('countdownTimer');
+    if (!this.timerEl) return;
+    this.timerEl.style.display = 'block';
+
+    let timeLeft = 180; // 3 minutes
+    
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
+
+    this.countdownInterval = setInterval(() => {
+      timeLeft--;
+      if (timeLeft <= 0) {
+        clearInterval(this.countdownInterval);
+        this.timerEl.textContent = "00:00";
+        this.timerEl.style.color = 'red';
+        this._handleTimeout();
+        return;
+      }
+      
+      const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+      const s = (timeLeft % 60).toString().padStart(2, '0');
+      this.timerEl.textContent = `${m}:${s}`;
+      
+      if (timeLeft <= 30) {
+        this.timerEl.style.color = '#ef4444'; // Red warning
+        this.timerEl.style.animation = 'plPulse 1s infinite alternate';
+      }
+    }, 1000);
+  }
+
+  _handleTimeout() {
+    // Block the UI completely
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.background = 'rgba(0,0,0,0.85)';
+    overlay.style.zIndex = '99999';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.backdropFilter = 'blur(10px)';
+    
+    overlay.innerHTML = `
+      <h1 style="color:#ef4444; font-size:32px; margin-bottom:16px;">Hết thời gian!</h1>
+      <p style="color:#a1a1aa; font-size:16px; margin-bottom:24px;">Bạn đã hết 3 phút để ghép ảnh.</p>
+      <button class="pl-btn pl-btn-primary" onclick="window.location.reload()" style="padding:10px 24px; font-size:16px;">Tải lại trang</button>
+    `;
+    document.body.appendChild(overlay);
   }
 
   _openDB() {
