@@ -29,9 +29,29 @@ const TEMPLATES = {
       { x: PADDING * 2 + (A5_WIDTH - PADDING * 3) / 2, y: PADDING, w: (A5_WIDTH - PADDING * 3) / 2, h: (A5_HEIGHT - PADDING * 3) / 2 },
       { x: PADDING, y: PADDING * 2 + (A5_HEIGHT - PADDING * 3) / 2, w: (A5_WIDTH - PADDING * 3) / 2, h: (A5_HEIGHT - PADDING * 3) / 2 },
       { x: PADDING * 2 + (A5_WIDTH - PADDING * 3) / 2, y: PADDING * 2 + (A5_HEIGHT - PADDING * 3) / 2, w: (A5_WIDTH - PADDING * 3) / 2, h: (A5_HEIGHT - PADDING * 3) / 2 }
-    ]
   }
 };
+
+let customTemplates = {};
+try {
+  const stored = localStorage.getItem('mme_print_templates');
+  if (stored) {
+    const arr = JSON.parse(stored);
+    arr.forEach(t => {
+      customTemplates[t.id] = {
+        name: t.name || 'Custom Template',
+        slots: t.slots.map(s => ({ x: s.x, y: s.y, w: s.width, h: s.height })),
+        frame_url: t.frame_url,
+        canvas_width: t.canvas_width || 1748,
+        canvas_height: t.canvas_height || 2480
+      };
+    });
+  }
+} catch (e) {
+  console.warn('Failed to load custom templates', e);
+}
+
+const ALL_TEMPLATES = { ...TEMPLATES, ...customTemplates };
 
 class PrintLayoutApp {
   constructor() {
@@ -58,13 +78,50 @@ class PrintLayoutApp {
     this.slotProps = document.getElementById('slotProps');
     this.exportOverlay = document.getElementById('exportOverlay');
 
+    this.frameImageObj = null;
+
     // Parse batch ID from URL
     const params = new URLSearchParams(window.location.search);
     this.batchId = params.get('batch');
 
+    this._initTemplateSelect();
     this._bindEvents();
     this._initTemplate();
     this._loadBatch();
+  }
+
+  _initTemplateSelect() {
+    this.templateSelect.innerHTML = '';
+    
+    const optGroupDefault = document.createElement('optgroup');
+    optGroupDefault.label = "Mặc định";
+    Object.keys(TEMPLATES).forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k;
+      opt.textContent = TEMPLATES[k].name;
+      optGroupDefault.appendChild(opt);
+    });
+    this.templateSelect.appendChild(optGroupDefault);
+
+    if (Object.keys(customTemplates).length > 0) {
+      const optGroupCustom = document.createElement('optgroup');
+      optGroupCustom.label = "Custom";
+      Object.keys(customTemplates).forEach(k => {
+        const opt = document.createElement('option');
+        opt.value = k;
+        opt.textContent = customTemplates[k].name;
+        optGroupCustom.appendChild(opt);
+      });
+      this.templateSelect.appendChild(optGroupCustom);
+    }
+    
+    // Set selected
+    if (ALL_TEMPLATES[this.currentTemplate]) {
+      this.templateSelect.value = this.currentTemplate;
+    } else {
+      this.currentTemplate = Object.keys(ALL_TEMPLATES)[0];
+      this.templateSelect.value = this.currentTemplate;
+    }
   }
 
   // ── Event Bindings ──
@@ -226,7 +283,16 @@ class PrintLayoutApp {
 
   // ── Template ──
   _initTemplate() {
-    const tmpl = TEMPLATES[this.currentTemplate];
+    const tmpl = ALL_TEMPLATES[this.currentTemplate];
+    
+    // Check if we need to load frame image
+    this.frameImageObj = null;
+    if (tmpl.frame_url) {
+      this.frameImageObj = new Image();
+      this.frameImageObj.onload = () => this._renderCanvas();
+      this.frameImageObj.src = tmpl.frame_url;
+    }
+
     this.slots = tmpl.slots.map(() => ({
       imageId: null,
       zoom: 1.0,
@@ -275,11 +341,12 @@ class PrintLayoutApp {
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
 
-    const tmpl = TEMPLATES[this.currentTemplate];
+    const tmpl = ALL_TEMPLATES[this.currentTemplate];
     let clickedSlot = -1;
 
     for (let i = 0; i < tmpl.slots.length; i++) {
       const s = tmpl.slots[i];
+      // Note: Coordinates are un-scaled relative to canvas width/height
       if (x >= s.x && x <= s.x + s.w && y >= s.y && y <= s.y + s.h) {
         clickedSlot = i;
         break;
@@ -376,7 +443,7 @@ class PrintLayoutApp {
     const slot = this.slots[slotIndex];
     if (!slot || !slot.imageId) return;
 
-    const tmpl = TEMPLATES[this.currentTemplate];
+    const tmpl = ALL_TEMPLATES[this.currentTemplate];
     const slotDef = tmpl.slots[slotIndex];
     const img = this._imageCache[slot.imageId];
     if (!img) return;
@@ -475,19 +542,18 @@ class PrintLayoutApp {
   }
 
   _drawToCanvas(canvas, isPreview) {
-    const w = A5_WIDTH;
-    const h = A5_HEIGHT;
+    const tmpl = ALL_TEMPLATES[this.currentTemplate];
+    const w = tmpl.canvas_width || A5_WIDTH;
+    const h = tmpl.canvas_height || A5_HEIGHT;
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
 
-    // White background
+    // White background (layer 1)
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, w, h);
 
-    const tmpl = TEMPLATES[this.currentTemplate];
-
-    // Draw slots
+    // Draw slots (layer 2)
     for (let i = 0; i < tmpl.slots.length; i++) {
       const slotDef = tmpl.slots[i];
       const slotData = this.slots[i];
@@ -522,6 +588,11 @@ class PrintLayoutApp {
         ctx.setLineDash([]);
         ctx.strokeRect(slotDef.x - 2, slotDef.y - 2, slotDef.w + 4, slotDef.h + 4);
       }
+    }
+
+    // Draw Overlay Frame (layer 3)
+    if (this.frameImageObj) {
+      ctx.drawImage(this.frameImageObj, 0, 0, w, h);
     }
   }
 
@@ -607,9 +678,9 @@ class PrintLayoutApp {
     this._drawToCanvas(exportCanvas, false);
 
     // Replace the preview canvas temporarily
-    const originalSrc = this.canvas.toDataURL();
-    this.canvas.width = A5_WIDTH;
-    this.canvas.height = A5_HEIGHT;
+    const tmpl = ALL_TEMPLATES[this.currentTemplate];
+    this.canvas.width = tmpl.canvas_width || A5_WIDTH;
+    this.canvas.height = tmpl.canvas_height || A5_HEIGHT;
     this.ctx.drawImage(exportCanvas, 0, 0);
 
     window.print();

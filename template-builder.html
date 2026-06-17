@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MME Color Lab — Admin Template Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="template-builder.css?v=1">
+</head>
+<body>
+  <div class="tb-app">
+    <!-- Header -->
+    <header class="tb-header">
+      <div class="tb-header-left">
+        <a href="print-layout.html" class="tb-back-btn" title="Quay lại Print Layout">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <div class="tb-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="3" width="18" height="18" rx="2" stroke="url(#tbGrad)" stroke-width="2"/>
+            <path d="M3 9h18M9 21V9" stroke="url(#tbGrad)" stroke-width="2"/>
+            <defs><linearGradient id="tbGrad" x1="0" y1="0" x2="24" y2="24">
+              <stop stop-color="#f59e0b"/><stop offset="1" stop-color="#ef4444"/>
+            </linearGradient></defs>
+          </svg>
+          <span>Template <em>Builder</em></span>
+        </div>
+      </div>
+      <div class="tb-header-right">
+        <button class="tb-btn" id="btnImportJson">📥 Import JSON</button>
+        <button class="tb-btn" id="btnExportJson">📤 Export JSON</button>
+        <button class="tb-btn tb-btn-primary" id="btnSaveTemplate">💾 Lưu Template</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="tb-main">
+      
+      <!-- Left Panel: Settings -->
+      <aside class="tb-panel">
+        <div class="tb-panel-header">
+          <h3>Cài Đặt Khung</h3>
+        </div>
+        <div class="tb-panel-content">
+          <div class="tb-group">
+            <label>Tên Template</label>
+            <input type="text" id="tplName" class="tb-input" placeholder="VD: Khung Hoa Lá A5">
+          </div>
+          <div class="tb-group">
+            <label>Kích thước Canvas (px)</label>
+            <div class="tb-flex-row">
+              <input type="number" id="canvasW" class="tb-input" value="1748" title="Width">
+              <span>×</span>
+              <input type="number" id="canvasH" class="tb-input" value="2480" title="Height">
+            </div>
+            <small>Khổ A5 300DPI mặc định là 1748×2480</small>
+          </div>
+          <div class="tb-group">
+            <label>Frame Overlay (PNG trong suốt)</label>
+            <button class="tb-btn tb-btn-full" id="btnUploadFrame">Tải lên PNG...</button>
+            <input type="file" id="frameInput" accept="image/png" hidden>
+            <div id="framePreview" class="tb-frame-preview" style="display:none;">
+              <img id="frameImg" src="">
+              <button class="tb-btn-icon tb-danger" id="btnRemoveFrame" title="Xóa frame">✕</button>
+            </div>
+          </div>
+          
+          <div class="tb-divider"></div>
+          
+          <div class="tb-panel-header" style="padding:0 0 10px 0; border:none;">
+            <h3>Slots (Vùng chứa ảnh)</h3>
+            <button class="tb-btn-icon" id="btnAddSlot" title="Thêm Slot mới">+</button>
+          </div>
+          
+          <div id="slotsList" class="tb-slots-list">
+            <!-- Slots listed here -->
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center: Workspace -->
+      <div class="tb-workspace">
+        <div class="tb-toolbar">
+          <span>Công cụ: Kéo thả slot trên canvas để di chuyển, kéo góc để đổi kích thước.</span>
+          <button class="tb-btn tb-btn-sm" id="btnZoomIn">🔍+</button>
+          <button class="tb-btn tb-btn-sm" id="btnZoomOut">🔍-</button>
+        </div>
+        <div class="tb-canvas-container" id="canvasContainer">
+          <div class="tb-canvas-wrapper" id="canvasWrapper" style="width: 1748px; height: 2480px; transform: scale(0.25);">
+            <!-- Background grid -->
+            <div class="tb-grid"></div>
+            
+            <!-- Slots will be injected here as absolute divs -->
+            <div id="slotsLayer" class="tb-layer"></div>
+            
+            <!-- Overlay Frame (PNG) -->
+            <div id="frameLayer" class="tb-layer" style="pointer-events: none;">
+              <img id="workspaceFrameImg" src="" style="width:100%; height:100%; display:none;">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+  </div>
+  
+  <input type="file" id="jsonInput" accept=".json" hidden>
+
+  <script type="module" src="js/template-builder.js?v=1"></script>
+</body>
+</html>
