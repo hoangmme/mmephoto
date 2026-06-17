@@ -174,12 +174,12 @@ class PrintLayoutApp {
 
     // Padding to center first/last
     this._updatePadding = () => {
-       if (this.mainSwiper.children.length > 0 && this.mainSwiper.offsetWidth > 0) {
-         // Force display block on slide to measure correctly
+       const parentArea = this.mainSwiper.parentElement;
+       if (this.mainSwiper.children.length > 0 && parentArea.offsetWidth > 0) {
          const firstSlide = this.mainSwiper.children[0];
          const slideWidth = firstSlide.offsetWidth;
          if (slideWidth > 0) {
-           const pad = (this.mainSwiper.offsetWidth - slideWidth) / 2;
+           const pad = (parentArea.offsetWidth - slideWidth) / 2;
            this.mainSwiper.style.paddingLeft = `${pad}px`;
            this.mainSwiper.style.paddingRight = `${pad}px`;
            this.mainSwiper.classList.add('loaded');
