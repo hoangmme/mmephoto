@@ -209,6 +209,8 @@ class PrintLayoutApp {
          slide.style.opacity = opacity;
       });
 
+      if (this.isProgrammaticScroll) return;
+
       scrollTimeout = setTimeout(() => {
         let closest = null;
         let minDiff = Infinity;
@@ -221,7 +223,8 @@ class PrintLayoutApp {
            }
         });
         
-        if (closest && closest.dataset.id !== this.currentTemplate) {
+        // Only trigger template switch when it fully snapped
+        if (closest && closest.dataset.id !== this.currentTemplate && minDiff < 50) {
            this._selectSlide(closest.dataset.id);
         }
       }, 150);
@@ -259,10 +262,17 @@ class PrintLayoutApp {
      this._renderSlotProps();
      
      const pad = (this.mainSwiper.offsetWidth - targetSlide.offsetWidth) / 2;
+     
+     this.isProgrammaticScroll = true;
      this.mainSwiper.scrollTo({ 
        left: targetSlide.offsetLeft - pad, 
        behavior: instant ? 'auto' : 'smooth' 
      });
+
+     clearTimeout(this.scrollUnlockTimeout);
+     this.scrollUnlockTimeout = setTimeout(() => {
+        this.isProgrammaticScroll = false;
+     }, instant ? 100 : 500);
   }
 
   // ── Event Bindings ──

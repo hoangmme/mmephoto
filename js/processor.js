@@ -8,7 +8,8 @@
 
 import { applyLUT } from './lut-parser.js';
 
-const MAX_PREVIEW = 4000; // Increased max preview dimension for higher sharpness
+const MAX_PREVIEW = 1200; // Fast preview (10x faster)
+const MAX_ORIGINAL = 2500; // A5 max print size (saves 4x RAM)
 
 export class ImageProcessor {
   constructor() {
@@ -25,16 +26,26 @@ export class ImageProcessor {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
-        const w = img.naturalWidth;
-        const h = img.naturalHeight;
+        let w = img.naturalWidth;
+        let h = img.naturalHeight;
 
-        // Full-resolution original
+        // Scale down original to save massive RAM (A5 print only needs max 2500px)
+        if (Math.max(w, h) > MAX_ORIGINAL) {
+          const scale = MAX_ORIGINAL / Math.max(w, h);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
+        }
+
+        // Full-resolution original (now capped at MAX_ORIGINAL)
         this.offscreen.width = w;
         this.offscreen.height = h;
-        this.offCtx.drawImage(img, 0, 0);
+        // High quality downscaling
+        this.offCtx.imageSmoothingEnabled = true;
+        this.offCtx.imageSmoothingQuality = 'high';
+        this.offCtx.drawImage(img, 0, 0, w, h);
         const originalData = this.offCtx.getImageData(0, 0, w, h);
 
-        // Preview (downscaled for performance)
+        // Preview (downscaled heavily for real-time slider performance)
         let pw = w, ph = h;
         if (Math.max(w, h) > MAX_PREVIEW) {
           const scale = MAX_PREVIEW / Math.max(w, h);
@@ -44,7 +55,9 @@ export class ImageProcessor {
 
         this.tempCanvas.width = pw;
         this.tempCanvas.height = ph;
-        this.tempCtx.drawImage(img, 0, 0, pw, ph);
+        this.tempCtx.imageSmoothingEnabled = true;
+        this.tempCtx.imageSmoothingQuality = 'high';
+        this.tempCtx.drawImage(this.offscreen, 0, 0, pw, ph);
         const previewData = this.tempCtx.getImageData(0, 0, pw, ph);
 
         URL.revokeObjectURL(img.src);
