@@ -40,7 +40,13 @@ try {
     arr.forEach(t => {
       customTemplates[t.id] = {
         name: t.name || 'Custom Template',
-        slots: t.slots.map(s => ({ x: s.x, y: s.y, w: s.width, h: s.height })),
+        slots: t.slots.map(s => ({
+          cx: s.cx !== undefined ? s.cx : (s.x + s.width/2),
+          cy: s.cy !== undefined ? s.cy : (s.y + s.height/2),
+          w: s.width || s.w,
+          h: s.height || s.h,
+          rotation: s.rotation || 0
+        })),
         frame_url: t.frame_url,
         canvas_width: t.canvas_width || 1748,
         canvas_height: t.canvas_height || 2480
@@ -51,7 +57,22 @@ try {
   console.warn('Failed to load custom templates', e);
 }
 
-const ALL_TEMPLATES = { ...TEMPLATES, ...customTemplates };
+// Convert default TEMPLATES x,y to cx,cy
+const parsedDefaults = {};
+Object.keys(TEMPLATES).forEach(k => {
+  parsedDefaults[k] = {
+    name: TEMPLATES[k].name,
+    slots: TEMPLATES[k].slots.map(s => ({
+      cx: s.x + s.w/2,
+      cy: s.y + s.h/2,
+      w: s.w,
+      h: s.h,
+      rotation: 0
+    }))
+  };
+});
+
+const ALL_TEMPLATES = { ...parsedDefaults, ...customTemplates };
 
 class PrintLayoutApp {
   constructor() {
@@ -347,7 +368,14 @@ class PrintLayoutApp {
     for (let i = 0; i < tmpl.slots.length; i++) {
       const s = tmpl.slots[i];
       // Note: Coordinates are un-scaled relative to canvas width/height
-      if (x >= s.x && x <= s.x + s.w && y >= s.y && y <= s.y + s.h) {
+      // Convert to local space
+      const dx = x - s.cx;
+      const dy = y - s.cy;
+      const rot = s.rotation || 0;
+      const localX = dx * Math.cos(-rot) - dy * Math.sin(-rot);
+      const localY = dx * Math.sin(-rot) + dy * Math.cos(-rot);
+
+      if (localX >= -s.w/2 && localX <= s.w/2 && localY >= -s.h/2 && localY <= s.h/2) {
         clickedSlot = i;
         break;
       }
@@ -407,8 +435,17 @@ class PrintLayoutApp {
   _panSlot(slotIndex, dx, dy) {
     const slot = this.slots[slotIndex];
     if (!slot || !slot.imageId) return;
-    slot.panX += dx;
-    slot.panY += dy;
+    
+    const tmpl = ALL_TEMPLATES[this.currentTemplate];
+    const slotDef = tmpl.slots[slotIndex];
+    const rot = slotDef.rotation || 0;
+    
+    // Reverse rotate mouse movement to local coordinates
+    const localDx = dx * Math.cos(-rot) - dy * Math.sin(-rot);
+    const localDy = dx * Math.sin(-rot) + dy * Math.cos(-rot);
+
+    slot.panX += localDx;
+    slot.panY += localDy;
     this._clampPan(slotIndex);
     this._renderCanvas();
   }
@@ -558,19 +595,25 @@ class PrintLayoutApp {
       const slotDef = tmpl.slots[i];
       const slotData = this.slots[i];
 
+      ctx.save();
+      ctx.translate(slotDef.cx, slotDef.cy);
+      if (slotDef.rotation) {
+        ctx.rotate(slotDef.rotation);
+      }
+
       if (slotData && slotData.imageId && this._imageCache[slotData.imageId]) {
         const img = this._imageCache[slotData.imageId];
         this._drawImageInSlot(ctx, img, slotDef, slotData);
       } else {
         // Empty slot
         ctx.fillStyle = '#f4f4f5';
-        ctx.fillRect(slotDef.x, slotDef.y, slotDef.w, slotDef.h);
+        ctx.fillRect(-slotDef.w/2, -slotDef.h/2, slotDef.w, slotDef.h);
 
         // Dashed border
         ctx.strokeStyle = '#d4d4d8';
         ctx.lineWidth = 2;
         ctx.setLineDash([8, 4]);
-        ctx.strokeRect(slotDef.x, slotDef.y, slotDef.w, slotDef.h);
+        ctx.strokeRect(-slotDef.w/2, -slotDef.h/2, slotDef.w, slotDef.h);
         ctx.setLineDash([]);
 
         // Slot number
@@ -578,7 +621,7 @@ class PrintLayoutApp {
         ctx.font = '32px Inter, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(`Slot ${i + 1}`, slotDef.x + slotDef.w / 2, slotDef.y + slotDef.h / 2);
+        ctx.fillText(`Slot ${i + 1}`, 0, 0);
       }
 
       // Selection highlight (preview only)
@@ -586,8 +629,10 @@ class PrintLayoutApp {
         ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 4;
         ctx.setLineDash([]);
-        ctx.strokeRect(slotDef.x - 2, slotDef.y - 2, slotDef.w + 4, slotDef.h + 4);
+        ctx.strokeRect(-slotDef.w/2 - 2, -slotDef.h/2 - 2, slotDef.w + 4, slotDef.h + 4);
       }
+      
+      ctx.restore();
     }
 
     // Draw Overlay Frame (layer 3)
@@ -603,14 +648,14 @@ class PrintLayoutApp {
       slotData.zoom
     );
 
-    // Center + pan
-    const drawX = slotDef.x + (slotDef.w - drawW) / 2 + slotData.panX;
-    const drawY = slotDef.y + (slotDef.h - drawH) / 2 + slotData.panY;
+    // Center + pan (relative to local cx,cy origin)
+    const drawX = -drawW / 2 + slotData.panX;
+    const drawY = -drawH / 2 + slotData.panY;
 
     // Clip to slot
     ctx.save();
     ctx.beginPath();
-    ctx.rect(slotDef.x, slotDef.y, slotDef.w, slotDef.h);
+    ctx.rect(-slotDef.w/2, -slotDef.h/2, slotDef.w, slotDef.h);
     ctx.clip();
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
     ctx.restore();
