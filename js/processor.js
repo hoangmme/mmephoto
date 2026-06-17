@@ -10,6 +10,7 @@ import { applyLUT } from './lut-parser.js';
 
 const MAX_PREVIEW = 1200; // Fast proxy preview (10x faster)
 const THUMB_SIZE = 300; // Thumbnail size
+const MAX_ORIGINAL = 2500; // Max RAM limit
 
 export class ImageProcessor {
   constructor() {
@@ -29,10 +30,20 @@ export class ImageProcessor {
         let w = img.naturalWidth;
         let h = img.naturalHeight;
 
-        // Full-resolution original (kept at 100% size for High-Res zoom)
+        // Scale down original to save massive RAM (A5 print only needs max 2500px)
+        // 24MP (4000x6000) takes 100MB RAM. 2500px takes 16MB RAM -> Prevents switching lag
+        if (Math.max(w, h) > MAX_ORIGINAL) {
+          const scale = MAX_ORIGINAL / Math.max(w, h);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
+        }
+
+        // Full-resolution original (kept at 2500px size for High-Res zoom)
         this.offscreen.width = w;
         this.offscreen.height = h;
-        this.offCtx.drawImage(img, 0, 0);
+        this.offCtx.imageSmoothingEnabled = true;
+        this.offCtx.imageSmoothingQuality = 'high';
+        this.offCtx.drawImage(img, 0, 0, w, h);
         const originalData = this.offCtx.getImageData(0, 0, w, h);
 
         // Preview (downscaled heavily for real-time proxy slider performance)
