@@ -6,6 +6,42 @@ const DEFAULT_MAGIC_COLORS = ['#01bf63', '#7ed957', '#c1ff72', '#ffde59', '#ffbd
 
 class TemplateBuilderApp {
   constructor() {
+    this.adminToken = sessionStorage.getItem('tb_admin_token');
+    
+    if (!this.adminToken) {
+      this._initLoginUI();
+      return;
+    }
+
+    this._initApp();
+  }
+
+  _initLoginUI() {
+    const btnLogin = document.getElementById('btnLogin');
+    const inputPass = document.getElementById('adminPassword');
+    
+    btnLogin.addEventListener('click', () => {
+      const pass = inputPass.value;
+      if (pass === 'admin123') { // Simple default password
+        sessionStorage.setItem('tb_admin_token', 'Bearer ' + pass);
+        this.adminToken = 'Bearer ' + pass;
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('appContent').style.display = 'flex';
+        this._initApp();
+      } else {
+        alert('Mật khẩu không đúng!');
+      }
+    });
+
+    inputPass.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') btnLogin.click();
+    });
+  }
+
+  async _initApp() {
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('appContent').style.display = 'flex';
+
     this.template = {
       id: 'tpl_' + Date.now(),
       name: '',
@@ -15,12 +51,21 @@ class TemplateBuilderApp {
       slots: []
     };
     
-    this.scale = 0.25; // Default zoom
+    this.magicColors = [...DEFAULT_MAGIC_COLORS];
+    this.scale = 0.25;
 
     this._cacheDOM();
     this._bindEvents();
     this._renderWorkspace();
     this._renderSlotsList();
+
+    // Fetch existing templates from server to be aware of them
+    try {
+      const res = await fetch('/api/templates');
+      this.serverTemplates = await res.json();
+    } catch(e) {
+      this.serverTemplates = [];
+    }
   }
 
   _cacheDOM() {
@@ -115,7 +160,7 @@ class TemplateBuilderApp {
     this.btnZoomOut.addEventListener('click', () => this._setZoom(this.scale - 0.1));
 
     // Save/Export/Import
-    this.btnSaveTemplate.addEventListener('click', () => this._saveToLocal());
+    this.btnSaveTemplate.addEventListener('click', () => this._saveToServer());
     this.btnExportJson.addEventListener('click', () => this._exportJson());
     this.btnImportJson.addEventListener('click', () => this.jsonInput.click());
     this.jsonInput.addEventListener('change', this._importJson.bind(this));
@@ -437,37 +482,57 @@ class TemplateBuilderApp {
     });
   }
 
-  // ── Save & Export ──
-  _saveToLocal() {
+  // ── Save to Server ──
+  async _saveToServer() {
     if (!this.template.name) {
       alert('Vui lòng nhập tên Template!');
       this.tplNameInput.focus();
       return;
     }
     
-    let templates = [];
-    try {
-      const stored = localStorage.getItem('mme_print_templates');
-      if (stored) templates = JSON.parse(stored);
-    } catch(e) {}
+    this.template.magicColors = [...this.magicColors];
     
-    const idx = templates.findIndex(t => t.id === this.template.id);
+    // Update local list
+    const idx = this.serverTemplates.findIndex(t => t.id === this.template.id);
     if (idx >= 0) {
-      templates[idx] = this.template;
+      this.serverTemplates[idx] = this.template;
     } else {
-      templates.push(this.template);
+      this.serverTemplates.push(this.template);
     }
-    
-    localStorage.setItem('mme_print_templates', JSON.stringify(templates));
     
     const btn = this.btnSaveTemplate;
     const oldText = btn.textContent;
-    btn.textContent = '✓ Đã lưu';
-    btn.style.background = '#22c55e';
+    btn.textContent = 'Đang lưu...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/templates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': this.adminToken
+        },
+        body: JSON.stringify(this.serverTemplates)
+      });
+      
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+      
+      btn.textContent = '✓ Đã lưu lên Server';
+      btn.style.background = '#22c55e';
+    } catch (e) {
+      console.error(e);
+      alert("Lưu thất bại: " + e.message);
+      btn.textContent = '❌ Lỗi lưu';
+      btn.style.background = '#ef4444';
+    }
+
     setTimeout(() => {
       btn.textContent = oldText;
       btn.style.background = '';
-    }, 1500);
+      btn.disabled = false;
+    }, 2000);
   }
 
   _exportJson() {

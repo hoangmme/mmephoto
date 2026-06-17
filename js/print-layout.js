@@ -29,33 +29,11 @@ const TEMPLATES = {
       { x: PADDING * 2 + (A5_WIDTH - PADDING * 3) / 2, y: PADDING, w: (A5_WIDTH - PADDING * 3) / 2, h: (A5_HEIGHT - PADDING * 3) / 2 },
       { x: PADDING, y: PADDING * 2 + (A5_HEIGHT - PADDING * 3) / 2, w: (A5_WIDTH - PADDING * 3) / 2, h: (A5_HEIGHT - PADDING * 3) / 2 },
       { x: PADDING * 2 + (A5_WIDTH - PADDING * 3) / 2, y: PADDING * 2 + (A5_HEIGHT - PADDING * 3) / 2, w: (A5_WIDTH - PADDING * 3) / 2, h: (A5_HEIGHT - PADDING * 3) / 2 }
+    ]
   }
 };
 
 let customTemplates = {};
-try {
-  const stored = localStorage.getItem('mme_print_templates');
-  if (stored) {
-    const arr = JSON.parse(stored);
-    arr.forEach(t => {
-      customTemplates[t.id] = {
-        name: t.name || 'Custom Template',
-        slots: t.slots.map(s => ({
-          cx: s.cx !== undefined ? s.cx : (s.x + s.width/2),
-          cy: s.cy !== undefined ? s.cy : (s.y + s.height/2),
-          w: s.width || s.w,
-          h: s.height || s.h,
-          rotation: s.rotation || 0
-        })),
-        frame_url: t.frame_url,
-        canvas_width: t.canvas_width || 1748,
-        canvas_height: t.canvas_height || 2480
-      };
-    });
-  }
-} catch (e) {
-  console.warn('Failed to load custom templates', e);
-}
 
 // Convert default TEMPLATES x,y to cx,cy
 const parsedDefaults = {};
@@ -72,7 +50,7 @@ Object.keys(TEMPLATES).forEach(k => {
   };
 });
 
-const ALL_TEMPLATES = { ...parsedDefaults, ...customTemplates };
+const ALL_TEMPLATES = { ...parsedDefaults };
 
 class PrintLayoutApp {
   constructor() {
@@ -104,6 +82,35 @@ class PrintLayoutApp {
     // Parse batch ID from URL
     const params = new URLSearchParams(window.location.search);
     this.batchId = params.get('batch');
+
+    this._initApp();
+  }
+
+  async _initApp() {
+    try {
+      const res = await fetch('/api/templates');
+      if (res.ok) {
+        const arr = await res.json();
+        arr.forEach(t => {
+          customTemplates[t.id] = {
+            name: t.name || 'Custom Template',
+            slots: t.slots.map(s => ({
+              cx: s.cx !== undefined ? s.cx : (s.x + s.width/2),
+              cy: s.cy !== undefined ? s.cy : (s.y + s.height/2),
+              w: s.width || s.w,
+              h: s.height || s.h,
+              rotation: s.rotation || 0
+            })),
+            frame_url: t.frame_url,
+            canvas_width: t.canvas_width || 1748,
+            canvas_height: t.canvas_height || 2480
+          };
+        });
+        Object.assign(ALL_TEMPLATES, customTemplates);
+      }
+    } catch(e) {
+      console.error("Error fetching templates from server", e);
+    }
 
     this._initTemplateSelect();
     this._bindEvents();
@@ -162,6 +169,14 @@ class PrintLayoutApp {
     document.getElementById('btnPrint').addEventListener('click', () => this._print());
     document.getElementById('btnExportJPG').addEventListener('click', () => this._exportJPG());
     document.getElementById('btnExportPDF').addEventListener('click', () => this._exportPDF());
+
+    // Import Custom Template
+    const btnImport = document.getElementById('btnImportTemplateJson');
+    const inputImport = document.getElementById('templateJsonInput');
+    if (btnImport && inputImport) {
+      btnImport.addEventListener('click', () => inputImport.click());
+      inputImport.addEventListener('change', (e) => this._importTemplateJson(e));
+    }
 
     // Canvas click → select slot
     this.canvas.addEventListener('click', (e) => this._onCanvasClick(e));
@@ -431,7 +446,66 @@ class PrintLayoutApp {
     this._renderImageList();
   }
 
-  // ── Slot Interactions ──
+  _handleImageUpload(e) {
+    const files = e.target.files;
+    if (!files.length) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const id = 'img_' + Date.now() + '_' + i;
+      const url = URL.createObjectURL(file);
+      this.images.push({ id, url });
+    }
+
+    this._renderImageList();
+  }
+
+  // ── Import JSON Template ──
+  _importTemplateJson(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const t = JSON.parse(ev.target.result);
+        if (t.id && t.slots) {
+          // Add to customTemplates
+          customTemplates[t.id] = {
+            name: t.name || 'Custom Template',
+            slots: t.slots.map(s => ({
+              cx: s.cx !== undefined ? s.cx : (s.x + s.width/2),
+              cy: s.cy !== undefined ? s.cy : (s.y + s.height/2),
+              w: s.width || s.w,
+              h: s.height || s.h,
+              rotation: s.rotation || 0
+            })),
+            frame_url: t.frame_url,
+            canvas_width: t.canvas_width || 1748,
+            canvas_height: t.canvas_height || 2480
+          };
+
+          // Update ALL_TEMPLATES in memory for this session
+          ALL_TEMPLATES[t.id] = customTemplates[t.id];
+
+          // Reload UI
+          this._initTemplateSelect();
+          this.templateSelect.value = t.id;
+          this.currentTemplate = t.id;
+          this._initTemplate();
+          this._renderCanvas();
+        } else {
+          alert('File JSON không hợp lệ!');
+        }
+      } catch (err) {
+        alert('Lỗi đọc file JSON!');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  // ── Canvas Interaction ──
   _panSlot(slotIndex, dx, dy) {
     const slot = this.slots[slotIndex];
     if (!slot || !slot.imageId) return;

@@ -10,7 +10,16 @@
   <link rel="stylesheet" href="template-builder.css?v=1">
 </head>
 <body>
-  <div class="tb-app">
+  <!-- Login Overlay -->
+  <div id="loginOverlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--tb-bg); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+    <div style="background:var(--tb-panel); padding:32px; border-radius:12px; border:1px solid var(--tb-border); text-align:center; width:300px;">
+      <h2 style="margin:0 0 16px 0;">Admin Login</h2>
+      <input type="password" id="adminPassword" class="tb-input" placeholder="Nhập mật khẩu..." style="margin-bottom:16px;">
+      <button id="btnLogin" class="tb-btn tb-btn-primary tb-btn-full">Đăng nhập</button>
+    </div>
+  </div>
+
+  <div class="tb-app" id="appContent" style="display:none;">
     <!-- Header -->
     <header class="tb-header">
       <div class="tb-header-left">
@@ -110,6 +119,6 @@
   
   <input type="file" id="jsonInput" accept=".json" hidden>
 
-  <script type="module" src="js/template-builder.js?v=4"></script>
+  <script type="module" src="js/template-builder.js?v=5"></script>
 </body>
 </html>

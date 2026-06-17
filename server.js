@@ -179,6 +179,37 @@ app.get('/api/sessions/:id', (req, res) => {
   });
 });
 
+// 3. Templates API
+const TEMPLATES_FILE = path.join(__dirname, 'templates.json');
+
+app.get('/api/templates', (req, res) => {
+  if (!fs.existsSync(TEMPLATES_FILE)) {
+    return res.json([]);
+  }
+  try {
+    const data = fs.readFileSync(TEMPLATES_FILE, 'utf8');
+    res.json(JSON.parse(data));
+  } catch(e) {
+    res.status(500).json({ error: 'Cannot read templates' });
+  }
+});
+
+app.post('/api/templates', express.json({ limit: '50mb' }), (req, res) => {
+  // Basic Auth
+  const auth = req.headers.authorization;
+  if (!auth || auth !== 'Bearer admin123') {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const templates = req.body;
+    fs.writeFileSync(TEMPLATES_FILE, JSON.stringify(templates, null, 2));
+    res.json({ success: true });
+  } catch(e) {
+    res.status(500).json({ error: 'Cannot save templates' });
+  }
+});
+
 app.listen(port, () => {
   console.log(`PhotoTune Backend running at http://localhost:${port}`);
   console.log(`Webtool 2 available at http://localhost:${port}/webtool2.html`);
