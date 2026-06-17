@@ -70,18 +70,13 @@
           <div class="tb-divider"></div>
           
           <div class="tb-panel-header" style="padding:0 0 10px 0; border:none; display:flex; align-items:center; justify-content:space-between;">
-            <h3>Slots theo màu sắc</h3>
-            <button class="tb-btn-icon" id="btnAddColor" title="Thêm mã màu mới">+</button>
-          </div>
-          
-          <div style="margin-bottom: 12px; display:flex; gap:8px; align-items:center;">
-            <input type="color" id="newColorPicker" value="#01bf63" style="width: 32px; height: 32px; padding: 0; border: none; cursor: pointer; border-radius: 4px;">
-            <button class="tb-btn tb-btn-sm" id="btnAddNewColor">Thêm màu</button>
+            <h3>Cấu hình Slots</h3>
+            <button class="tb-btn-icon" id="btnAddSlot" title="Thêm Slot mới">+</button>
           </div>
           
           <button class="tb-btn tb-btn-primary tb-btn-full" id="btnAutoScan" style="margin-bottom: 12px;">🪄 Tự động quét & Xóa nền</button>
           
-          <div id="slotsColorList" class="tb-slots-list">
+          <div id="slotsList" class="tb-slots-list">
             <!-- Slots will be generated here -->
           </div>
         </div>
@@ -115,6 +110,6 @@
   
   <input type="file" id="jsonInput" accept=".json" hidden>
 
-  <script type="module" src="js/template-builder.js?v=3"></script>
+  <script type="module" src="js/template-builder.js?v=4"></script>
 </body>
 </html>

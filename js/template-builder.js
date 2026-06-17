@@ -2,6 +2,8 @@
 // MME Color Lab — Admin Template Builder
 // ============================================
 
+const DEFAULT_MAGIC_COLORS = ['#01bf63', '#7ed957', '#c1ff72', '#ffde59', '#ffbd59', '#ff914d', '#ff751f'];
+
 class TemplateBuilderApp {
   constructor() {
     this.template = {
@@ -12,9 +14,6 @@ class TemplateBuilderApp {
       frame_url: '',
       slots: []
     };
-    
-    // Default magic colors
-    this.magicColors = ['#01bf63', '#7ed957', '#c1ff72', '#ffde59', '#ffbd59', '#ff914d', '#ff751f'];
     
     this.scale = 0.25; // Default zoom
 
@@ -36,11 +35,10 @@ class TemplateBuilderApp {
     this.frameImg = document.getElementById('frameImg');
     this.btnRemoveFrame = document.getElementById('btnRemoveFrame');
     
-    // Colors & Auto Scan
-    this.btnAddNewColor = document.getElementById('btnAddNewColor');
-    this.newColorPicker = document.getElementById('newColorPicker');
+    // Slots UI
+    this.btnAddSlot = document.getElementById('btnAddSlot');
     this.btnAutoScan = document.getElementById('btnAutoScan');
-    this.slotsColorList = document.getElementById('slotsColorList');
+    this.slotsList = document.getElementById('slotsList');
     
     // Workspace
     this.canvasWrapper = document.getElementById('canvasWrapper');
@@ -78,30 +76,34 @@ class TemplateBuilderApp {
       const reader = new FileReader();
       reader.onload = (ev) => {
         this.template.frame_url = ev.target.result;
-        this.template.slots = [];
+        // Do not clear slots, just update frame
         this._updateFrameUI();
         this._renderWorkspace();
-        this._renderSlotsList();
       };
       reader.readAsDataURL(file);
     });
     this.btnRemoveFrame.addEventListener('click', () => {
       this.template.frame_url = '';
       this.frameInput.value = '';
-      this.template.slots = [];
       this._updateFrameUI();
       this._renderWorkspace();
-      this._renderSlotsList();
     });
 
-    // Color Management
-    if (this.btnAddNewColor) {
-      this.btnAddNewColor.addEventListener('click', () => {
-        const c = this.newColorPicker.value;
-        if (!this.magicColors.includes(c)) {
-          this.magicColors.push(c);
-          this._renderSlotsList();
-        }
+    // Slot Management
+    if (this.btnAddSlot) {
+      this.btnAddSlot.addEventListener('click', () => {
+        const nextColor = DEFAULT_MAGIC_COLORS[this.template.slots.length % DEFAULT_MAGIC_COLORS.length];
+        this.template.slots.push({
+          id: 'slot_' + Date.now().toString().slice(-6),
+          color: nextColor,
+          cx: 0,
+          cy: 0,
+          w: 600,
+          h: 800,
+          rotation: 0
+        });
+        this._renderSlotsList();
+        this._renderWorkspace();
       });
     }
 
@@ -152,7 +154,6 @@ class TemplateBuilderApp {
       const el = document.createElement('div');
       el.className = 'tb-visual-slot active';
       
-      // Calculate top-left for standard CSS positioning before transform
       const left = slot.cx - slot.w / 2;
       const top = slot.cy - slot.h / 2;
       
@@ -161,14 +162,14 @@ class TemplateBuilderApp {
       el.style.width = slot.w + 'px';
       el.style.height = slot.h + 'px';
       el.style.pointerEvents = 'none';
-      el.style.borderColor = slot.color || '#f59e0b';
-      el.style.backgroundColor = (slot.color || '#f59e0b') + '33';
+      el.style.borderColor = slot.color;
+      el.style.backgroundColor = slot.color + '33';
+      el.style.zIndex = index + 1;
       
-      // Apply rotation around its center
       const rotDeg = (slot.rotation || 0) * (180 / Math.PI);
       el.style.transform = `rotate(${rotDeg}deg)`;
       
-      el.innerHTML = `<span style="color:${slot.color || '#f59e0b'}">S${index + 1}</span>`;
+      el.innerHTML = `<span style="color:${slot.color}; font-weight:bold; font-size:24px;">S${index + 1}</span>`;
       this.slotsLayer.appendChild(el);
     });
   }
@@ -202,10 +203,8 @@ class TemplateBuilderApp {
     m02 /= pixels.length;
     m11 /= pixels.length;
 
-    // Angle of the major axis
     let theta = 0.5 * Math.atan2(2 * m11, m20 - m02);
 
-    // To get exact width and height, rotate all points by -theta
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     const cosT = Math.cos(-theta);
     const sinT = Math.sin(-theta);
@@ -223,7 +222,6 @@ class TemplateBuilderApp {
     let w = maxX - minX;
     let h = maxY - minY;
 
-    // Normalize rotation to be between -45 and 45 degrees so that portrait frames stay portrait
     while (theta > Math.PI / 4) {
       theta -= Math.PI / 2;
       let temp = w; w = h; h = temp;
@@ -260,11 +258,10 @@ class TemplateBuilderApp {
       const data = imgData.data;
 
       const tolerance = 15;
-      let newSlots = [];
+      let updatedCount = 0;
 
-      // Scan for each magic color
-      this.magicColors.forEach((hex, index) => {
-        const targetColor = this._hexToRgb(hex);
+      this.template.slots.forEach((slot) => {
+        const targetColor = this._hexToRgb(slot.color);
         if (!targetColor) return;
 
         let pixels = [];
@@ -292,37 +289,30 @@ class TemplateBuilderApp {
         }
 
         if (pixels.length > 50) {
-          // Punch holes
           for (let idx of pixelIndices) {
-            data[idx + 3] = 0;
+            data[idx + 3] = 0; // punch hole
           }
 
-          // Calculate rotated bounding box via PCA
           const pca = this._calculatePCA(pixels);
           if (pca) {
-            newSlots.push({
-              id: 'slot_' + (index + 1),
-              color: hex,
-              cx: Math.round(pca.cx),
-              cy: Math.round(pca.cy),
-              w: Math.round(pca.w),
-              h: Math.round(pca.h),
-              rotation: pca.rotation
-            });
+            slot.cx = Math.round(pca.cx);
+            slot.cy = Math.round(pca.cy);
+            slot.w = Math.round(pca.w);
+            slot.h = Math.round(pca.h);
+            slot.rotation = pca.rotation;
+            updatedCount++;
           }
         }
       });
 
-      if (newSlots.length > 0) {
+      if (updatedCount > 0) {
         ctx.putImageData(imgData, 0, 0);
         this.template.frame_url = canvas.toDataURL('image/png');
-        this.template.slots = newSlots;
-        
         this._updateFrameUI();
         this._renderWorkspace();
         this._renderSlotsList();
       } else {
-        alert("Không tìm thấy khối màu chuẩn nào trên ảnh. Đảm bảo mã màu trên thiết kế hoàn toàn khớp với danh sách bên trái.");
+        alert("Không tìm thấy khối màu nào khớp với các Slot đã tạo.");
       }
 
       this.btnAutoScan.textContent = '🪄 Tự động quét & Xóa nền';
@@ -333,49 +323,116 @@ class TemplateBuilderApp {
 
   // ── Render Slots List UI ──
   _renderSlotsList() {
-    this.slotsColorList.innerHTML = '';
+    this.slotsList.innerHTML = '';
     
-    this.magicColors.forEach((hex, index) => {
-      const slotData = this.template.slots.find(s => s.color === hex);
-      
+    this.template.slots.forEach((slot, index) => {
       const item = document.createElement('div');
       item.className = 'tb-slot-item';
       
-      let statusHtml = '<span style="color:var(--tb-text-muted); font-size:12px;">Chưa quét</span>';
-      if (slotData) {
-        const rotDeg = Math.round(slotData.rotation * (180 / Math.PI));
-        statusHtml = `<span style="color:#22c55e; font-size:12px;">✓ Đã tìm thấy (${slotData.w}x${slotData.h}) | Góc: ${rotDeg}°</span>`;
-      }
+      const rotDeg = Math.round(slot.rotation * (180 / Math.PI)) || 0;
 
       item.innerHTML = `
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 4px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px;">
           <div style="display:flex; align-items:center; gap:8px;">
-            <input type="color" value="${hex}" class="color-edit" data-idx="${index}" style="width:20px; height:20px; padding:0; border:none; border-radius:50%; cursor:pointer;">
-            <strong>Slot ${index + 1}</strong>
-            <span style="font-size:11px; color:var(--tb-text-muted);">${hex}</span>
+            <input type="color" class="color-edit" data-idx="${index}" value="${slot.color}" style="width:24px; height:24px; padding:0; border:none; cursor:pointer;">
+            <strong style="color:var(--tb-accent);">Slot ${index + 1}</strong>
           </div>
-          <button class="tb-btn-icon tb-danger btn-del-color" data-idx="${index}" title="Xóa màu">✕</button>
+          <div style="display:flex; gap:4px;">
+            <button class="tb-btn-icon btn-move-up" data-idx="${index}" title="Lên trên" ${index === 0 ? 'disabled' : ''}>↑</button>
+            <button class="tb-btn-icon btn-move-down" data-idx="${index}" title="Xuống dưới" ${index === this.template.slots.length - 1 ? 'disabled' : ''}>↓</button>
+            <button class="tb-btn-icon tb-danger btn-del-slot" data-idx="${index}" title="Xóa Slot">✕</button>
+          </div>
         </div>
-        ${statusHtml}
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom: 8px;">
+          <div>
+            <label style="font-size:11px; color:var(--tb-text-muted);">Tâm X (px)</label>
+            <input type="number" class="tb-input input-cx" data-idx="${index}" value="${slot.cx}">
+          </div>
+          <div>
+            <label style="font-size:11px; color:var(--tb-text-muted);">Tâm Y (px)</label>
+            <input type="number" class="tb-input input-cy" data-idx="${index}" value="${slot.cy}">
+          </div>
+          <div>
+            <label style="font-size:11px; color:var(--tb-text-muted);">Chiều rộng (px)</label>
+            <input type="number" class="tb-input input-w" data-idx="${index}" value="${slot.w}">
+          </div>
+          <div>
+            <label style="font-size:11px; color:var(--tb-text-muted);">Chiều cao (px)</label>
+            <input type="number" class="tb-input input-h" data-idx="${index}" value="${slot.h}">
+          </div>
+        </div>
+        
+        <div>
+          <label style="font-size:11px; color:var(--tb-text-muted);">Góc nghiêng (Độ)</label>
+          <input type="number" class="tb-input input-rot" data-idx="${index}" value="${rotDeg}">
+        </div>
       `;
       
-      this.slotsColorList.appendChild(item);
+      this.slotsList.appendChild(item);
     });
 
-    // Bind color edit & delete
-    this.slotsColorList.querySelectorAll('.color-edit').forEach(inp => {
+    // Event Bindings for inputs
+    this.slotsList.querySelectorAll('.color-edit').forEach(inp => {
       inp.addEventListener('change', (e) => {
-        const idx = e.target.dataset.idx;
-        this.magicColors[idx] = e.target.value.toLowerCase();
-        this._renderSlotsList();
+        this.template.slots[e.target.dataset.idx].color = e.target.value.toLowerCase();
+        this._renderWorkspace();
+      });
+    });
+    
+    this.slotsList.querySelectorAll('.input-cx').forEach(inp => {
+      inp.addEventListener('input', (e) => { this.template.slots[e.target.dataset.idx].cx = parseFloat(e.target.value) || 0; this._renderWorkspace(); });
+    });
+    this.slotsList.querySelectorAll('.input-cy').forEach(inp => {
+      inp.addEventListener('input', (e) => { this.template.slots[e.target.dataset.idx].cy = parseFloat(e.target.value) || 0; this._renderWorkspace(); });
+    });
+    this.slotsList.querySelectorAll('.input-w').forEach(inp => {
+      inp.addEventListener('input', (e) => { this.template.slots[e.target.dataset.idx].w = parseFloat(e.target.value) || 0; this._renderWorkspace(); });
+    });
+    this.slotsList.querySelectorAll('.input-h').forEach(inp => {
+      inp.addEventListener('input', (e) => { this.template.slots[e.target.dataset.idx].h = parseFloat(e.target.value) || 0; this._renderWorkspace(); });
+    });
+    this.slotsList.querySelectorAll('.input-rot').forEach(inp => {
+      inp.addEventListener('input', (e) => { 
+        this.template.slots[e.target.dataset.idx].rotation = (parseFloat(e.target.value) || 0) * (Math.PI / 180); 
+        this._renderWorkspace(); 
       });
     });
 
-    this.slotsColorList.querySelectorAll('.btn-del-color').forEach(btn => {
+    // Delete
+    this.slotsList.querySelectorAll('.btn-del-slot').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const idx = e.target.dataset.idx;
-        this.magicColors.splice(idx, 1);
+        this.template.slots.splice(e.target.dataset.idx, 1);
         this._renderSlotsList();
+        this._renderWorkspace();
+      });
+    });
+
+    // Move Up
+    this.slotsList.querySelectorAll('.btn-move-up').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.target.dataset.idx);
+        if (idx > 0) {
+          const temp = this.template.slots[idx];
+          this.template.slots[idx] = this.template.slots[idx - 1];
+          this.template.slots[idx - 1] = temp;
+          this._renderSlotsList();
+          this._renderWorkspace();
+        }
+      });
+    });
+
+    // Move Down
+    this.slotsList.querySelectorAll('.btn-move-down').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.target.dataset.idx);
+        if (idx < this.template.slots.length - 1) {
+          const temp = this.template.slots[idx];
+          this.template.slots[idx] = this.template.slots[idx + 1];
+          this.template.slots[idx + 1] = temp;
+          this._renderSlotsList();
+          this._renderWorkspace();
+        }
       });
     });
   }
@@ -388,9 +445,6 @@ class TemplateBuilderApp {
       return;
     }
     
-    // Convert magicColors back to template property so we can recall them
-    this.template.magicColors = [...this.magicColors];
-
     let templates = [];
     try {
       const stored = localStorage.getItem('mme_print_templates');
@@ -418,7 +472,6 @@ class TemplateBuilderApp {
 
   _exportJson() {
     if (!this.template.name) this.template.name = 'Unnamed Template';
-    this.template.magicColors = [...this.magicColors];
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.template, null, 2));
     const dlAnchorElem = document.createElement('a');
     dlAnchorElem.setAttribute("href", dataStr);
@@ -439,9 +492,6 @@ class TemplateBuilderApp {
           this.tplNameInput.value = data.name || '';
           this.canvasWInput.value = data.canvas_width || 1748;
           this.canvasHInput.value = data.canvas_height || 2480;
-          if (data.magicColors) {
-            this.magicColors = data.magicColors;
-          }
           this._updateFrameUI();
           this._renderWorkspace();
           this._renderSlotsList();
