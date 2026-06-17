@@ -330,7 +330,8 @@ body {
 .pl-slide {
   flex: 0 0 auto;
   scroll-snap-align: center;
-  height: 100%;
+  /* Ensure it never overflows horizontally by capping height relative to viewport width */
+  height: min(calc(100vh - 120px), calc((100vw - 280px) * 1.418));
   aspect-ratio: 1748 / 2480;
   background: #fff;
   border-radius: 4px;
@@ -537,6 +538,9 @@ body {
     max-height: 180px;
     border-right: none;
     border-bottom: 1px solid var(--pl-border);
+  }
+  .pl-slide {
+    height: min(calc(100vh - 300px), calc(100vw * 1.418));
   }
   .pl-image-list {
     grid-template-columns: repeat(4, 1fr);
