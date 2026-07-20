@@ -243,7 +243,7 @@ body {
   cursor: pointer;
   border: 2px solid transparent;
   transition: all var(--pl-transition);
-  aspect-ratio: 2/3;
+  aspect-ratio: 1/1;
 }
 .pl-thumb:hover {
   border-color: var(--pl-border-light);
