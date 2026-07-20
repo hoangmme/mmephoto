@@ -58,7 +58,7 @@
 
     async function checkAuth() {
       if (!adminAuth) return;
-      const res = await fetch('/api/admin/data?auth=' + adminAuth);
+      const res = await fetch('/api/admin/data?auth=' + encodeURIComponent(adminAuth));
       if (res.ok) {
         document.getElementById('loginView').style.display = 'none';
         document.getElementById('adminView').style.display = 'block';
