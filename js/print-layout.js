@@ -81,84 +81,226 @@ class PrintLayoutApp {
 
     // Parse batch ID from URL
     const params = new URLSearchParams(window.location.search);
-    this.batchId = params.get('batch');
+    this.batchId = params.get('batch');\n    this.rooms = {};\n    this.activeRoom = null;\n
 
     this._initApp();
   }
 
 
-  _initSSE(branch, room) {
+
+  _initSSE(branch) {
     if (this.sse) this.sse.close();
-    this.sse = new EventSource(`/api/stream/${branch}/${room}`);
+    this.sse = new EventSource(`/api/stream/${branch}`);
     
     this.sse.onmessage = (e) => {
       const data = JSON.parse(e.data);
       if (data.type === 'init') {
-        this.images = [];
-        data.images.forEach(url => {
-          const id = 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-          this.images.push({ id, url });
-        });
-        this._renderImageList();
-        if (data.session) this._updateQRCode(data.session);
-        if (data.images.length > 0) this._startTimer();
+        const room = data.room;
+        if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 180, locked: false, hasNew: false };
+        this.rooms[room].session = data.session;
+        this.rooms[room].images = data.images.map(url => ({ id: 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000), url }));
+        if (this.rooms[room].images.length > 0) this._startTimer(room);
+        this._renderTabs();
+        this._updateUIForRoom();
       } else if (data.type === 'new_image') {
-        if (this.images.length === 0) this._startTimer();
-        const id = 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-        this.images.push({ id, url: data.imageUrl });
-        this._renderImageList();
-        this._updateQRCode(data.session);
+        const room = data.room;
+        if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 180, locked: false, hasNew: false };
+        if (this.rooms[room].images.length === 0) this._startTimer(room);
+        this.rooms[room].session = data.session;
+        this.rooms[room].images.push({ id: 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000), url: data.imageUrl });
+        
+        if (this.activeRoom !== room) {
+          this.rooms[room].hasNew = true;
+          this._renderTabs();
+        } else {
+          this._updateUIForRoom();
+        }
       } else if (data.type === 'reset') {
-        this.images = [];
-        this._renderImageList();
-        this._stopTimer();
-        const qrOverlay = document.getElementById('qrOverlay');
-        if (qrOverlay) qrOverlay.style.display = 'none';
+        const room = data.room;
+        if (this.rooms[room]) {
+          this._stopTimer(room);
+          delete this.rooms[room];
+          if (this.activeRoom === room) {
+            this.activeRoom = Object.keys(this.rooms)[0] || null;
+            this._updateUIForRoom();
+          }
+          this._renderTabs();
+        }
       }
     };
   }
-
-  _startTimer() {
-    if (this.timerInterval) clearInterval(this.timerInterval);
-    let timeLeft = 180; // 3 minutes
-    const el = document.getElementById('countdownTimer');
-    if (!el) return;
-    el.style.display = 'block';
+  
+  _renderTabs() {
+    const tabsContainer = document.getElementById('roomTabs');
+    if (!tabsContainer) return;
+    tabsContainer.innerHTML = '';
+    const rooms = Object.keys(this.rooms).sort();
     
-    this.timerInterval = setInterval(() => {
-      timeLeft--;
-      if (timeLeft <= 0) {
-        clearInterval(this.timerInterval);
-        const lock = document.getElementById('lockOverlay');
-        if (lock) lock.style.display = 'flex';
-        el.innerText = '00:00';
+    if (rooms.length > 0 && !this.activeRoom) {
+      this.activeRoom = rooms[0];
+      this._updateUIForRoom();
+    }
+    
+    rooms.forEach(room => {
+      const btn = document.createElement('button');
+      btn.innerText = room;
+      btn.style.padding = '8px 12px';
+      btn.style.border = '1px solid var(--pl-border)';
+      btn.style.borderRadius = '6px 6px 0 0';
+      btn.style.cursor = 'pointer';
+      btn.style.position = 'relative';
+      btn.style.fontWeight = '600';
+      
+      if (room === this.activeRoom) {
+        btn.style.background = 'var(--pl-accent)';
+        btn.style.color = '#000';
       } else {
-        const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-        const s = (timeLeft % 60).toString().padStart(2, '0');
-        el.innerText = `${m}:${s}`;
+        btn.style.background = 'var(--pl-bg-section)';
+        btn.style.color = 'var(--pl-text)';
+      }
+      
+      if (this.rooms[room].hasNew && room !== this.activeRoom) {
+        const dot = document.createElement('div');
+        dot.style.position = 'absolute';
+        dot.style.top = '-2px';
+        dot.style.right = '-2px';
+        dot.style.width = '10px';
+        dot.style.height = '10px';
+        dot.style.background = '#ef4444';
+        dot.style.borderRadius = '50%';
+        btn.appendChild(dot);
+      }
+      
+      btn.onclick = () => {
+        this.activeRoom = room;
+        this.rooms[room].hasNew = false;
+        this._renderTabs();
+        this._updateUIForRoom();
+      };
+      
+      tabsContainer.appendChild(btn);
+    });
+  }
+  
+  _updateUIForRoom() {
+    if (!this.activeRoom || !this.rooms[this.activeRoom]) {
+      this.images = [];
+      this._renderImageList();
+      document.getElementById('countdownTimer').style.display = 'none';
+      document.getElementById('qrOverlay').style.display = 'none';
+      document.getElementById('lockOverlay').style.display = 'none';
+      return;
+    }
+    
+    const roomData = this.rooms[this.activeRoom];
+    this.images = roomData.images;
+    this._renderImageList();
+    
+    // Timer update
+    const el = document.getElementById('countdownTimer');
+    el.style.display = 'block';
+    if (roomData.locked) {
+      document.getElementById('lockOverlay').style.display = 'flex';
+      el.innerText = '00:00';
+    } else {
+      document.getElementById('lockOverlay').style.display = 'none';
+      const m = Math.floor(roomData.timeLeft / 60).toString().padStart(2, '0');
+      const s = (roomData.timeLeft % 60).toString().padStart(2, '0');
+      el.innerText = `${m}:${s}`;
+    }
+    
+    // QR Code
+    if (roomData.session) {
+      this._updateQRCode(this.activeRoom, roomData.session);
+    }
+  }
+
+  _startTimer(room) {
+    if (this.rooms[room].timerInterval) clearInterval(this.rooms[room].timerInterval);
+    this.rooms[room].timeLeft = 180; // 3 minutes
+    this.rooms[room].locked = false;
+    
+    this.rooms[room].timerInterval = setInterval(() => {
+      this.rooms[room].timeLeft--;
+      if (this.rooms[room].timeLeft <= 0) {
+        clearInterval(this.rooms[room].timerInterval);
+        this.rooms[room].locked = true;
+      }
+      if (this.activeRoom === room) {
+        this._updateUIForRoom();
       }
     }, 1000);
   }
 
-  _stopTimer() {
-    if (this.timerInterval) clearInterval(this.timerInterval);
-    const el = document.getElementById('countdownTimer');
-    if (el) el.style.display = 'none';
+  _stopTimer(room) {
+    if (this.rooms[room].timerInterval) clearInterval(this.rooms[room].timerInterval);
   }
 
-  _updateQRCode(session) {
+  _updateQRCode(room, session) {
     const qrOverlay = document.getElementById('qrOverlay');
     if (!qrOverlay) return;
     qrOverlay.style.display = 'block';
     const canvas = document.getElementById('qrCanvas');
     const b = localStorage.getItem('branchId') || '';
-    const r = localStorage.getItem('roomId') || '';
-    const url = `${window.location.origin}/download.html?branch=${b}&room=${r}&session=${session}`;
+    const url = `${window.location.origin}/download.html?branch=${b}&room=${room}&session=${session}`;
     if (window.QRCode) {
       window.QRCode.toCanvas(canvas, url, { width: 120, margin: 1 }, function (error) {
         if (error) console.error(error);
       });
     }
+  }
+
+
+  _initLogin() {
+    const branchId = localStorage.getItem('branchId');
+    const loginOverlay = document.getElementById('loginOverlay');
+    const lockOverlay = document.getElementById('lockOverlay');
+    
+    if (!branchId) {
+      if(loginOverlay) loginOverlay.style.display = 'flex';
+    } else {
+      if(loginOverlay) loginOverlay.style.display = 'none';
+      this._initSSE(branchId);
+    }
+    
+    document.getElementById('btnLoginSubmit')?.addEventListener('click', async () => {
+      const branch = document.getElementById('loginBranch').value.trim();
+      const pass = document.getElementById('loginPassword').value.trim();
+      
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({branchId: branch, password: pass})
+      });
+      
+      if (res.ok) {
+        localStorage.setItem('branchId', branch);
+        if(loginOverlay) loginOverlay.style.display = 'none';
+        this._initSSE(branch);
+      } else {
+        const err = document.getElementById('loginError');
+        if (err) err.style.display = 'block';
+      }
+    });
+    
+    document.getElementById('btnUnlock')?.addEventListener('click', () => {
+      if (this.activeRoom && this.rooms[this.activeRoom]) {
+        this.rooms[this.activeRoom].locked = false;
+        this._updateUIForRoom();
+        const btnNext = document.getElementById('btnNextCustomer');
+        if (btnNext) btnNext.style.display = 'inline-flex';
+      }
+    });
+    
+    document.getElementById('btnNextCustomer')?.addEventListener('click', async () => {
+      const b = localStorage.getItem('branchId');
+      const r = this.activeRoom;
+      if (b && r) {
+        await fetch(`/api/next-session/${b}/${r}`, { method: 'POST' });
+      }
+      const btnNext = document.getElementById('btnNextCustomer');
+      if (btnNext) btnNext.style.display = 'none';
+    });
   }
 \n  async _initApp() {
     try {
@@ -197,7 +339,7 @@ class PrintLayoutApp {
     this._initMainSwiper();
     this._bindEvents();
     this._initTemplate();
-    this._loadBatch();
+    this._loadBatch();\n    this._initLogin();
   }
 
   _initMainSwiper() {

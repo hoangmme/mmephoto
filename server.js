@@ -259,10 +259,9 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (r
   roomState[branch][room].images.push(imageUrl);
   
   // Notify SSE clients
-  const roomKey = `${branch}_${room}`;
-  if (clients[roomKey]) {
-    clients[roomKey].forEach(client => {
-      client.write(`data: ${JSON.stringify({ type: 'new_image', session, imageUrl })}\n\n`);
+  if (clients[branch]) {
+    clients[branch].forEach(client => {
+      client.write(`data: ${JSON.stringify({ type: 'new_image', room, session, imageUrl })}\n\n`);
     });
   }
   
@@ -278,38 +277,41 @@ app.post('/api/next-session/:branch/:room', (req, res) => {
     roomState[branch][room].images = [];
   }
   
-  const roomKey = `${branch}_${room}`;
-  if (clients[roomKey]) {
-    clients[roomKey].forEach(client => {
-      client.write(`data: ${JSON.stringify({ type: 'reset' })}\n\n`);
+  if (clients[branch]) {
+    clients[branch].forEach(client => {
+      client.write(`data: ${JSON.stringify({ type: 'reset', room })}\n\n`);
     });
   }
   
   res.json({ success: true });
 });
 
-app.get('/api/stream/:branch/:room', (req, res) => {
-  const { branch, room } = req.params;
-  const roomKey = `${branch}_${room}`;
+app.get('/api/stream/:branch', (req, res) => {
+  const { branch } = req.params;
   
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   
-  if (!clients[roomKey]) clients[roomKey] = [];
-  clients[roomKey].push(res);
+  if (!clients[branch]) clients[branch] = [];
+  clients[branch].push(res);
   
-  // Send current state immediately
-  if (roomState[branch] && roomState[branch][room] && roomState[branch][room].session) {
-     res.write(`data: ${JSON.stringify({ 
-       type: 'init', 
-       session: roomState[branch][room].session, 
-       images: roomState[branch][room].images 
-     })}\n\n`);
+  // Send current state immediately for ALL rooms in this branch
+  if (roomState[branch]) {
+    Object.keys(roomState[branch]).forEach(room => {
+      if (roomState[branch][room].session) {
+         res.write(`data: ${JSON.stringify({ 
+           type: 'init', 
+           room: room,
+           session: roomState[branch][room].session, 
+           images: roomState[branch][room].images 
+         })}\n\n`);
+      }
+    });
   }
   
   req.on('close', () => {
-    clients[roomKey] = clients[roomKey].filter(c => c !== res);
+    clients[branch] = clients[branch].filter(c => c !== res);
   });
 });
 
