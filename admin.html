@@ -118,12 +118,21 @@
         card.className = 'branch-card';
         card.innerHTML = `
           <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin:0;">Chi nhánh: ${bId} <span style="font-size:14px; font-weight:normal; color:var(--text-muted);">(Pass: ${b.password})</span></h3>
-            <button class="danger" onclick="deleteBranch('${bId}')">Xoá Chi nhánh</button>
+            <h3 style="margin:0;">Chi nhánh: ${bId}</h3>
+            <div>
+              <button onclick="spyBranch('${bId}')" style="background:#22c55e; margin-right:5px;">👀 Xem (Spy)</button>
+              <button class="danger" onclick="deleteBranch('${bId}')">Xoá Chi nhánh</button>
+            </div>
           </div>
-          <div class="flex" style="margin-bottom: 10px;">
+          <div style="margin-bottom: 10px;">
+            Mật khẩu Đăng nhập (trên Web): <strong>${b.password}</strong>
+          </div>
+          <div style="margin-bottom: 10px;">
+            Mã Cài Đặt (cho PC): <span class="setup-code">${b.setupCode}</span>
+          </div>
+          <div class="flex" style="margin-bottom: 10px; margin-top: 20px;">
             <input type="text" id="newRoomId_${bId}" placeholder="Tên phòng mới (VD: ROOM_1)">
-            <button onclick="addRoom('${bId}')" style="white-space: nowrap;">Tạo Phòng & Lấy Mã Setup</button>
+            <button onclick="addRoom('${bId}')" style="white-space: nowrap;">Thêm Phòng</button>
           </div>
           ${roomsHtml}
         `;
