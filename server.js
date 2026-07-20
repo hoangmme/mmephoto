@@ -407,18 +407,24 @@ app.get('/api/stream/:branch', (req, res) => {
   if (!clients[branch]) clients[branch] = [];
   clients[branch].push(res);
   
-  // Send current state immediately for ALL rooms configured in this branch
+  // Send current state immediately for ALL rooms configured in this branch or currently active
+  const allRooms = new Set();
   const branchData = ADMIN_DATA.branches[branch];
   if (branchData && branchData.rooms) {
-    branchData.rooms.forEach(room => {
-      const state = (roomState[branch] && roomState[branch][room]) || { sessions: [] };
-      res.write(`data: ${JSON.stringify({ 
-        type: 'init', 
-        room: room,
-        sessions: state.sessions || []
-      })}\n\n`);
-    });
+    branchData.rooms.forEach(r => allRooms.add(r));
   }
+  if (roomState[branch]) {
+    Object.keys(roomState[branch]).forEach(r => allRooms.add(r));
+  }
+  
+  allRooms.forEach(room => {
+    const state = (roomState[branch] && roomState[branch][room]) || { sessions: [] };
+    res.write(`data: ${JSON.stringify({ 
+      type: 'init', 
+      room: room,
+      sessions: state.sessions || []
+    })}\n\n`);
+  });
   
   req.on('close', () => {
     clients[branch] = clients[branch].filter(c => c !== res);
