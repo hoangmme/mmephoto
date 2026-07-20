@@ -90,19 +90,16 @@
       </aside>
 
       <!-- Center: Main Template Swiper -->
-      <div class="pl-main-swiper-area" id="mainSwiperArea">
+      <div class="pl-main-swiper-area" id="mainSwiperArea" style="position:relative;">
         <div class="pl-swiper-container" id="mainSwiper">
           <!-- Slides injected by JS -->
         </div>
         <div class="pl-canvas-info" id="canvasInfo">A5 — 1748 × 2480 px — 300 DPI</div>
+        <button id="floatingRotateBtn" title="Xoay ảnh 90 độ" style="position:absolute; display:none; background:rgba(0,0,0,0.7); color:#fff; border:none; padding:8px 12px; border-radius:6px; font-size:14px; cursor:pointer; z-index:100; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition: transform 0.1s;">↻ Xoay</button>
       </div>
 
       <!-- Right Panel: Slot Properties -->
       <aside class="pl-panel pl-panel-right">
-
-        <div id="roomTabs" style="display:flex; flex-wrap:wrap; gap:5px; padding:10px 15px 0 15px; border-bottom:1px solid var(--pl-border);">
-          <!-- Tabs will be generated here -->
-        </div>
         <div class="pl-panel-header">
           <h3>🔧 Slot Properties</h3>
         </div>
@@ -120,7 +117,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=19"></script>
+  <script type="module" src="js/print-layout.js?v=20"></script>
 
   <!-- LOGIN OVERLAY -->
   <div id="loginOverlay" style="position:fixed; inset:0; background:var(--pl-bg); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column;">
