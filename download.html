@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tải Ảnh - LL Photobooth</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-panel: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --border: #334155;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+    }
+    .header {
+      background: var(--bg-panel);
+      padding: 15px 20px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--accent);
+    }
+    .container {
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .photo-item {
+      background: var(--bg-panel);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .photo-item img {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      display: block;
+    }
+    .download-btn {
+      display: block;
+      padding: 10px;
+      text-align: center;
+      background: var(--accent);
+      color: #0f172a;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <h1>Cảm ơn bạn đã chụp ảnh tại LL Photobooth!</h1>
+  </header>
+
+  <div class="container">
+    <p style="text-align: center; color: var(--text-muted); font-size: 14px;">Nhấn vào nút Tải Xuống bên dưới mỗi tấm ảnh để lưu về máy.</p>
+    
+    <div id="loading" class="loading">Đang tải ảnh...</div>
+    
+    <div id="photoGrid" class="photo-grid"></div>
+  </div>
+
+  <script>
+    async function loadPhotos() {
+      const params = new URLSearchParams(window.location.search);
+      const branch = params.get('branch');
+      const room = params.get('room');
+      const session = params.get('session');
+      
+      const grid = document.getElementById('photoGrid');
+      const loading = document.getElementById('loading');
+
+      if (!branch || !room || !session) {
+        loading.innerText = 'Đường dẫn không hợp lệ.';
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/download/${branch}/${room}/${session}`);
+        if (!res.ok) throw new Error('Không tìm thấy ảnh');
+        
+        const data = await res.json();
+        
+        if (data.images && data.images.length > 0) {
+          loading.style.display = 'none';
+          data.images.forEach((imgUrl, i) => {
+            const item = document.createElement('div');
+            item.className = 'photo-item';
+            
+            const img = document.createElement('img');
+            img.src = imgUrl;
+            
+            const a = document.createElement('a');
+            a.className = 'download-btn';
+            a.href = imgUrl;
+            a.download = `LL_Photobooth_${session}_${i+1}`;
+            a.innerText = 'Tải Xuống';
+            
+            item.appendChild(img);
+            item.appendChild(a);
+            grid.appendChild(item);
+          });
+        } else {
+          loading.innerText = 'Chưa có ảnh nào trong phiên này.';
+        }
+      } catch (err) {
+        loading.innerText = 'Lỗi tải ảnh: ' + err.message;
+      }
+    }
+    
+    window.onload = loadPhotos;
+  </script>
+
+</body>
+</html>

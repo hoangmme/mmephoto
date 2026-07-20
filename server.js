@@ -167,28 +167,136 @@ app.post('/api/sessions/upload', upload.array('images', 20), async (req, res) =>
   }
 });
 
-// 2. Get Session Data
-app.get('/api/sessions/:id', (req, res) => {
-  const sessionId = req.params.id;
-  const sessionDir = path.join(UPLOADS_DIR, sessionId);
+// 2. Get Session Data for Download
+app.get('/api/download/:branch/:room/:session', (req, res) => {
+  const { branch, room, session } = req.params;
+  const sessionDir = path.join(UPLOADS_DIR, branch, room, session);
   
   if (!fs.existsSync(sessionDir)) {
     return res.status(404).json({ error: 'Session not found' });
   }
 
   const files = fs.readdirSync(sessionDir)
-                  .filter(f => f.endsWith('.jpg') || f.endsWith('.jpeg') || f.endsWith('.png'));
+                  .filter(f => f.endsWith('.jpg') || f.endsWith('.jpeg') || f.endsWith('.png') || f.endsWith('.webp'));
                   
-  const images = files.map(f => `/uploads/${sessionId}/${f}`);
+  const images = files.map(f => `/uploads/${branch}/${room}/${session}/${f}`);
 
   res.json({
     success: true,
-    sessionId,
+    session,
     images
   });
 });
 
-// 3. Templates API
+
+// ==========================================
+// NEW FLOW: Branch/Room Sync API
+// ==========================================
+const BRANCHES = {
+  "CN01": "llphoto01",
+  "CN02": "llphoto02",
+  "CN03": "llphoto03",
+  "CN04": "llphoto04",
+  "CN05": "llphoto05",
+  "CN06": "llphoto06"
+};
+
+// state: { branchId: { roomId: { session: string, locked: boolean, images: [] } } }
+const roomState = {};
+// SSE clients: { branch_room: [res, res] }
+const clients = {};
+
+app.post('/api/login', (req, res) => {
+  const { branchId, password } = req.body;
+  if (BRANCHES[branchId] && BRANCHES[branchId] === password) {
+    res.json({ success: true, branchId });
+  } else {
+    res.status(401).json({ error: 'Sai tài khoản hoặc mật khẩu' });
+  }
+});
+
+// PC upload single webp photo
+app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (req, res) => {
+  const { branch, room, session } = req.params;
+  
+  if (!req.file) return res.status(400).json({ error: 'No image' });
+  
+  const branchDir = path.join(UPLOADS_DIR, branch);
+  const roomDir = path.join(branchDir, room);
+  const sessionDir = path.join(roomDir, session);
+  
+  fs.mkdirSync(sessionDir, { recursive: true });
+  
+  const filename = req.file.originalname;
+  const filepath = path.join(sessionDir, filename);
+  fs.writeFileSync(filepath, req.file.buffer);
+  
+  const imageUrl = `/uploads/${branch}/${room}/${session}/${filename}`;
+  
+  // Update state
+  if (!roomState[branch]) roomState[branch] = {};
+  if (!roomState[branch][room] || roomState[branch][room].session !== session) {
+    roomState[branch][room] = { session, locked: false, images: [] };
+  }
+  roomState[branch][room].images.push(imageUrl);
+  
+  // Notify SSE clients
+  const roomKey = `${branch}_${room}`;
+  if (clients[roomKey]) {
+    clients[roomKey].forEach(client => {
+      client.write(`data: ${JSON.stringify({ type: 'new_image', session, imageUrl })}\n\n`);
+    });
+  }
+  
+  res.json({ success: true, imageUrl });
+});
+
+app.post('/api/next-session/:branch/:room', (req, res) => {
+  const { branch, room } = req.params;
+  
+  if (roomState[branch] && roomState[branch][room]) {
+    roomState[branch][room].locked = false;
+    roomState[branch][room].session = null;
+    roomState[branch][room].images = [];
+  }
+  
+  const roomKey = `${branch}_${room}`;
+  if (clients[roomKey]) {
+    clients[roomKey].forEach(client => {
+      client.write(`data: ${JSON.stringify({ type: 'reset' })}\n\n`);
+    });
+  }
+  
+  res.json({ success: true });
+});
+
+app.get('/api/stream/:branch/:room', (req, res) => {
+  const { branch, room } = req.params;
+  const roomKey = `${branch}_${room}`;
+  
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  
+  if (!clients[roomKey]) clients[roomKey] = [];
+  clients[roomKey].push(res);
+  
+  // Send current state immediately
+  if (roomState[branch] && roomState[branch][room] && roomState[branch][room].session) {
+     res.write(`data: ${JSON.stringify({ 
+       type: 'init', 
+       session: roomState[branch][room].session, 
+       images: roomState[branch][room].images 
+     })}\n\n`);
+  }
+  
+  req.on('close', () => {
+    clients[roomKey] = clients[roomKey].filter(c => c !== res);
+  });
+});
+
+// ==========================================
+\n// 3. Templates API
 const TEMPLATES_FILE = path.join(DATA_DIR, 'templates.json');
 
 app.get('/api/templates', (req, res) => {
