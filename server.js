@@ -207,6 +207,13 @@ if (fs.existsSync(ADMIN_FILE)) {
     const loadedData = JSON.parse(fs.readFileSync(ADMIN_FILE, 'utf8'));
     ADMIN_DATA = { ...ADMIN_DATA, ...loadedData };
     if (!ADMIN_DATA.branches) ADMIN_DATA.branches = {};
+    // Normalize rooms to array to prevent forEach/includes errors
+    Object.keys(ADMIN_DATA.branches).forEach(bId => {
+      const branch = ADMIN_DATA.branches[bId];
+      if (branch.rooms && !Array.isArray(branch.rooms)) {
+        branch.rooms = typeof branch.rooms === 'object' ? Object.values(branch.rooms) : [branch.rooms];
+      }
+    });
   } catch(e) { console.error('Error loading admin data:', e); }
 } else {
   fs.writeFileSync(ADMIN_FILE, JSON.stringify(ADMIN_DATA, null, 2));
