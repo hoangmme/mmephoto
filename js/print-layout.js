@@ -866,7 +866,8 @@ class PrintLayoutApp {
     if (!this.activeRoom) return alert("Vui lòng chọn một phòng (Room) trước khi tải ảnh test!");
     const branch = localStorage.getItem('branchId') || '';
     const room = this.activeRoom;
-    const session = this.rooms[room].session || ('test_' + Date.now());
+    const session = (this.rooms[room] && this.rooms[room].session) ? this.rooms[room].session : ('test_' + Date.now());
+
     
     const files = Array.from(e.target.files);
     for (let file of files) {
