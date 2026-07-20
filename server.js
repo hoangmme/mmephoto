@@ -81,6 +81,9 @@ async function initStyleA() {
 }
 initStyleA();
 
+let roomState = {};
+let clients = {};
+
 const processor = new ImageProcessor();
 
 // Helper to process an image buffer

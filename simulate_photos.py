@@ -4,7 +4,7 @@ import time
 from PIL import Image
 
 def simulate(branch="CNHANGKHAY", room="ROOM1", session="khach_test_123"):
-    url = f"https://photo.llphotobooth.vn/api/stream-upload/{branch}/{room}/{session}"
+    url = f"http://localhost:3000/api/stream-upload/{branch}/{room}/{session}"
     colors = ["#ff9999", "#99ff99", "#9999ff", "#ffff99"]
     
     print(f"Bắt đầu đẩy 4 ảnh lên Server cho chi nhánh {branch} - {room} - {session}")
