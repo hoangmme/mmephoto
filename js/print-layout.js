@@ -255,12 +255,13 @@ class PrintLayoutApp {
     const qrOverlay = document.getElementById('qrOverlay');
     if (!qrOverlay) return;
     qrOverlay.style.display = 'block';
-    const canvas = document.getElementById('qrCanvas');
+    const img = document.getElementById('qrImage');
     const b = localStorage.getItem('branchId') || '';
     const url = `${window.location.origin}/download.html?branch=${b}&room=${room}&session=${session}`;
-    if (window.QRCode) {
-      window.QRCode.toCanvas(canvas, url, { width: 120, margin: 1 }, function (error) {
+    if (window.QRCode && img) {
+      window.QRCode.toDataURL(url, { width: 120, margin: 1 }, function (error, urlData) {
         if (error) console.error(error);
+        else img.src = urlData;
       });
     }
   }
@@ -533,6 +534,15 @@ class PrintLayoutApp {
 
   // ── Event Bindings ──
   _bindEvents() {
+    const btnLogout = document.getElementById('btnLogout');
+    if (btnLogout) {
+      btnLogout.addEventListener('click', () => {
+        if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi chi nhánh này?')) {
+          localStorage.removeItem('branchId');
+          window.location.reload();
+        }
+      });
+    }
 
     document.getElementById('btnSelectAll').addEventListener('click', () => this._selectAll());
     document.getElementById('btnDeselectAll').addEventListener('click', () => this._deselectAll());
