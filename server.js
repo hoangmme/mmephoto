@@ -204,7 +204,9 @@ let ADMIN_DATA = {
 
 if (fs.existsSync(ADMIN_FILE)) {
   try {
-    ADMIN_DATA = JSON.parse(fs.readFileSync(ADMIN_FILE, 'utf8'));
+    const loadedData = JSON.parse(fs.readFileSync(ADMIN_FILE, 'utf8'));
+    ADMIN_DATA = { ...ADMIN_DATA, ...loadedData };
+    if (!ADMIN_DATA.branches) ADMIN_DATA.branches = {};
   } catch(e) { console.error('Error loading admin data:', e); }
 } else {
   fs.writeFileSync(ADMIN_FILE, JSON.stringify(ADMIN_DATA, null, 2));
