@@ -28,7 +28,7 @@
 </head>
 <body>
   <div class="container">
-    <div id="loginView" class="panel">
+    <div id="loginView" class="panel" style="display:none;">
       <h2>Admin Login</h2>
       <input type="password" id="adminPass" placeholder="Mật khẩu Admin">
       <button onclick="login()">Đăng nhập</button>
@@ -64,7 +64,10 @@
     let adminAuth = localStorage.getItem('adminAuth') || '';
 
     async function checkAuth() {
-      if (!adminAuth) return;
+      if (!adminAuth) {
+        document.getElementById('loginView').style.display = 'block';
+        return;
+      }
       const res = await fetch('/api/admin/data?auth=' + encodeURIComponent(adminAuth));
       if (res.ok) {
         document.getElementById('loginView').style.display = 'none';
@@ -73,6 +76,7 @@
       } else {
         localStorage.removeItem('adminAuth');
         adminAuth = '';
+        document.getElementById('loginView').style.display = 'block';
       }
     }
 

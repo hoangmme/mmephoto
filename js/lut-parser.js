@@ -9,7 +9,7 @@
  * Returns { title, size, domainMin, domainMax, data }
  * data is a flat Float32Array of RGB triplets (size³ × 3 values)
  */
-export function parseCubeLUT(text) {
+window.parseCubeLUT = function(text) {
   const lines = text.split(/\r?\n/);
   let title = 'Untitled LUT';
   let size = 0;
@@ -89,7 +89,7 @@ export function parseCubeLUT(text) {
  * @param {Object} lut - Parsed LUT from parseCubeLUT()
  * @param {number} intensity - 0 to 1 blend factor (0 = original, 1 = full LUT)
  */
-export function applyLUT(pixels, lut, intensity = 1) {
+window.applyLUT = function(pixels, lut, intensity = 1) {
   const { size, data, domainMin, domainMax } = lut;
   const sizeM1 = size - 1;
   const len = pixels.length;
@@ -190,7 +190,7 @@ export function applyLUT(pixels, lut, intensity = 1) {
  * Serialize a LUT for storage (IndexedDB).
  * We store the essential data compactly.
  */
-export function serializeLUT(lut) {
+window.serializeLUT = function(lut) {
   return {
     title: lut.title,
     size: lut.size,
@@ -203,7 +203,7 @@ export function serializeLUT(lut) {
 /**
  * Deserialize a stored LUT back to usable format.
  */
-export function deserializeLUT(stored) {
+window.deserializeLUT = function(stored) {
   return {
     title: stored.title,
     size: stored.size,
