@@ -109,8 +109,23 @@ def process_and_upload(file_path, room_id, session_id):
     print(f"[>] Đang xử lý: {filename} (Phòng: {room_id}, Session: {session_id})")
     
     try:
-        # 1. Đọc và Nén ảnh thành WebP trên RAM (không ghi ra ổ cứng để tăng tốc)
-        img = Image.open(file_path)
+        # Chờ file được ghi xong (tránh lỗi Permission denied do phần mềm camera đang giữ file)
+        max_retries = 20
+        img = None
+        for attempt in range(max_retries):
+            try:
+                # 1. Đọc và Nén ảnh thành WebP trên RAM (không ghi ra ổ cứng để tăng tốc)
+                img = Image.open(file_path)
+                break
+            except PermissionError:
+                if attempt < max_retries - 1:
+                    time.sleep(0.2)
+                else:
+                    print(f"    [LỖI] Không thể đọc file {filename} do đang bị khóa.")
+                    return
+        
+        if img is None:
+            return
         
         # Resize nếu ảnh quá to
         if img.width > MAX_WIDTH:
