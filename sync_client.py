@@ -27,6 +27,7 @@ def load_config():
         print("=== CÀI ĐẶT LẦN ĐẦU ===")
         server_url = "https://photo.llphotobooth.vn"
         setup_code = input("Nhập Mã Cài Đặt (Setup Code) do Admin cấp: ").strip()
+        room_id = input("Nhập Mã Phòng cho máy này (VD: ROOM_01): ").strip()
         watch_folder = input("Nhập đường dẫn thư mục lưu ảnh (VD: ./photos): ").strip()
         
         if not watch_folder: watch_folder = "./photos"
@@ -41,7 +42,7 @@ def load_config():
                     "server_url": server_url,
                     "branch_id": data["branchId"],
                     "password": data["password"],
-                    "room_id": data["roomId"],
+                    "room_id": room_id,
                     "watch_folder": watch_folder,
                     "compress_quality": 80,
                     "max_width": 1200

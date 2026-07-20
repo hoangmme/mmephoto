@@ -274,6 +274,12 @@ class PrintLayoutApp {
       });
       
       if (res.ok) {
+        const data = await res.json();
+        if (data.isAdmin) {
+          localStorage.setItem('adminAuth', data.auth);
+          window.location.href = '/admin.html';
+          return;
+        }
         localStorage.setItem('branchId', branch);
         if(loginOverlay) loginOverlay.style.display = 'none';
         this._initSSE(branch);
