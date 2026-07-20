@@ -523,6 +523,13 @@ class PrintLayoutApp {
     document.getElementById('btnSelectAll').addEventListener('click', () => this._selectAll());
     document.getElementById('btnDeselectAll').addEventListener('click', () => this._deselectAll());
     document.getElementById('btnAutoFill').addEventListener('click', () => this._autoFill());
+    
+    const btnUploadTest = document.getElementById('btnUploadTest');
+    const fileUploadTest = document.getElementById('fileUploadTest');
+    if (btnUploadTest && fileUploadTest) {
+      btnUploadTest.addEventListener('click', () => fileUploadTest.click());
+      fileUploadTest.addEventListener('change', (e) => this._uploadTestImages(e));
+    }
 
     document.getElementById('btnPrint').addEventListener('click', () => this._print());
     document.getElementById('btnExportJPG').addEventListener('click', () => this._exportJPG());
@@ -830,20 +837,14 @@ class PrintLayoutApp {
     }
   }
 
-  // ── Assign Image to Slot ──
   _assignToSlot(slotIndex, imageId) {
     this.slots[slotIndex].imageId = imageId;
     this.slots[slotIndex].zoom = 1.0;
     this.slots[slotIndex].panX = 0;
     this.slots[slotIndex].panY = 0;
+    this.slots[slotIndex].rotation = 0; // In degrees
     this.slots[slotIndex].assignedAt = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     this.selectedImageId = null;
-    
-    // Auto-advance to next slot to make sequential swapping faster
-    const tmpl = ALL_TEMPLATES[this.currentTemplate];
-    if (tmpl && tmpl.slots.length > 1) {
-      this.selectedSlotIndex = (slotIndex + 1) % tmpl.slots.length;
-    }
 
     this._renderCanvas();
     this._renderSlotProps();
@@ -859,6 +860,28 @@ class PrintLayoutApp {
         imgIndex++;
       }
     }
+  }
+
+  async _uploadTestImages(e) {
+    if (!this.activeRoom) return alert("Vui lòng chọn một phòng (Room) trước khi tải ảnh test!");
+    const branch = localStorage.getItem('branchId') || '';
+    const room = this.activeRoom;
+    const session = this.rooms[room].session || ('test_' + Date.now());
+    
+    const files = Array.from(e.target.files);
+    for (let file of files) {
+      const formData = new FormData();
+      formData.append('image', file);
+      try {
+        await fetch(`/api/stream-upload/${branch}/${room}/${session}`, {
+          method: 'POST',
+          body: formData
+        });
+      } catch (err) {
+        console.error("Test upload failed:", err);
+      }
+    }
+    e.target.value = ''; // reset
   }
 
   _selectAll() {
@@ -985,7 +1008,10 @@ class PrintLayoutApp {
     if (!img) return;
 
     // Calculate cover dimensions
-    const { drawW, drawH } = this._calcCover(img.naturalWidth, img.naturalHeight, slotDef.w, slotDef.h, slot.zoom);
+    const isRotated = (slot.rotation === 90 || slot.rotation === 270);
+    const imgW = isRotated ? img.naturalHeight : img.naturalWidth;
+    const imgH = isRotated ? img.naturalWidth : img.naturalHeight;
+    const { drawW, drawH } = this._calcCover(imgW, imgH, slotDef.w, slotDef.h, slot.zoom);
 
     const maxPanX = Math.max(0, (drawW - slotDef.w) / 2);
     const maxPanY = Math.max(0, (drawH - slotDef.h) / 2);
@@ -1048,6 +1074,7 @@ class PrintLayoutApp {
         </div>
       </div>
       <div class="pl-prop-actions">
+        <button class="pl-prop-btn" id="btnRotateSlot">↻ Xoay ảnh</button>
         <button class="pl-prop-btn" id="btnResetCrop">↺ Reset Crop</button>
         <button class="pl-prop-btn danger" id="btnRemoveSlot">✕ Xóa ảnh khỏi slot</button>
       </div>
@@ -1058,6 +1085,12 @@ class PrintLayoutApp {
     zoomSlider.addEventListener('input', () => {
       this._zoomSlot(this.selectedSlotIndex, parseInt(zoomSlider.value) / 100);
       this.slotProps.querySelector('.pl-zoom-value').textContent = zoomSlider.value + '%';
+    });
+
+    document.getElementById('btnRotateSlot').addEventListener('click', () => {
+      const sData = this.slots[this.selectedSlotIndex];
+      sData.rotation = ((sData.rotation || 0) + 90) % 360;
+      this._renderCanvas();
     });
 
     document.getElementById('btnResetCrop').addEventListener('click', () => {
@@ -1150,8 +1183,12 @@ class PrintLayoutApp {
   }
 
   _drawImageInSlot(ctx, img, slotDef, slotData) {
+    const isRotated = (slotData.rotation === 90 || slotData.rotation === 270);
+    const imgW = isRotated ? img.naturalHeight : img.naturalWidth;
+    const imgH = isRotated ? img.naturalWidth : img.naturalHeight;
+
     const { drawW, drawH } = this._calcCover(
-      img.naturalWidth, img.naturalHeight,
+      imgW, imgH,
       slotDef.w, slotDef.h,
       slotData.zoom
     );
@@ -1165,7 +1202,22 @@ class PrintLayoutApp {
     ctx.beginPath();
     ctx.rect(-slotDef.w/2, -slotDef.h/2, slotDef.w, slotDef.h);
     ctx.clip();
-    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    
+    if (slotData.rotation) {
+      ctx.rotate(slotData.rotation * Math.PI / 180);
+    }
+    
+    // If rotated 90 or 270, the drawing dimensions are swapped relative to the rotated context
+    if (slotData.rotation === 90) {
+      ctx.drawImage(img, drawY, -drawX - drawW, drawH, drawW);
+    } else if (slotData.rotation === 270) {
+      ctx.drawImage(img, -drawY - drawH, drawX, drawH, drawW);
+    } else if (slotData.rotation === 180) {
+      ctx.drawImage(img, -drawX - drawW, -drawY - drawH, drawW, drawH);
+    } else {
+      ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    }
+    
     ctx.restore();
   }
 
