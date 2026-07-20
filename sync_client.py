@@ -27,25 +27,37 @@ def load_config():
         print("=== CÀI ĐẶT LẦN ĐẦU ===")
         server_url = "https://photo.llphotobooth.vn"
         setup_code = input("Nhập Mã Cài Đặt (Setup Code) do Admin cấp: ").strip()
-        watch_folder = input("Nhập đường dẫn thư mục lưu ảnh (Nhấn Enter để dùng './photos'): ").strip()
+        watch_folder = input("Nhập đường dẫn thư mục gốc (Nhấn Enter để dùng './photos'): ").strip()
         
         if not watch_folder: watch_folder = "./photos"
         
-        import socket
-        room_id = socket.gethostname().upper() # Tự động lấy tên máy tính làm tên phòng
-        
-        print("\\nĐang xác thực Mã Cài Đặt với Server...")
+        print("\nĐang xác thực Mã Cài Đặt với Server...")
         try:
             res = requests.post(f"{server_url}/api/setup-room", json={"setupCode": setup_code})
             if res.status_code == 200:
                 data = res.json()
-                print(f"[OK] Xác thực thành công! Máy tính này được nhận diện là Phòng: {room_id}")
+                print(f"[OK] Xác thực thành công! Chi nhánh: {data['branchId']}")
+                print(f"Các phòng thuộc chi nhánh: {', '.join(data.get('rooms', []))}")
+                
+                # Automatically create folder structure
+                branch_folder = os.path.join(watch_folder, data['branchId'])
+                if not os.path.exists(branch_folder):
+                    os.makedirs(branch_folder)
+                    
+                rooms = data.get('rooms', [])
+                for r in rooms:
+                    room_path = os.path.join(branch_folder, r)
+                    if not os.path.exists(room_path):
+                        os.makedirs(room_path)
+                
+                print(f"[OK] Đã tạo cấu trúc thư mục tại: {branch_folder}")
+                
                 config = {
                     "server_url": server_url,
                     "branch_id": data["branchId"],
                     "password": data["password"],
-                    "room_id": room_id,
-                    "watch_folder": watch_folder,
+                    "rooms": rooms,
+                    "watch_folder": branch_folder,
                     "compress_quality": 80,
                     "max_width": 1200
                 }
@@ -69,7 +81,7 @@ config = load_config()
 
 SERVER_URL = config["server_url"].rstrip('/')
 BRANCH_ID = config["branch_id"]
-ROOM_ID = config["room_id"]
+ROOMS = config.get("rooms", [])
 WATCH_FOLDER = config["watch_folder"]
 PASSWORD = config.get("password", "")
 QUALITY = config["compress_quality"]
@@ -81,21 +93,17 @@ if not os.path.exists(WATCH_FOLDER):
 
 print(f"==================================================")
 print(f" LL PHOTOBOOTH - PC SYNC CLIENT (WEBP ONLY)")
-print(f" Chi nhánh: {BRANCH_ID} | Phòng: {ROOM_ID}")
+print(f" Chi nhánh: {BRANCH_ID}")
+print(f" Các phòng: {', '.join(ROOMS)}")
 print(f" Thư mục theo dõi: {WATCH_FOLDER}")
 print(f" Máy chủ: {SERVER_URL}")
-print(f"==================================================\n")
+print(f"==================================================\\n")
 
-# Lưu trữ session hiện tại. Khi thư mục con thay đổi, ta xem nó như một session
 current_session = {}
 
-def process_and_upload(file_path, folder_name):
-    # folder_name sẽ đóng vai trò như Session ID, hoặc ta tự sinh session
-    # Giả sử mỗi khách là một folder, lấy tên folder làm session_id
-    session_id = folder_name
-    
+def process_and_upload(file_path, room_id, session_id):
     filename = os.path.basename(file_path)
-    print(f"[>] Đang xử lý: {filename} (Session: {session_id})")
+    print(f"[>] Đang xử lý: {filename} (Phòng: {room_id}, Session: {session_id})")
     
     try:
         # 1. Đọc và Nén ảnh thành WebP trên RAM (không ghi ra ổ cứng để tăng tốc)
@@ -116,7 +124,7 @@ def process_and_upload(file_path, folder_name):
         byte_arr.seek(0)
         
         # 2. Upload ngay lập tức lên VPS
-        upload_url = f"{SERVER_URL}/api/stream-upload/{BRANCH_ID}/{ROOM_ID}/{session_id}"
+        upload_url = f"{SERVER_URL}/api/stream-upload/{BRANCH_ID}/{room_id}/{session_id}"
         
         files = {
             'image': (f"{os.path.splitext(filename)[0]}.webp", byte_arr, 'image/webp')
@@ -148,12 +156,22 @@ class PhotoHandler(FileSystemEventHandler):
         ext = os.path.splitext(filename)[1].lower()
         
         if ext in ['.jpg', '.jpeg', '.png', '.cr2', '.raw']:
-            # Lấy tên folder ngay trên file làm session_id
-            folder_name = os.path.basename(os.path.dirname(file_path))
-            # Chạy thread riêng để không block file system event
-            t = threading.Thread(target=process_and_upload, args=(file_path, folder_name))
-            t.start()
-
+            # The structure is: WATCH_FOLDER / ROOM_ID / SESSION_ID / file.jpg
+            # Or WATCH_FOLDER / ROOM_ID / file.jpg
+            rel_path = os.path.relpath(file_path, WATCH_FOLDER)
+            parts = rel_path.split(os.sep)
+            
+            if len(parts) >= 2:
+                room_id = parts[0]
+                session_id = parts[1] if len(parts) > 2 else "default"
+                
+                # Check if it's a valid room
+                if room_id in ROOMS:
+                    # Chạy thread riêng để không block file system event
+                    t = threading.Thread(target=process_and_upload, args=(file_path, room_id, session_id))
+                    t.start()
+                else:
+                    print(f"    [BỎ QUA] File không nằm trong thư mục phòng hợp lệ: {rel_path}")
 
 if __name__ == "__main__":
     event_handler = PhotoHandler()
