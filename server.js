@@ -23,7 +23,8 @@ global.ImageData = canvasModule.ImageData;
 
 // Now we can safely import our frontend logic
 import { ImageProcessor } from './js/processor.js';
-import { parseCubeLUT } from './js/lut-parser.js';
+import './js/lut-parser.js';
+const parseCubeLUT = global.parseCubeLUT;
 import { PRESETS } from './js/presets.js';
 
 const __filename = fileURLToPath(import.meta.url);

@@ -4,12 +4,14 @@
 // Supports 3D LUT files in .cube format (industry standard)
 // Used by Lightroom, Premiere, DaVinci Resolve, etc.
 
+const root = (typeof window !== 'undefined' ? window : global);
+
 /**
  * Parse a .cube LUT file text content.
  * Returns { title, size, domainMin, domainMax, data }
  * data is a flat Float32Array of RGB triplets (size³ × 3 values)
  */
-window.parseCubeLUT = function(text) {
+root.parseCubeLUT = function(text) {
   const lines = text.split(/\r?\n/);
   let title = 'Untitled LUT';
   let size = 0;
@@ -89,7 +91,7 @@ window.parseCubeLUT = function(text) {
  * @param {Object} lut - Parsed LUT from parseCubeLUT()
  * @param {number} intensity - 0 to 1 blend factor (0 = original, 1 = full LUT)
  */
-window.applyLUT = function(pixels, lut, intensity = 1) {
+root.applyLUT = function(pixels, lut, intensity = 1) {
   const { size, data, domainMin, domainMax } = lut;
   const sizeM1 = size - 1;
   const len = pixels.length;
@@ -190,7 +192,7 @@ window.applyLUT = function(pixels, lut, intensity = 1) {
  * Serialize a LUT for storage (IndexedDB).
  * We store the essential data compactly.
  */
-window.serializeLUT = function(lut) {
+root.serializeLUT = function(lut) {
   return {
     title: lut.title,
     size: lut.size,
@@ -203,7 +205,7 @@ window.serializeLUT = function(lut) {
 /**
  * Deserialize a stored LUT back to usable format.
  */
-window.deserializeLUT = function(stored) {
+root.deserializeLUT = function(stored) {
   return {
     title: stored.title,
     size: stored.size,

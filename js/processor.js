@@ -6,7 +6,8 @@
 //           → Temperature/Tint → Vibrance → Saturation → Hue
 //           → LUT → NoiseReduction → Texture → Clarity → Dehaze → Sharpness
 
-import { applyLUT } from './lut-parser.js';
+import './lut-parser.js';
+const applyLUT = (typeof window !== 'undefined' ? window : global).applyLUT;
 
 const MAX_PREVIEW = 1200; // Fast proxy preview (10x faster)
 const THUMB_SIZE = 300; // Thumbnail size
