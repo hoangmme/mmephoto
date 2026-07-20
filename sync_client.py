@@ -7,6 +7,7 @@ from watchdog.events import FileSystemEventHandler
 from PIL import Image
 import io
 import threading
+import shutil
 import uuid
 
 # --- CONFIGURATION ---
@@ -45,19 +46,20 @@ def load_config():
                     print("[LỖI] Tên phòng không hợp lệ!")
                     exit(1)
                     
-                # Automatically create folder structure: watch_folder / branch_id / room_id
-                full_watch_folder = os.path.join(watch_folder, data['branchId'], room_id)
-                if not os.path.exists(full_watch_folder):
-                    os.makedirs(full_watch_folder)
+                # Tạo thư mục Archive (lưu trữ bản sao) tại thư mục CÀI ĐẶT
+                archive_folder = os.path.join(BASE_DIR, data['branchId'], room_id)
+                if not os.path.exists(archive_folder):
+                    os.makedirs(archive_folder)
                 
-                print(f"[OK] Đã tạo và cấu hình theo dõi thư mục: {full_watch_folder}")
+                print(f"[OK] Đã cấu hình theo dõi thư mục gốc: {watch_folder}")
+                print(f"[OK] Ảnh gốc sẽ được copy sao lưu vào: {archive_folder}")
                 
                 config = {
                     "server_url": server_url,
                     "branch_id": data["branchId"],
                     "password": data["password"],
                     "room_id": room_id,
-                    "watch_folder": full_watch_folder,
+                    "watch_folder": watch_folder,
                     "compress_quality": 80,
                     "max_width": 1200
                 }
@@ -86,6 +88,7 @@ WATCH_FOLDER = config["watch_folder"]
 PASSWORD = config.get("password", "")
 QUALITY = config["compress_quality"]
 MAX_WIDTH = config["max_width"]
+ARCHIVE_FOLDER = os.path.join(BASE_DIR, BRANCH_ID, ROOM_ID)
 
 if not os.path.exists(WATCH_FOLDER):
     os.makedirs(WATCH_FOLDER)
@@ -139,6 +142,19 @@ def process_and_upload(file_path, room_id, session_id):
         
         if response.status_code == 200:
             print(f"    [OK] Upload thành công ({time.time() - start_time:.2f}s)")
+            
+            # 3. Copy bản gốc sang thư mục Archive
+            try:
+                session_archive_dir = os.path.join(ARCHIVE_FOLDER, session_id)
+                if not os.path.exists(session_archive_dir):
+                    os.makedirs(session_archive_dir)
+                
+                dest_path = os.path.join(session_archive_dir, filename)
+                shutil.copy2(file_path, dest_path)
+                print(f"    [OK] Đã copy lưu trữ vào: {dest_path}")
+            except Exception as e:
+                print(f"    [CẢNH BÁO] Không thể copy lưu trữ file {filename}: {str(e)}")
+                
         else:
             print(f"    [LỖI] Upload thất bại: {response.text}")
             
@@ -152,6 +168,11 @@ class PhotoHandler(FileSystemEventHandler):
             return
             
         file_path = event.src_path
+        
+        # Bỏ qua nếu file nằm trong thư mục Archive (chống lặp vô tận nếu cài chung ổ)
+        if file_path.startswith(ARCHIVE_FOLDER):
+            return
+            
         filename = os.path.basename(file_path)
         ext = os.path.splitext(filename)[1].lower()
         
