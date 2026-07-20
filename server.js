@@ -314,7 +314,7 @@ app.get('/api/stream/:branch/:room', (req, res) => {
 });
 
 // ==========================================
-\n// 3. Templates API
+// 3. Templates API
 const TEMPLATES_FILE = path.join(DATA_DIR, 'templates.json');
 
 app.get('/api/templates', (req, res) => {
