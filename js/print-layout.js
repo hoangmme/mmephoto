@@ -278,7 +278,7 @@ class PrintLayoutApp {
         const data = await res.json();
         if (data.isAdmin) {
           localStorage.setItem('adminAuth', data.auth);
-          window.location.href = '/admin.html';
+          window.location.href = '/admin.html?auth=' + encodeURIComponent(data.auth);
           return;
         }
         localStorage.setItem('branchId', branch);

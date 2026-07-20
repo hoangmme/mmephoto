@@ -54,6 +54,13 @@
   </div>
 
   <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const authFromUrl = urlParams.get('auth');
+    if (authFromUrl) {
+      localStorage.setItem('adminAuth', authFromUrl);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
     let adminAuth = localStorage.getItem('adminAuth') || '';
 
     async function checkAuth() {
