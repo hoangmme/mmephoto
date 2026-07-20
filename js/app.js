@@ -1139,7 +1139,7 @@ class PhotoTuneApp {
       }
 
       // Navigate to print layout
-      window.open(`print-layout.html?batch=${batchId}`, '_blank');
+      window.open(`index.html?batch=${batchId}`, '_blank');
 
     } catch (err) {
       console.error('Failed to create print batch:', err);
