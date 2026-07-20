@@ -81,8 +81,9 @@ class PrintLayoutApp {
 
     // Parse batch ID from URL
     const params = new URLSearchParams(window.location.search);
-    this.batchId = params.get('batch');\n    this.rooms = {};\n    this.activeRoom = null;\n
-
+    this.batchId = params.get('batch');
+    this.rooms = {};
+    this.activeRoom = null;
     this._initApp();
   }
 
