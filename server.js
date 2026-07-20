@@ -265,6 +265,11 @@ app.post('/api/admin/room', (req, res) => {
   if (!ADMIN_DATA.branches[branchId].rooms.includes(roomId)) {
     ADMIN_DATA.branches[branchId].rooms.push(roomId);
     saveAdminData();
+    if (clients[branchId]) {
+      clients[branchId].forEach(client => {
+        client.write(`data: ${JSON.stringify({ type: 'init', room: roomId, session: null, images: [] })}\n\n`);
+      });
+    }
   }
   res.json({ success: true });
 });
@@ -283,6 +288,11 @@ app.delete('/api/admin/room/:branch/:room', (req, res) => {
   if (ADMIN_DATA.branches[req.params.branch] && ADMIN_DATA.branches[req.params.branch].rooms) {
     ADMIN_DATA.branches[req.params.branch].rooms = ADMIN_DATA.branches[req.params.branch].rooms.filter(r => r !== req.params.room);
     saveAdminData();
+    if (clients[req.params.branch]) {
+      clients[req.params.branch].forEach(client => {
+        client.write(`data: ${JSON.stringify({ type: 'reset', room: req.params.room })}\n\n`);
+      });
+    }
   }
   res.json({ success: true });
 });
@@ -386,17 +396,17 @@ app.get('/api/stream/:branch', (req, res) => {
   if (!clients[branch]) clients[branch] = [];
   clients[branch].push(res);
   
-  // Send current state immediately for ALL rooms in this branch
-  if (roomState[branch]) {
-    Object.keys(roomState[branch]).forEach(room => {
-      if (roomState[branch][room].session) {
-         res.write(`data: ${JSON.stringify({ 
-           type: 'init', 
-           room: room,
-           session: roomState[branch][room].session, 
-           images: roomState[branch][room].images 
-         })}\n\n`);
-      }
+  // Send current state immediately for ALL rooms configured in this branch
+  const branchData = ADMIN_DATA.branches[branch];
+  if (branchData && branchData.rooms) {
+    branchData.rooms.forEach(room => {
+      const state = (roomState[branch] && roomState[branch][room]) || {};
+      res.write(`data: ${JSON.stringify({ 
+        type: 'init', 
+        room: room,
+        session: state.session || null, 
+        images: state.images || [] 
+      })}\n\n`);
     });
   }
   
