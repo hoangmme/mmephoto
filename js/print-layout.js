@@ -601,18 +601,7 @@ class PrintLayoutApp {
       this.canvas.style.cursor = '';
     });
     
-    // Floating rotate button
-    const floatRotateBtn = document.getElementById('floatingRotateBtn');
-    if (floatRotateBtn) {
-      floatRotateBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (this.selectedSlotIndex >= 0) {
-          const sData = this.slots[this.selectedSlotIndex];
-          sData.rotation = ((sData.rotation || 0) + 90) % 360;
-          this._renderCanvas();
-        }
-      });
-    }
+
 
     // Touch support for pan
     let touchStartX, touchStartY;
@@ -1153,27 +1142,7 @@ class PrintLayoutApp {
   _renderCanvas() {
     this._drawToCanvas(this.canvas, true);
 
-    const btn = document.getElementById('floatingRotateBtn');
-    if (btn) {
-      if (this.selectedSlotIndex >= 0 && this.slots[this.selectedSlotIndex].imageId) {
-        const tmpl = ALL_TEMPLATES[this.currentTemplate];
-        const slotDef = tmpl.slots[this.selectedSlotIndex];
-        
-        // Ensure scale is computed against rendered width vs actual internal width
-        const scaleX = this.canvas.offsetWidth / this.canvas.width;
-        const scaleY = this.canvas.offsetHeight / this.canvas.height;
-        
-        // Position it at the center of the slot
-        const centerX = slotDef.cx * scaleX;
-        const centerY = slotDef.cy * scaleY;
-        
-        btn.style.left = (this.canvas.offsetLeft + centerX - btn.offsetWidth / 2) + 'px';
-        btn.style.top = (this.canvas.offsetTop + centerY - btn.offsetHeight / 2) + 'px';
-        btn.style.display = 'block';
-      } else {
-        btn.style.display = 'none';
-      }
-    }
+
   }
 
   _drawToCanvas(canvas, isPreview) {
