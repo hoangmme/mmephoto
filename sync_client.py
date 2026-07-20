@@ -45,14 +45,19 @@ def load_config():
                     print("[LỖI] Tên phòng không hợp lệ!")
                     exit(1)
                     
-                print(f"[OK] Đã cấu hình theo dõi thư mục: {watch_folder} cho phòng {room_id}")
+                # Automatically create folder structure: watch_folder / branch_id / room_id
+                full_watch_folder = os.path.join(watch_folder, data['branchId'], room_id)
+                if not os.path.exists(full_watch_folder):
+                    os.makedirs(full_watch_folder)
+                
+                print(f"[OK] Đã tạo và cấu hình theo dõi thư mục: {full_watch_folder}")
                 
                 config = {
                     "server_url": server_url,
                     "branch_id": data["branchId"],
                     "password": data["password"],
                     "room_id": room_id,
-                    "watch_folder": watch_folder,
+                    "watch_folder": full_watch_folder,
                     "compress_quality": 80,
                     "max_width": 1200
                 }
