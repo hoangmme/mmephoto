@@ -306,6 +306,20 @@ app.post('/api/setup-room', (req, res) => {
   }
 });
 
+app.post('/api/login', (req, res) => {
+  const { branchId, password } = req.body;
+  
+  if (branchId.toLowerCase() === 'cnadmin' && password === ADMIN_DATA.adminPass) {
+    return res.json({ success: true, isAdmin: true, auth: password });
+  }
+  
+  if (ADMIN_DATA.branches[branchId] && ADMIN_DATA.branches[branchId].password === password) {
+    res.json({ success: true, branchId });
+  } else {
+    res.status(401).json({ error: 'Sai ID hoặc Mật khẩu' });
+  }
+});
+
 app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (req, res) => {
   const { branch, room, session } = req.params;
   

@@ -112,7 +112,10 @@
         card.innerHTML = `
           <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h3 style="margin:0;">Chi nhánh: ${bId}</h3>
-            <button class="danger" onclick="deleteBranch('${bId}')">Xoá Chi nhánh</button>
+            <div>
+              <button onclick="spyBranch('${bId}')" style="background:#22c55e; margin-right:5px;">👀 Xem (Spy)</button>
+              <button class="danger" onclick="deleteBranch('${bId}')">Xoá Chi nhánh</button>
+            </div>
           </div>
           <div style="margin-bottom: 10px;">
             Mật khẩu Đăng nhập (trên Web): <strong>${b.password}</strong>
@@ -223,6 +226,11 @@
         body: JSON.stringify({auth: adminAuth})
       });
       reloadData();
+    }
+
+    function spyBranch(branchId) {
+      localStorage.setItem('branchId', branchId);
+      window.open('/', '_blank');
     }
 
     async function addRoom(branchId) {
