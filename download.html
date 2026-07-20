@@ -83,6 +83,8 @@
   <div class="container">
     <p style="text-align: center; color: var(--text-muted); font-size: 14px;">Nhấn vào nút Tải Xuống bên dưới mỗi tấm ảnh để lưu về máy.</p>
     
+    <button id="btnDownloadAll" class="download-btn" style="width: 100%; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; display: none;">Tải Toàn Bộ Ảnh</button>
+    
     <div id="loading" class="loading">Đang tải ảnh...</div>
     
     <div id="photoGrid" class="photo-grid"></div>
@@ -109,35 +111,50 @@
         
         const data = await res.json();
         
-        if (data.images && data.images.length > 0) {
-          loading.style.display = 'none';
-          data.images.forEach((imgUrl, i) => {
-            const item = document.createElement('div');
-            item.className = 'photo-item';
-            
-            const img = document.createElement('img');
-            img.src = imgUrl;
-            
-            const a = document.createElement('a');
-            a.className = 'download-btn';
-            a.href = imgUrl;
-            a.download = `LL_Photobooth_${session}_${i+1}`;
-            a.innerText = 'Tải Xuống';
-            
-            item.appendChild(img);
-            item.appendChild(a);
-            grid.appendChild(item);
-          });
-        } else {
-          loading.innerText = 'Chưa có ảnh nào trong phiên này.';
-        }
-      } catch (err) {
-        loading.innerText = 'Lỗi tải ảnh: ' + err.message;
-      }
-    }
-    
-    window.onload = loadPhotos;
-  </script>
+          if (data.images && data.images.length > 0) {
+            loading.style.display = 'none';
+            data.images.forEach((imgUrl, i) => {
+              const item = document.createElement('div');
+              item.className = 'photo-item';
+              
+              const img = document.createElement('img');
+              img.src = imgUrl;
+              
+              const a = document.createElement('a');
+              a.className = 'download-btn single-download';
+              a.href = imgUrl;
+              a.download = `LL_Photobooth_${session}_${i+1}`;
+              a.innerText = 'Tải Xuống';
+              
+              item.appendChild(img);
+              item.appendChild(a);
+              grid.appendChild(item);
+            });
 
+            // Show download all button
+            const btnDownloadAll = document.getElementById('btnDownloadAll');
+            btnDownloadAll.style.display = 'block';
+            btnDownloadAll.addEventListener('click', async () => {
+              const links = document.querySelectorAll('.single-download');
+              for (let i = 0; i < links.length; i++) {
+                const a = document.createElement('a');
+                a.href = links[i].href;
+                a.download = links[i].download;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                await new Promise(r => setTimeout(r, 500)); // Delay to prevent browser blocking
+              }
+            });
+          } else {
+            loading.innerText = 'Chưa có ảnh nào trong phiên này.';
+          }
+        } catch (err) {
+          loading.innerText = 'Lỗi tải ảnh: ' + err.message;
+        }
+      }
+      
+      window.onload = loadPhotos;
+    </script>
 </body>
 </html>
