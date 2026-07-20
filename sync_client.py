@@ -24,10 +24,40 @@ default_config = {
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
+        print("=== CÀI ĐẶT LẦN ĐẦU ===")
+        server_url = "https://photo.llphotobooth.vn"
+        branch_id = input("Nhập Mã Chi Nhánh (VD: CN01): ").strip()
+        password = input("Nhập Mật khẩu đăng nhập cho chi nhánh: ").strip()
+        room_id = input("Nhập Mã Phòng (VD: ROOM_01): ").strip()
+        watch_folder = input("Nhập đường dẫn thư mục lưu ảnh (VD: ./photos): ").strip()
+        
+        if not watch_folder: watch_folder = "./photos"
+        
+        print("\nĐang đăng ký chi nhánh với server...")
+        try:
+            res = requests.post(f"{server_url}/api/register-branch", json={"branchId": branch_id, "password": password})
+            if res.status_code == 200:
+                print("[OK] Đăng ký chi nhánh thành công!")
+            else:
+                print(f"[LỖI] Đăng ký thất bại: {res.json().get('error')}")
+        except Exception as e:
+            print(f"[CẢNH BÁO] Không thể kết nối tới server lúc này: {e}")
+            
+        config = {
+            "server_url": server_url,
+            "branch_id": branch_id,
+            "password": password,
+            "room_id": room_id,
+            "watch_folder": watch_folder,
+            "compress_quality": 80,
+            "max_width": 1200
+        }
+        
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-            json.dump(default_config, f, indent=4)
-        print(f"[*] Đã tạo file cấu hình mẫu {CONFIG_FILE}. Vui lòng sửa lại và chạy lại script.")
-        return default_config
+            json.dump(config, f, indent=4)
+        print(f"[*] Đã lưu cấu hình vào {CONFIG_FILE}.")
+        return config
+
     with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
         return json.load(f)
 
@@ -37,7 +67,7 @@ SERVER_URL = config["server_url"].rstrip('/')
 BRANCH_ID = config["branch_id"]
 ROOM_ID = config["room_id"]
 WATCH_FOLDER = config["watch_folder"]
-API_KEY = config["api_key"]
+PASSWORD = config.get("password", "")
 QUALITY = config["compress_quality"]
 MAX_WIDTH = config["max_width"]
 
@@ -87,9 +117,9 @@ def process_and_upload(file_path, folder_name):
         files = {
             'image': (f"{os.path.splitext(filename)[0]}.webp", byte_arr, 'image/webp')
         }
-        headers = {
-            'Authorization': f"Bearer {API_KEY}"
-        }
+        headers = {}
+        if PASSWORD:
+            headers['Authorization'] = f"Bearer {PASSWORD}"
         
         print(f"    -> Đang upload WebP lên VPS...")
         start_time = time.time()

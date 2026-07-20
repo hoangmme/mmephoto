@@ -192,14 +192,32 @@ app.get('/api/download/:branch/:room/:session', (req, res) => {
 // ==========================================
 // NEW FLOW: Branch/Room Sync API
 // ==========================================
-const BRANCHES = {
-  "CN01": "llphoto01",
-  "CN02": "llphoto02",
-  "CN03": "llphoto03",
-  "CN04": "llphoto04",
-  "CN05": "llphoto05",
-  "CN06": "llphoto06"
-};
+const BRANCHES_FILE = path.join(DATA_DIR, 'branches.json');
+let BRANCHES = {};
+if (fs.existsSync(BRANCHES_FILE)) {
+  try {
+    BRANCHES = JSON.parse(fs.readFileSync(BRANCHES_FILE, 'utf8'));
+  } catch(e) { console.error('Error loading branches:', e); }
+} else {
+  // Default branches if file doesn't exist
+  BRANCHES = {
+    "CN01": "llphoto01",
+    "CN02": "llphoto02"
+  };
+}
+
+app.post('/api/register-branch', (req, res) => {
+  const { branchId, password } = req.body;
+  if (!branchId || !password) return res.status(400).json({error: 'Missing branchId or password'});
+  
+  if (BRANCHES[branchId] && BRANCHES[branchId] !== password) {
+    return res.status(403).json({error: 'Chi nhánh đã tồn tại với mật khẩu khác. Vui lòng liên hệ Admin.'});
+  }
+  
+  BRANCHES[branchId] = password;
+  fs.writeFileSync(BRANCHES_FILE, JSON.stringify(BRANCHES, null, 2));
+  res.json({ success: true, message: 'Đăng ký chi nhánh thành công' });
+});
 
 // state: { branchId: { roomId: { session: string, locked: boolean, images: [] } } }
 const roomState = {};
