@@ -143,17 +143,21 @@ def process_and_upload(file_path, room_id, session_id):
         if response.status_code == 200:
             print(f"    [OK] Upload thành công ({time.time() - start_time:.2f}s)")
             
-            # 3. Copy bản gốc sang thư mục Archive
+            # 3. Lưu bản nén WebP sang thư mục Archive
             try:
                 session_archive_dir = os.path.join(ARCHIVE_FOLDER, session_id)
                 if not os.path.exists(session_archive_dir):
                     os.makedirs(session_archive_dir)
                 
-                dest_path = os.path.join(session_archive_dir, filename)
-                shutil.copy2(file_path, dest_path)
-                print(f"    [OK] Đã copy lưu trữ vào: {dest_path}")
+                webp_filename = f"{os.path.splitext(filename)[0]}.webp"
+                dest_path = os.path.join(session_archive_dir, webp_filename)
+                
+                with open(dest_path, "wb") as f:
+                    f.write(byte_arr.getvalue())
+                    
+                print(f"    [OK] Đã lưu bản nén WebP vào: {dest_path}")
             except Exception as e:
-                print(f"    [CẢNH BÁO] Không thể copy lưu trữ file {filename}: {str(e)}")
+                print(f"    [CẢNH BÁO] Không thể lưu bản WebP {filename}: {str(e)}")
                 
         else:
             print(f"    [LỖI] Upload thất bại: {response.text}")
