@@ -27,17 +27,19 @@ def load_config():
         print("=== CÀI ĐẶT LẦN ĐẦU ===")
         server_url = "https://photo.llphotobooth.vn"
         setup_code = input("Nhập Mã Cài Đặt (Setup Code) do Admin cấp: ").strip()
-        room_id = input("Nhập Mã Phòng cho máy này (VD: ROOM_01): ").strip()
-        watch_folder = input("Nhập đường dẫn thư mục lưu ảnh (VD: ./photos): ").strip()
+        watch_folder = input("Nhập đường dẫn thư mục lưu ảnh (Nhấn Enter để dùng './photos'): ").strip()
         
         if not watch_folder: watch_folder = "./photos"
+        
+        import socket
+        room_id = socket.gethostname().upper() # Tự động lấy tên máy tính làm tên phòng
         
         print("\\nĐang xác thực Mã Cài Đặt với Server...")
         try:
             res = requests.post(f"{server_url}/api/setup-room", json={"setupCode": setup_code})
             if res.status_code == 200:
                 data = res.json()
-                print("[OK] Xác thực thành công!")
+                print(f"[OK] Xác thực thành công! Máy tính này được nhận diện là Phòng: {room_id}")
                 config = {
                     "server_url": server_url,
                     "branch_id": data["branchId"],
