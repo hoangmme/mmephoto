@@ -99,7 +99,11 @@ class PrintLayoutApp {
         const room = data.room;
         if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 180, locked: false, hasNew: false };
         this.rooms[room].session = data.session;
-        this.rooms[room].images = data.images.map(url => ({ id: 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000), url }));
+        this.rooms[room].images = data.images.map(url => {
+          const id = 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+          this._preloadImage(id, url).then(() => this._renderCanvas());
+          return { id, url, name: url.split('/').pop() };
+        });
         if (this.rooms[room].images.length > 0) this._startTimer(room);
         this._renderTabs();
         this._updateUIForRoom();
@@ -108,7 +112,11 @@ class PrintLayoutApp {
         if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 180, locked: false, hasNew: false };
         if (this.rooms[room].images.length === 0) this._startTimer(room);
         this.rooms[room].session = data.session;
-        this.rooms[room].images.push({ id: 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000), url: data.imageUrl });
+        const newImg = { id: 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000), url: data.imageUrl, name: data.imageUrl.split('/').pop() };
+        this.rooms[room].images.push(newImg);
+        this._preloadImage(newImg.id, newImg.url).then(() => {
+          if (this.activeRoom === room) this._renderCanvas();
+        });
         
         if (this.activeRoom !== room) {
           this.rooms[room].hasNew = true;
@@ -776,9 +784,12 @@ class PrintLayoutApp {
       if (img.id === this.selectedImageId) thumb.classList.add('selected');
       if (usedIds.has(img.id)) thumb.classList.add('used');
 
+      const srcUrl = img.objectUrl || img.url;
+      const imgName = img.name || img.id;
+
       thumb.innerHTML = `
-        <img src="${img.objectUrl}" alt="${img.name}">
-        <div class="pl-thumb-info">${img.name}</div>
+        <img src="${srcUrl}" alt="${imgName}">
+        <div class="pl-thumb-info">${imgName}</div>
       `;
 
       thumb.addEventListener('click', () => {
