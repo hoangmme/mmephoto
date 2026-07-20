@@ -108,15 +108,16 @@
       Object.keys(data.branches).forEach(bId => {
         const b = data.branches[bId];
         let roomsHtml = '';
-        Object.keys(b.rooms).forEach(rId => {
-          roomsHtml += `
-            <div class="room-item">
-              <div>Phòng: <strong>${rId}</strong></div>
-              <div>Mã cài đặt: <span class="setup-code">${b.rooms[rId]}</span></div>
-              <button class="danger" onclick="deleteRoom('${bId}', '${rId}')">Xoá</button>
-            </div>
-          `;
-        });
+        if (Array.isArray(b.rooms)) {
+          b.rooms.forEach(rId => {
+            roomsHtml += `
+              <div class="room-item">
+                <div>Phòng: <strong>${rId}</strong></div>
+                <button class="danger" onclick="deleteRoom('${bId}', '${rId}')">Xoá</button>
+              </div>
+            `;
+          });
+        }
 
         const card = document.createElement('div');
         card.className = 'branch-card';

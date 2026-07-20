@@ -17,10 +17,8 @@
     <!-- Header -->
     <header class="pl-header">
       <div class="pl-header-left">
-        <a href="editor.html" class="pl-back-btn" title="Quay lại Color Lab">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-        </a>
-        <div class="pl-logo">
+        <!-- Nút quay về đã bị xóa theo yêu cầu -->
+        <div class="pl-logo" style="margin-left: 10px;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="url(#plGrad)" stroke-width="2"/>
             <defs><linearGradient id="plGrad" x1="0" y1="0" x2="24" y2="24">
@@ -28,6 +26,7 @@
             </linearGradient></defs>
           </svg>
           <span>Print <em>Layout</em></span>
+          <span id="headerBranchName" style="margin-left:15px; padding-left:15px; border-left:1px solid var(--pl-border); color:#a1a1aa; font-weight:500; font-size:14px; display:none;"></span>
         </div>
       </div>
       <div class="pl-header-center">
@@ -117,7 +116,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=20"></script>
+  <script type="module" src="js/print-layout.js?v=21"></script>
 
   <!-- LOGIN OVERLAY -->
   <div id="loginOverlay" style="position:fixed; inset:0; background:var(--pl-bg); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column;">

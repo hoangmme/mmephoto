@@ -90,6 +90,12 @@ class PrintLayoutApp {
 
 
   _initSSE(branch) {
+    const branchNameEl = document.getElementById('headerBranchName');
+    if (branchNameEl) {
+      branchNameEl.textContent = `Chi nhánh: ${branch}`;
+      branchNameEl.style.display = 'inline';
+    }
+
     if (this.sse) this.sse.close();
     this.sse = new EventSource(`/api/stream/${branch}`);
     
