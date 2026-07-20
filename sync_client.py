@@ -26,33 +26,34 @@ def load_config():
     if not os.path.exists(CONFIG_FILE):
         print("=== CÀI ĐẶT LẦN ĐẦU ===")
         server_url = "https://photo.llphotobooth.vn"
-        branch_id = input("Nhập Mã Chi Nhánh (VD: CN01): ").strip()
-        password = input("Nhập Mật khẩu đăng nhập cho chi nhánh: ").strip()
-        room_id = input("Nhập Mã Phòng (VD: ROOM_01): ").strip()
+        setup_code = input("Nhập Mã Cài Đặt (Setup Code) do Admin cấp: ").strip()
         watch_folder = input("Nhập đường dẫn thư mục lưu ảnh (VD: ./photos): ").strip()
         
         if not watch_folder: watch_folder = "./photos"
         
-        print("\nĐang đăng ký chi nhánh với server...")
+        print("\\nĐang xác thực Mã Cài Đặt với Server...")
         try:
-            res = requests.post(f"{server_url}/api/register-branch", json={"branchId": branch_id, "password": password})
+            res = requests.post(f"{server_url}/api/setup-room", json={"setupCode": setup_code})
             if res.status_code == 200:
-                print("[OK] Đăng ký chi nhánh thành công!")
+                data = res.json()
+                print("[OK] Xác thực thành công!")
+                config = {
+                    "server_url": server_url,
+                    "branch_id": data["branchId"],
+                    "password": data["password"],
+                    "room_id": data["roomId"],
+                    "watch_folder": watch_folder,
+                    "compress_quality": 80,
+                    "max_width": 1200
+                }
             else:
-                print(f"[LỖI] Đăng ký thất bại: {res.json().get('error')}")
+                print(f"[LỖI] {res.json().get('error')}")
+                print("Vui lòng chạy lại script và nhập đúng Mã Cài Đặt.")
+                exit(1)
         except Exception as e:
-            print(f"[CẢNH BÁO] Không thể kết nối tới server lúc này: {e}")
+            print(f"[LỖI] Không thể kết nối tới server: {e}")
+            exit(1)
             
-        config = {
-            "server_url": server_url,
-            "branch_id": branch_id,
-            "password": password,
-            "room_id": room_id,
-            "watch_folder": watch_folder,
-            "compress_quality": 80,
-            "max_width": 1200
-        }
-        
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=4)
         print(f"[*] Đã lưu cấu hình vào {CONFIG_FILE}.")

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - LL Photobooth</title>
+  <style>
+    :root {
+      --bg: #0f172a; --panel: #1e293b; --text: #f8fafc; --text-muted: #94a3b8;
+      --border: #334155; --accent: #38bdf8; --danger: #ef4444;
+    }
+    body {
+      margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg); color: var(--text);
+    }
+    h1, h2, h3 { margin-top: 0; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); box-sizing: border-box; }
+    button { padding: 10px 15px; border: none; border-radius: 6px; background: var(--accent); color: #000; font-weight: 600; cursor: pointer; }
+    button.danger { background: var(--danger); color: #fff; }
+    .flex { display: flex; gap: 10px; }
+    .branch-card { border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; background: #0b1120; }
+    .room-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--panel); border-radius: 4px; margin-top: 10px; }
+    .setup-code { font-family: monospace; background: var(--accent); color: #000; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+    #loginView { max-width: 400px; margin: 100px auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="loginView" class="panel">
+      <h2>Admin Login</h2>
+      <input type="password" id="adminPass" placeholder="Mật khẩu Admin">
+      <button onclick="login()">Đăng nhập</button>
+    </div>
+
+    <div id="adminView" style="display:none;">
+      <div class="panel flex" style="justify-content: space-between; align-items: center;">
+        <h2>Quản lý Chi nhánh</h2>
+        <button onclick="logout()">Đăng xuất</button>
+      </div>
+
+      <div class="panel">
+        <h3>Thêm Chi nhánh mới</h3>
+        <div class="flex">
+          <input type="text" id="newBranchId" placeholder="Mã chi nhánh (VD: CN01)">
+          <input type="text" id="newBranchPass" placeholder="Mật khẩu cho iPad">
+          <button onclick="addBranch()" style="white-space: nowrap;">Thêm Chi nhánh</button>
+        </div>
+      </div>
+
+      <div id="branchesList"></div>
+    </div>
+  </div>
+
+  <script>
+    let adminAuth = localStorage.getItem('adminAuth') || '';
+
+    async function checkAuth() {
+      if (!adminAuth) return;
+      const res = await fetch('/api/admin/data?auth=' + adminAuth);
+      if (res.ok) {
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('adminView').style.display = 'block';
+        loadData(await res.json());
+      } else {
+        localStorage.removeItem('adminAuth');
+        adminAuth = '';
+      }
+    }
+
+    async function login() {
+      const pass = document.getElementById('adminPass').value;
+      const res = await fetch('/api/admin/login', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({password: pass})
+      });
+      if (res.ok) {
+        adminAuth = pass;
+        localStorage.setItem('adminAuth', pass);
+        checkAuth();
+      } else {
+        alert('Sai mật khẩu');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('adminAuth');
+      location.reload();
+    }
+
+    function loadData(data) {
+      const container = document.getElementById('branchesList');
+      container.innerHTML = '';
+      
+      Object.keys(data.branches).forEach(bId => {
+        const b = data.branches[bId];
+        let roomsHtml = '';
+        Object.keys(b.rooms).forEach(rId => {
+          roomsHtml += `
+            <div class="room-item">
+              <div>Phòng: <strong>${rId}</strong></div>
+              <div>Mã cài đặt: <span class="setup-code">${b.rooms[rId]}</span></div>
+              <button class="danger" onclick="deleteRoom('${bId}', '${rId}')">Xoá</button>
+            </div>
+          `;
+        });
+
+        const card = document.createElement('div');
+        card.className = 'branch-card';
+        card.innerHTML = `
+          <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin:0;">Chi nhánh: ${bId} <span style="font-size:14px; font-weight:normal; color:var(--text-muted);">(Pass: ${b.password})</span></h3>
+            <button class="danger" onclick="deleteBranch('${bId}')">Xoá Chi nhánh</button>
+          </div>
+          <div class="flex" style="margin-bottom: 10px;">
+            <input type="text" id="newRoomId_${bId}" placeholder="Tên phòng mới (VD: ROOM_1)">
+            <button onclick="addRoom('${bId}')" style="white-space: nowrap;">Tạo Phòng & Lấy Mã Setup</button>
+          </div>
+          ${roomsHtml}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function reloadData() {
+      const res = await fetch('/api/admin/data?auth=' + adminAuth);
+      if (res.ok) loadData(await res.json());
+    }
+
+    async function addBranch() {
+      const id = document.getElementById('newBranchId').value;
+      const pass = document.getElementById('newBranchPass').value;
+      if(!id || !pass) return alert('Nhập đủ thông tin');
+      await fetch('/api/admin/branch', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({auth: adminAuth, branchId: id, password: pass})
+      });
+      reloadData();
+    }
+
+    async function deleteBranch(id) {
+      if(!confirm('Xoá chi nhánh ' + id + '?')) return;
+      await fetch('/api/admin/branch/' + id, {
+        method: 'DELETE', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({auth: adminAuth})
+      });
+      reloadData();
+    }
+
+    async function addRoom(branchId) {
+      const roomId = document.getElementById('newRoomId_' + branchId).value;
+      if(!roomId) return alert('Nhập tên phòng');
+      await fetch('/api/admin/room', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({auth: adminAuth, branchId, roomId})
+      });
+      reloadData();
+    }
+
+    async function deleteRoom(branch, room) {
+      if(!confirm('Xoá phòng ' + room + '?')) return;
+      await fetch(`/api/admin/room/${branch}/${room}`, {
+        method: 'DELETE', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({auth: adminAuth})
+      });
+      reloadData();
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>
