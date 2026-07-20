@@ -362,10 +362,14 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (r
   
   // Update state
   if (!roomState[branch]) roomState[branch] = {};
-  if (!roomState[branch][room] || roomState[branch][room].session !== session) {
-    roomState[branch][room] = { session, locked: false, images: [] };
+  if (!roomState[branch][room]) roomState[branch][room] = { sessions: [] };
+  
+  let sessionObj = roomState[branch][room].sessions.find(s => s.id === session);
+  if (!sessionObj) {
+    sessionObj = { id: session, images: [] };
+    roomState[branch][room].sessions.push(sessionObj);
   }
-  roomState[branch][room].images.push(imageUrl);
+  sessionObj.images.push(imageUrl);
   
   // Notify SSE clients
   if (clients[branch]) {
@@ -377,18 +381,16 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (r
   res.json({ success: true, imageUrl });
 });
 
-app.post('/api/next-session/:branch/:room', (req, res) => {
-  const { branch, room } = req.params;
+app.post('/api/finish-session/:branch/:room/:session', (req, res) => {
+  const { branch, room, session } = req.params;
   
   if (roomState[branch] && roomState[branch][room]) {
-    roomState[branch][room].locked = false;
-    roomState[branch][room].session = null;
-    roomState[branch][room].images = [];
+    roomState[branch][room].sessions = roomState[branch][room].sessions.filter(s => s.id !== session);
   }
   
   if (clients[branch]) {
     clients[branch].forEach(client => {
-      client.write(`data: ${JSON.stringify({ type: 'reset', room })}\n\n`);
+      client.write(`data: ${JSON.stringify({ type: 'session_finished', room, session })}\n\n`);
     });
   }
   
@@ -409,12 +411,11 @@ app.get('/api/stream/:branch', (req, res) => {
   const branchData = ADMIN_DATA.branches[branch];
   if (branchData && branchData.rooms) {
     branchData.rooms.forEach(room => {
-      const state = (roomState[branch] && roomState[branch][room]) || {};
+      const state = (roomState[branch] && roomState[branch][room]) || { sessions: [] };
       res.write(`data: ${JSON.stringify({ 
         type: 'init', 
         room: room,
-        session: state.session || null, 
-        images: state.images || [] 
+        sessions: state.sessions || []
       })}\n\n`);
     });
   }

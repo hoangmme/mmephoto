@@ -103,48 +103,102 @@ class PrintLayoutApp {
       const data = JSON.parse(e.data);
       if (data.type === 'init') {
         const room = data.room;
-        if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 180, locked: false, hasNew: false };
-        this.rooms[room].session = data.session;
-        this.rooms[room].images = data.images.map(url => {
-          const id = 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-          this._preloadImage(id, url).then(() => this._renderCanvas());
-          return { id, url, name: url.split('/').pop() };
-        });
-        if (this.rooms[room].images.length > 0) this._startTimer(room);
+        if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 180, locked: false, hasNew: false, queue: [] };
+        this.rooms[room].queue = data.sessions || [];
+        this._updateActiveSession(room);
         this._renderTabs();
         this._updateUIForRoom();
       } else if (data.type === 'new_image') {
         const room = data.room;
-        if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 180, locked: false, hasNew: false };
-        if (this.rooms[room].images.length === 0) this._startTimer(room);
-        this.rooms[room].session = data.session;
-        const newImg = { id: 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000), url: data.imageUrl, name: data.imageUrl.split('/').pop() };
-        this.rooms[room].images.push(newImg);
-        this._preloadImage(newImg.id, newImg.url).then(() => {
-          if (this.activeRoom === room) this._renderCanvas();
-        });
+        if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 180, locked: false, hasNew: false, queue: [] };
         
-        if (this.activeRoom !== room) {
-          this.rooms[room].hasNew = true;
-          this._renderTabs();
-        } else {
-          this._updateUIForRoom();
+        // Find if session is in queue
+        let sessionObj = this.rooms[room].queue.find(s => s.id === data.session);
+        if (!sessionObj) {
+            sessionObj = { id: data.session, images: [] };
+            this.rooms[room].queue.push(sessionObj);
         }
-      } else if (data.type === 'reset') {
+        sessionObj.images.push(data.imageUrl);
+
+        // If this is the active session
+        if (this.rooms[room].session === data.session) {
+            if (this.rooms[room].images.length === 0) this._startTimer(room);
+            const newImg = { id: 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000), url: data.imageUrl, name: data.imageUrl.split('/').pop() };
+            this.rooms[room].images.push(newImg);
+            this._preloadImage(newImg.id, newImg.url).then(() => {
+                if (this.activeRoom === room) this._renderCanvas();
+            });
+            if (this.activeRoom !== room) {
+                this.rooms[room].hasNew = true;
+                this._renderTabs();
+            } else {
+                this._updateUIForRoom();
+            }
+        } else {
+            // It's a queued session, just update the badge
+            if (this.activeRoom === room) Object.assign(this.rooms[room], {hasNew: false}); // ensure no weirdness
+            if (this.activeRoom === room) this._updateActiveSession(room, true); // update badge only
+        }
+      } else if (data.type === 'session_finished') {
         const room = data.room;
         if (this.rooms[room]) {
-          this._stopTimer(room);
-          delete this.rooms[room];
-          if (this.activeRoom === room) {
-            this.activeRoom = Object.keys(this.rooms)[0] || null;
-            this._updateUIForRoom();
-          }
-          this._renderTabs();
+           this.rooms[room].queue = this.rooms[room].queue.filter(s => s.id !== data.session);
+           // If the finished session is the active one, advance queue
+           if (this.rooms[room].session === data.session) {
+               this._stopTimer(room);
+               this.rooms[room].session = null; // force update
+               this._updateActiveSession(room);
+               if (this.activeRoom === room) {
+                   this._updateUIForRoom();
+                   this._renderCanvas();
+               }
+           }
+           this._renderTabs();
         }
       }
     };
   }
   
+  _updateActiveSession(room, onlyBadge = false) {
+    const roomData = this.rooms[room];
+    if (!roomData) return;
+    
+    if (!roomData.queue) roomData.queue = [];
+    
+    if (roomData.queue && roomData.queue.length > 0) {
+      const active = roomData.queue[0];
+      if (roomData.session !== active.id && !onlyBadge) {
+        roomData.session = active.id;
+        roomData.images = active.images.map(url => {
+          const id = 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+          this._preloadImage(id, url).then(() => this._renderCanvas());
+          return { id, url, name: url.split('/').pop() };
+        });
+        if (roomData.images.length > 0) this._startTimer(room);
+      }
+    } else if (!onlyBadge) {
+      roomData.session = null;
+      roomData.images = [];
+      this._stopTimer(room);
+    }
+    
+    // Update Header
+    if (this.activeRoom === room) {
+       const lbl = document.getElementById('headerSessionName');
+       if (lbl) {
+         if (roomData.session) {
+           lbl.innerText = "Phiên chụp: " + roomData.session;
+           if (roomData.queue.length > 1) {
+             lbl.innerText += ` (+${roomData.queue.length - 1} chờ)`;
+           }
+           lbl.style.display = 'inline-block';
+         } else {
+           lbl.style.display = 'none';
+         }
+       }
+    }
+  }
+
   _renderTabs() {
     const tabsContainer = document.getElementById('roomTabs');
     if (!tabsContainer) return;
@@ -198,12 +252,15 @@ class PrintLayoutApp {
   }
   
   _updateUIForRoom() {
-    if (!this.activeRoom || !this.rooms[this.activeRoom]) {
+    this._updateActiveSession(this.activeRoom, true);
+    if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) {
       this.images = [];
       this._renderImageList();
       document.getElementById('countdownTimer').style.display = 'none';
       document.getElementById('qrOverlay').style.display = 'none';
       document.getElementById('lockOverlay').style.display = 'none';
+      const btnNext = document.getElementById('btnNextCustomer');
+      if (btnNext) btnNext.style.display = 'none';
       return;
     }
     
@@ -310,6 +367,7 @@ class PrintLayoutApp {
       if (this.activeRoom && this.rooms[this.activeRoom]) {
         this.rooms[this.activeRoom].locked = false;
         this._updateUIForRoom();
+        this._updateActiveSession(this.activeRoom, true);
         const btnNext = document.getElementById('btnNextCustomer');
         if (btnNext) btnNext.style.display = 'inline-flex';
       }
@@ -318,8 +376,8 @@ class PrintLayoutApp {
     document.getElementById('btnNextCustomer')?.addEventListener('click', async () => {
       const b = localStorage.getItem('branchId');
       const r = this.activeRoom;
-      if (b && r) {
-        await fetch(`/api/next-session/${b}/${r}`, { method: 'POST' });
+      if (b && r && this.rooms[r] && this.rooms[r].session) {
+        await fetch(`/api/finish-session/${b}/${r}/${this.rooms[r].session}`, { method: 'POST' });
       }
       const btnNext = document.getElementById('btnNextCustomer');
       if (btnNext) btnNext.style.display = 'none';
