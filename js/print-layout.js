@@ -258,11 +258,12 @@ class PrintLayoutApp {
     const img = document.getElementById('qrImage');
     const b = localStorage.getItem('branchId') || '';
     const url = `${window.location.origin}/download.html?branch=${b}&room=${room}&session=${session}`;
-    if (window.QRCode && img) {
-      window.QRCode.toDataURL(url, { width: 120, margin: 1 }, function (error, urlData) {
-        if (error) console.error(error);
-        else img.src = urlData;
-      });
+    
+    const qrLink = document.getElementById('qrLink');
+    if (qrLink) qrLink.href = url;
+
+    if (img) {
+      img.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=1&data=${encodeURIComponent(url)}`;
     }
   }
 

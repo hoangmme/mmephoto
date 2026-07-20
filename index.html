@@ -118,8 +118,7 @@
     <span>Đang xuất...</span>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=22"></script>
+  <script type="module" src="js/print-layout.js?v=23"></script>
 
   <!-- LOGIN OVERLAY -->
   <div id="loginOverlay" style="position:fixed; inset:0; background:var(--pl-bg); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column;">
@@ -142,7 +141,9 @@
   
   <!-- QR CODE OVERLAY -->
   <div id="qrOverlay" style="position:fixed; bottom:20px; left:20px; background:#fff; padding:10px; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:50; display:none; text-align:center;">
-    <img id="qrImage" width="120" height="120" style="display:block; margin: 0 auto; background: #fff;" />
+    <a id="qrLink" href="#" target="_blank" title="Nhấn để mở link">
+      <img id="qrImage" width="120" height="120" style="display:block; margin: 0 auto; background: #fff; cursor: pointer;" />
+    </a>
     <div style="font-size:12px; color:#000; margin-top:5px; font-weight:bold;">Quét để tải ảnh</div>
   </div>
 </body>
