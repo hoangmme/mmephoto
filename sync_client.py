@@ -39,25 +39,19 @@ def load_config():
                 print(f"[OK] Xác thực thành công! Chi nhánh: {data['branchId']}")
                 print(f"Các phòng thuộc chi nhánh: {', '.join(data.get('rooms', []))}")
                 
-                # Automatically create folder structure
-                branch_folder = os.path.join(watch_folder, data['branchId'])
-                if not os.path.exists(branch_folder):
-                    os.makedirs(branch_folder)
+                room_id = input("Bạn đang cài đặt máy này cho Phòng nào? (Nhập đúng Tên phòng ở trên): ").strip()
+                if room_id not in data.get('rooms', []):
+                    print("[LỖI] Tên phòng không hợp lệ!")
+                    exit(1)
                     
-                rooms = data.get('rooms', [])
-                for r in rooms:
-                    room_path = os.path.join(branch_folder, r)
-                    if not os.path.exists(room_path):
-                        os.makedirs(room_path)
-                
-                print(f"[OK] Đã tạo cấu trúc thư mục tại: {branch_folder}")
+                print(f"[OK] Đã cấu hình theo dõi thư mục: {watch_folder} cho phòng {room_id}")
                 
                 config = {
                     "server_url": server_url,
                     "branch_id": data["branchId"],
                     "password": data["password"],
-                    "rooms": rooms,
-                    "watch_folder": branch_folder,
+                    "room_id": room_id,
+                    "watch_folder": watch_folder,
                     "compress_quality": 80,
                     "max_width": 1200
                 }
@@ -81,7 +75,7 @@ config = load_config()
 
 SERVER_URL = config["server_url"].rstrip('/')
 BRANCH_ID = config["branch_id"]
-ROOMS = config.get("rooms", [])
+ROOM_ID = config.get("room_id", "")
 WATCH_FOLDER = config["watch_folder"]
 PASSWORD = config.get("password", "")
 QUALITY = config["compress_quality"]
@@ -94,10 +88,10 @@ if not os.path.exists(WATCH_FOLDER):
 print(f"==================================================")
 print(f" LL PHOTOBOOTH - PC SYNC CLIENT (WEBP ONLY)")
 print(f" Chi nhánh: {BRANCH_ID}")
-print(f" Các phòng: {', '.join(ROOMS)}")
+print(f" Phòng: {ROOM_ID}")
 print(f" Thư mục theo dõi: {WATCH_FOLDER}")
 print(f" Máy chủ: {SERVER_URL}")
-print(f"==================================================\\n")
+print(f"==================================================\n")
 
 current_session = {}
 
@@ -156,22 +150,19 @@ class PhotoHandler(FileSystemEventHandler):
         ext = os.path.splitext(filename)[1].lower()
         
         if ext in ['.jpg', '.jpeg', '.png', '.cr2', '.raw']:
-            # The structure is: WATCH_FOLDER / ROOM_ID / SESSION_ID / file.jpg
-            # Or WATCH_FOLDER / ROOM_ID / file.jpg
             rel_path = os.path.relpath(file_path, WATCH_FOLDER)
             parts = rel_path.split(os.sep)
             
+            # The structure could be: WATCH_FOLDER / SESSION_ID / file.jpg
+            # Or WATCH_FOLDER / file.jpg
             if len(parts) >= 2:
-                room_id = parts[0]
-                session_id = parts[1] if len(parts) > 2 else "default"
+                session_id = parts[0]
+            else:
+                session_id = "default"
                 
-                # Check if it's a valid room
-                if room_id in ROOMS:
-                    # Chạy thread riêng để không block file system event
-                    t = threading.Thread(target=process_and_upload, args=(file_path, room_id, session_id))
-                    t.start()
-                else:
-                    print(f"    [BỎ QUA] File không nằm trong thư mục phòng hợp lệ: {rel_path}")
+            # Chạy thread riêng để không block file system event
+            t = threading.Thread(target=process_and_upload, args=(file_path, ROOM_ID, session_id))
+            t.start()
 
 if __name__ == "__main__":
     event_handler = PhotoHandler()
