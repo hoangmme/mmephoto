@@ -264,6 +264,9 @@ class PrintLayoutApp {
       return;
     }
     
+    const btnNext = document.getElementById('btnNextCustomer');
+    if (btnNext) btnNext.style.display = 'inline-flex';
+    
     const roomData = this.rooms[this.activeRoom];
     this.images = roomData.images;
     this._renderImageList();
@@ -373,7 +376,7 @@ class PrintLayoutApp {
       }
     });
     
-    document.getElementById('btnNextCustomer')?.addEventListener('click', async () => {
+    const handleNextCustomer = async () => {
       const b = localStorage.getItem('branchId');
       const r = this.activeRoom;
       if (b && r && this.rooms[r] && this.rooms[r].session) {
@@ -381,7 +384,12 @@ class PrintLayoutApp {
       }
       const btnNext = document.getElementById('btnNextCustomer');
       if (btnNext) btnNext.style.display = 'none';
-    });
+      const lockOverlay = document.getElementById('lockOverlay');
+      if (lockOverlay) lockOverlay.style.display = 'none';
+    };
+    
+    document.getElementById('btnNextCustomer')?.addEventListener('click', handleNextCustomer);
+    document.getElementById('btnLockNextCustomer')?.addEventListener('click', handleNextCustomer);
   }
   async _initApp() {
     try {
@@ -616,6 +624,8 @@ class PrintLayoutApp {
 
     document.getElementById('btnPrint').addEventListener('click', () => this._print());
     document.getElementById('btnExportJPG').addEventListener('click', () => this._exportJPG());
+    const btnLockExportJPG = document.getElementById('btnLockExportJPG');
+    if (btnLockExportJPG) btnLockExportJPG.addEventListener('click', () => this._exportJPG());
     document.getElementById('btnExportPDF').addEventListener('click', () => this._exportPDF());
 
     // Import Custom Template
