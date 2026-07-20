@@ -863,9 +863,12 @@ class PrintLayoutApp {
   }
 
   async _uploadTestImages(e) {
-    if (!this.activeRoom) return alert("Vui lòng chọn một phòng (Room) trước khi tải ảnh test!");
-    const branch = localStorage.getItem('branchId') || '';
-    const room = this.activeRoom;
+    const branch = localStorage.getItem('branchId') || 'CN01';
+    let room = this.activeRoom;
+    if (!room) {
+      room = prompt("Chưa có Room nào đang mở. Vui lòng nhập tên Room để test (VD: Room1):", "Room1");
+      if (!room) return; // user cancelled
+    }
     const session = (this.rooms[room] && this.rooms[room].session) ? this.rooms[room].session : ('test_' + Date.now());
 
     
