@@ -309,7 +309,7 @@ class PrintLayoutApp {
       if (btnNext) btnNext.style.display = 'none';
     });
   }
-\n  async _initApp() {
+  async _initApp() {
     try {
       const res = await fetch('/api/templates');
       if (res.ok) {
@@ -346,7 +346,8 @@ class PrintLayoutApp {
     this._initMainSwiper();
     this._bindEvents();
     this._initTemplate();
-    this._loadBatch();\n    this._initLogin();
+    this._loadBatch();
+    this._initLogin();
   }
 
   _initMainSwiper() {
