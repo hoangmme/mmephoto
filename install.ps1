@@ -41,10 +41,15 @@ if (Test-Path (Join-Path $CurrentDir ".git")) {
     }
 }
 
-# 3. Chay cac buoc cai dat thong qua mmephoto.bat
-Write-Host "[*] Dang dang ky lenh 'mmephoto' toan cuc..." -ForegroundColor Yellow
-cmd.exe /c "mmephoto.bat add_to_path"
+# 3. Them thu muc cai dat vao PATH (de chay lenh mmephoto o moi noi)
+Write-Host "[*] Dang them thu muc code vao he thong (PATH)..." -ForegroundColor Yellow
+$userPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
+if ($userPath -notlike "*$InstallDir*") {
+    [Environment]::SetEnvironmentVariable('PATH', "$userPath;$InstallDir", 'User')
+}
+$env:PATH = "$env:PATH;$InstallDir" # Update current session
 
+# 4. Chay cac buoc cai dat thong qua mmephoto.bat
 Write-Host "[*] Dang cai dat thu vien va tao Startup script..." -ForegroundColor Yellow
 cmd.exe /c "mmephoto.bat install"
 

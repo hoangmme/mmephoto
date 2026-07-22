@@ -28,15 +28,13 @@ echo  2. Cap nhat (Update) - Tai code moi nhat va Restart
 echo  3. Reset cau hinh    - Xoa phong cu va Dang ky lai
 echo  4. Start             - Bat script chay ngam
 echo  5. Stop              - Tat script dang chay ngam
-echo  6. Cai dat toan cuc  - Them lenh "mmephoto" vao may
 echo ========================================================
-set /p opt="Chon tuy chon (1-6): "
+set /p opt="Chon tuy chon (1-5): "
 if "%opt%"=="1" goto install
 if "%opt%"=="2" goto update
 if "%opt%"=="3" goto reset
 if "%opt%"=="4" goto start
 if "%opt%"=="5" goto stop
-if "%opt%"=="6" goto add_to_path
 goto end
 
 :help
@@ -111,17 +109,6 @@ wmic process where "name='python.exe' and commandline like '%%sync_client.py%%'"
 wmic process where "name='wscript.exe' and commandline like '%%run_hidden.vbs%%'" call terminate >nul 2>&1
 echo [OK] Da tat!
 if "%CMD%"=="" pause
-goto end
-
-:add_to_path
-echo [*] Dang them lenh mmephoto vao he thong...
-set "TARGET_DIR=%LOCALAPPDATA%\Microsoft\WindowsApps"
-if not exist "%TARGET_DIR%" mkdir "%TARGET_DIR%"
-copy /y "%~dp0mmephoto.bat" "%TARGET_DIR%\mmephoto.bat" >nul
-echo [OK] Da xong! Tu bay gio ban co the mo Terminal bat ky dau va go:
-echo        mmephoto update
-echo        mmephoto install
-pause
 goto end
 
 :setup
