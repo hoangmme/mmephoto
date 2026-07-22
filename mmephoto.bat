@@ -11,6 +11,7 @@ if "%CMD%"=="update" goto update
 if "%CMD%"=="reset" goto reset
 if "%CMD%"=="start" goto start
 if "%CMD%"=="stop" goto stop
+if "%CMD%"=="setup" goto setup
 if "%CMD%"=="add_to_path" goto add_to_path
 if "%CMD%"=="6" goto add_to_path
 if "%CMD%"=="help" goto help
@@ -42,6 +43,7 @@ goto end
 echo Cac lenh ho tro:
 echo   mmephoto install  - Cai dat thu vien, tao shortcut Startup
 echo   mmephoto update   - Git pull code moi nhat va tu dong Restart
+echo   mmephoto setup    - Mo Terminal de nhap thong tin Phong
 echo   mmephoto reset    - Xoa file config.json de dang ky lai phong
 echo   mmephoto start    - Chay ngam sync_client.py
 echo   mmephoto stop     - Dung sync_client.py
@@ -120,6 +122,11 @@ echo [OK] Da xong! Tu bay gio ban co the mo Terminal bat ky dau va go:
 echo        mmephoto update
 echo        mmephoto install
 pause
+goto end
+
+:setup
+echo [*] Dang mo giao dien de Dang ky Thong tin Phong...
+start cmd /k "python sync_client.py"
 goto end
 
 :end

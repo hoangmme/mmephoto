@@ -52,8 +52,7 @@ Write-Host "================================================" -ForegroundColor C
 Write-Host "[XONG] CAI DAT HOAN TAT!" -ForegroundColor Green
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host "Neu day la lan dau tien cai dat PC nay, hay mo Terminal và go lenh duoi day de dang ky Thong tin Phong:" -ForegroundColor Yellow
-Write-Host "  cd $InstallDir"
-Write-Host "  python sync_client.py"
+Write-Host "  mmephoto setup"
 Write-Host ""
 Write-Host "Cac lenh ho tro sau nay (co the go o bat ky dau):" -ForegroundColor Cyan
 Write-Host "  mmephoto update   (De lay code moi va restart)"
