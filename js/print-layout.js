@@ -60,6 +60,13 @@ class PrintLayoutApp {
     this.selectedSlotIndex = -1;
     this.currentTemplate = '2photos';
 
+    // Default preview images for Step 1
+    this.defaultPreviewImages = [];
+    const defaultImg = new Image();
+    defaultImg.onload = () => this._renderCanvas();
+    defaultImg.src = 'test_photo.png';
+    this.defaultPreviewImages.push(defaultImg);
+
     // Slot state
     this.slots = [];           // Array of { imageId, zoom, panX, panY, assignedAt }
 
@@ -610,29 +617,14 @@ class PrintLayoutApp {
       
       const preview = document.createElement('div');
       preview.className = 'pl-slide-preview';
-      if (t.frame_url) {
-        const img = document.createElement('img');
-        img.src = t.frame_url;
-        preview.appendChild(img);
-      } else {
-        const cvs = document.createElement('canvas');
-        cvs.width = 174;
-        cvs.height = 248;
-        const ctx = cvs.getContext('2d');
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0, 0, 174, 248);
-        ctx.fillStyle = '#eee';
-        t.slots.forEach(s => {
-          const w = s.w * 0.1; const h = s.h * 0.1;
-          const cx = s.cx * 0.1; const cy = s.cy * 0.1;
-          ctx.save();
-          ctx.translate(cx, cy);
-          ctx.rotate(s.rotation || 0);
-          ctx.fillRect(-w/2, -h/2, w, h);
-          ctx.restore();
-        });
-        preview.appendChild(cvs);
-      }
+      
+      const cvs = document.createElement('canvas');
+      cvs.width = t.canvas_width || A5_WIDTH;
+      cvs.height = t.canvas_height || A5_HEIGHT;
+      // Draw template with default photos
+      this._drawToCanvas(cvs, false, t, true);
+      preview.appendChild(cvs);
+      
       slide.appendChild(preview);
       
       slide.addEventListener('click', () => {
@@ -872,6 +864,8 @@ class PrintLayoutApp {
     // Canvas drag for pan
     let isDragging = false, dragStartX, dragStartY, dragSlot;
     this.canvas.addEventListener('mousedown', (e) => {
+      const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+      if (step === 1 || step === 4) return;
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];
       if (!slot || !slot.imageId) return;
@@ -907,6 +901,8 @@ class PrintLayoutApp {
     let initialSlotZoom = 1.0, initialSlotRot = 0;
 
     this.canvas.addEventListener('touchstart', (e) => {
+      const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+      if (step === 1 || step === 4) return;
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];
       if (!slot || !slot.imageId) return;
@@ -958,6 +954,8 @@ class PrintLayoutApp {
 
     // Mouse wheel zoom support for desktop testing/usage
     this.canvas.addEventListener('wheel', (e) => {
+      const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+      if (step === 1 || step === 4) return;
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];
       if (!slot || !slot.imageId) return;
@@ -1168,6 +1166,9 @@ class PrintLayoutApp {
 
   // ── Canvas Click → Select Slot ──
   _onCanvasClick(e) {
+    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    if (step === 1 || step === 4) return;
+
     const rect = this.canvas.getBoundingClientRect();
     const scaleX = this.canvas.width / rect.width;
     const scaleY = this.canvas.height / rect.height;
@@ -1487,13 +1488,15 @@ class PrintLayoutApp {
 
   }
 
-  _drawToCanvas(canvas, isPreview) {
-    const tmpl = ALL_TEMPLATES[this.currentTemplate];
+  _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = false) {
+    const tmpl = overrideTemplate || ALL_TEMPLATES[this.currentTemplate];
     const w = tmpl.canvas_width || A5_WIDTH;
     const h = tmpl.canvas_height || A5_HEIGHT;
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
+
+    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
 
     // White background (layer 1)
     ctx.fillStyle = '#ffffff';
@@ -1502,7 +1505,7 @@ class PrintLayoutApp {
     // Draw slots (layer 2)
     for (let i = 0; i < tmpl.slots.length; i++) {
       const slotDef = tmpl.slots[i];
-      const slotData = this.slots[i];
+      const slotData = overrideTemplate ? null : this.slots[i]; // If rendering swiper preview, no slots data
 
       ctx.save();
       ctx.translate(slotDef.cx, slotDef.cy);
@@ -1511,10 +1514,30 @@ class PrintLayoutApp {
       }
 
       if (slotData && slotData.imageId && this._imageCache[slotData.imageId]) {
+        // Draw assigned user photo
         const img = this._imageCache[slotData.imageId];
         this._drawImageInSlot(ctx, img, slotDef, slotData);
+      } else if (step === 1 || isPreviewSwiper) {
+        // Fill default image in Step 1 or swiper thumbnail
+        let defaultImgToDraw = null;
+        if (this.images && this.images.length > 0) {
+           const cachedImg = this._imageCache[this.images[i % this.images.length].id];
+           if (cachedImg) defaultImgToDraw = cachedImg;
+        }
+        if (!defaultImgToDraw && this.defaultPreviewImages && this.defaultPreviewImages.length > 0) {
+           const d = this.defaultPreviewImages[i % this.defaultPreviewImages.length];
+           if (d.complete && d.naturalWidth > 0) defaultImgToDraw = d;
+        }
+
+        if (defaultImgToDraw) {
+           this._drawImageInSlot(ctx, defaultImgToDraw, slotDef, { zoom: 1.0, panX: 0, panY: 0, rotation: 0 });
+        } else {
+           // Fallback loading state
+           ctx.fillStyle = '#e4e4e7';
+           ctx.fillRect(-slotDef.w/2, -slotDef.h/2, slotDef.w, slotDef.h);
+        }
       } else {
-        // Empty slot
+        // Empty slot in Step 2 or 3
         ctx.fillStyle = '#f4f4f5';
         ctx.fillRect(-slotDef.w/2, -slotDef.h/2, slotDef.w, slotDef.h);
 
@@ -1537,12 +1560,19 @@ class PrintLayoutApp {
     }
 
     // Draw Overlay Frame (layer 3)
-    if (this.frameImageObj) {
+    if (isPreviewSwiper && tmpl.frame_url) {
+       // In swiper, we need to load and draw the frame independently if it's an override
+       const frameImg = new Image();
+       frameImg.onload = () => { ctx.drawImage(frameImg, 0, 0, w, h); };
+       frameImg.src = tmpl.frame_url;
+       // Synchronous draw if it happens to be loaded
+       if (frameImg.complete && frameImg.naturalWidth > 0) ctx.drawImage(frameImg, 0, 0, w, h);
+    } else if (this.frameImageObj && !overrideTemplate) {
       ctx.drawImage(this.frameImageObj, 0, 0, w, h);
     }
 
     // Draw active slot highlight OVER the frame (layer 4)
-    if (isPreview && this.selectedSlotIndex >= 0) {
+    if (isPreview && this.selectedSlotIndex >= 0 && step !== 1 && step !== 4 && !isPreviewSwiper) {
        const s = tmpl.slots[this.selectedSlotIndex];
        if (s) {
          ctx.save();
