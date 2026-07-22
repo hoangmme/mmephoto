@@ -63,8 +63,13 @@ class PrintLayoutApp {
     // Default preview images for Step 1
     this.defaultPreviewImages = [];
     const defaultImg = new Image();
-    defaultImg.onload = () => this._renderCanvas();
-    defaultImg.src = 'test_photo.png';
+    defaultImg.crossOrigin = 'anonymous'; // Important for external URLs on canvas
+    defaultImg.onload = () => {
+      this._renderCanvas();
+      // Re-init swiper to re-draw preview canvas with loaded default images
+      this._initMainSwiper();
+    };
+    defaultImg.src = 'https://images.unsplash.com/photo-1604004555489-723a93d6ce74?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
     this.defaultPreviewImages.push(defaultImg);
 
     // Slot state
