@@ -65,9 +65,8 @@ class PrintLayoutApp {
     const defaultImg = new Image();
     defaultImg.crossOrigin = 'anonymous'; // Important for external URLs on canvas
     defaultImg.onload = () => {
-      this._renderCanvas();
-      // Re-init swiper to re-draw preview canvas with loaded default images
-      this._initMainSwiper();
+      if (this.canvas) this._renderCanvas();
+      if (this.mainSwiper) this._initMainSwiper();
     };
     defaultImg.src = 'https://images.unsplash.com/photo-1604004555489-723a93d6ce74?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
     this.defaultPreviewImages.push(defaultImg);
@@ -300,10 +299,11 @@ class PrintLayoutApp {
       if (lockOverlay) lockOverlay.style.display = 'none';
       if (btnNext) btnNext.style.display = 'none';
       if (mainContainer) mainContainer.className = 'pl-main pl-step-mode-1';
-      if (instructionText) instructionText.textContent = 'Chưa có phiên chụp nào đang hoạt động. Vui lòng chụp ảnh hoặc chọn phòng.';
+      if (instructionText) instructionText.textContent = 'Chưa có phiên chụp nào. Vui lòng chụp ảnh hoặc chạm để chọn sẵn Khung in (Frame) yêu thích trong khi chờ.';
       if (uploadBadge) uploadBadge.style.display = 'none';
       if (btnStepPrev) btnStepPrev.style.display = 'none';
       if (btnStepNext) btnStepNext.style.display = 'none';
+      if (stepFooterInfo) stepFooterInfo.textContent = 'Chọn khung in và tiếp tục chọn ảnh';
       return;
     }
     
@@ -635,6 +635,12 @@ class PrintLayoutApp {
       slide.addEventListener('click', () => {
         if (this.currentTemplate !== k) {
            this._selectSlide(k);
+        } else {
+           const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+           const hasSession = this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].session;
+           if (step === 1 && hasSession) {
+             this._setStep(this.activeRoom, 2);
+           }
         }
       });
       
