@@ -290,6 +290,7 @@ class PrintLayoutApp {
     const btnStepPrev = document.getElementById('btnStepPrev');
     const btnStepNext = document.getElementById('btnStepNext');
     const stepFooterInfo = document.getElementById('stepFooterInfo');
+    const stepFooter = document.getElementById('stepFooter');
 
     if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) {
       this.images = [];
@@ -301,11 +302,11 @@ class PrintLayoutApp {
       if (mainContainer) mainContainer.className = 'pl-main pl-step-mode-1';
       if (instructionText) instructionText.textContent = 'Chưa có phiên chụp nào. Vui lòng chụp ảnh hoặc chạm để chọn sẵn Khung in (Frame) yêu thích trong khi chờ.';
       if (uploadBadge) uploadBadge.style.display = 'none';
-      if (btnStepPrev) btnStepPrev.style.display = 'none';
-      if (btnStepNext) btnStepNext.style.display = 'none';
-      if (stepFooterInfo) stepFooterInfo.textContent = 'Chọn khung in và tiếp tục chọn ảnh';
+      if (stepFooter) stepFooter.style.display = 'none';
       return;
     }
+    
+    if (stepFooter) stepFooter.style.display = 'flex';
     
     const roomData = this.rooms[this.activeRoom];
     const step = roomData.step || 1;
