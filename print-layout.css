@@ -341,7 +341,7 @@ body {
   position: relative;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: box-shadow 0.25s ease;
 }
 
 .pl-slide:not(.active) {

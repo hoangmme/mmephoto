@@ -688,16 +688,18 @@ class PrintLayoutApp {
       // Update visual scaling
       const center = this.mainSwiper.scrollLeft + this.mainSwiper.offsetWidth / 2;
       Array.from(this.mainSwiper.children).forEach(slide => {
-         if (slide.classList.contains('active')) {
-            slide.style.transform = '';
-            slide.style.opacity = '';
-            return;
-         }
          const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
          const diff = Math.abs(center - slideCenter);
-         const progress = Math.min(1, diff / (slide.offsetWidth * 1.5));
-         const scale = 0.8 - (progress * 0.1); 
-         const opacity = 0.5 - (progress * 0.2);
+         
+         // Progress from 0 (at center) to 1 (at edges)
+         const progress = Math.min(1, diff / (slide.offsetWidth * 1.2));
+         
+         // Scale goes from 1.0 (center) down to 0.85 (edges)
+         const scale = 1.0 - (progress * 0.15); 
+         
+         // Opacity goes from 1.0 (center) down to 0.5 (edges)
+         const opacity = 1.0 - (progress * 0.5);
+         
          slide.style.transform = `scale(${scale})`;
          slide.style.opacity = opacity;
       });
@@ -739,8 +741,6 @@ class PrintLayoutApp {
      
      Array.from(this.mainSwiper.children).forEach(s => {
         s.classList.remove('active');
-        s.style.transform = '';
-        s.style.opacity = '';
         if (s.contains(this.canvas)) {
            s.removeChild(this.canvas);
         }
