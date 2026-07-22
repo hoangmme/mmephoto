@@ -21,23 +21,29 @@ try {
     exit
 }
 
-# 2. Xac dinh thu muc cai dat (mac dinh vao o C: hoac thu muc User)
-$InstallDir = "$env:USERPROFILE\mmephoto"
-Write-Host "[*] Thu muc cai dat: $InstallDir" -ForegroundColor Yellow
+# 2. Xac dinh thu muc cai dat
+$CurrentDir = (Get-Location).Path
 
-if (Test-Path $InstallDir) {
-    Write-Host "[*] Thu muc da ton tai. Dang cap nhat (git pull)..." -ForegroundColor Yellow
-    Set-Location $InstallDir
+if (Test-Path (Join-Path $CurrentDir ".git")) {
+    $InstallDir = $CurrentDir
+    Write-Host "[*] Dang o san trong thu muc code. Dang cap nhat..." -ForegroundColor Yellow
     git pull
 } else {
-    Write-Host "[*] Dang tai ban clone tu Github..." -ForegroundColor Yellow
-    git clone https://github.com/hoangmme/mmephoto.git $InstallDir
-    Set-Location $InstallDir
+    $InstallDir = Join-Path $CurrentDir "mmephoto"
+    if (Test-Path $InstallDir) {
+        Write-Host "[*] Thu muc $InstallDir da ton tai. Dang cap nhat..." -ForegroundColor Yellow
+        Set-Location $InstallDir
+        git pull
+    } else {
+        Write-Host "[*] Dang tai ban clone tu Github vao $InstallDir..." -ForegroundColor Yellow
+        git clone https://github.com/hoangmme/mmephoto.git $InstallDir
+        Set-Location $InstallDir
+    }
 }
 
 # 3. Chay cac buoc cai dat thong qua mmephoto.bat
 Write-Host "[*] Dang dang ky lenh 'mmephoto' toan cuc..." -ForegroundColor Yellow
-cmd.exe /c "mmephoto.bat 6"
+cmd.exe /c "mmephoto.bat add_to_path"
 
 Write-Host "[*] Dang cai dat thu vien va tao Startup script..." -ForegroundColor Yellow
 cmd.exe /c "mmephoto.bat install"

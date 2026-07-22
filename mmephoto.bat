@@ -11,6 +11,8 @@ if "%CMD%"=="update" goto update
 if "%CMD%"=="reset" goto reset
 if "%CMD%"=="start" goto start
 if "%CMD%"=="stop" goto stop
+if "%CMD%"=="add_to_path" goto add_to_path
+if "%CMD%"=="6" goto add_to_path
 if "%CMD%"=="help" goto help
 
 echo [!] Lenh khong hop le! Go "mmephoto help" de xem cac lenh.
