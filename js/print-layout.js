@@ -780,11 +780,17 @@ class PrintLayoutApp {
       fileUploadTest.addEventListener('change', (e) => this._uploadTestImages(e));
     }
 
-    document.getElementById('btnPrint').addEventListener('click', () => this._print());
-    document.getElementById('btnExportJPG').addEventListener('click', () => this._exportJPG());
+    const btnPrint = document.getElementById('btnPrint');
+    if (btnPrint) btnPrint.addEventListener('click', () => this._print());
+    
+    const btnExportJPG = document.getElementById('btnExportJPG');
+    if (btnExportJPG) btnExportJPG.addEventListener('click', () => this._exportJPG());
+    
     const btnLockExportJPG = document.getElementById('btnLockExportJPG');
     if (btnLockExportJPG) btnLockExportJPG.addEventListener('click', () => this._exportJPG());
-    document.getElementById('btnExportPDF').addEventListener('click', () => this._exportPDF());
+    
+    const btnExportPDF = document.getElementById('btnExportPDF');
+    if (btnExportPDF) btnExportPDF.addEventListener('click', () => this._exportPDF());
 
     // Step Wizard Navigation Buttons
     const btnStepPrev = document.getElementById('btnStepPrev');
