@@ -103,14 +103,14 @@ class PrintLayoutApp {
       const data = JSON.parse(e.data);
       if (data.type === 'init') {
         const room = data.room;
-        if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 180, locked: false, hasNew: false, queue: [] };
+        if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false };
         this.rooms[room].queue = data.sessions || [];
         this._updateActiveSession(room);
         this._renderTabs();
         this._updateUIForRoom();
       } else if (data.type === 'new_image') {
         const room = data.room;
-        if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 180, locked: false, hasNew: false, queue: [] };
+        if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false };
         
         // Find if session is in queue
         let sessionObj = this.rooms[room].queue.find(s => s.id === data.session);
@@ -122,7 +122,10 @@ class PrintLayoutApp {
 
         // If this is the active session
         if (this.rooms[room].session === data.session) {
-            if (this.rooms[room].images.length === 0) this._startTimer(room);
+            this.rooms[room].lastImageTime = Date.now();
+            if (this.rooms[room].images.length === 0) {
+              this._setStep(room, 1);
+            }
             const newImg = { id: 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000), url: data.imageUrl, name: data.imageUrl.split('/').pop() };
             this.rooms[room].images.push(newImg);
             this._preloadImage(newImg.id, newImg.url).then(() => {
@@ -147,6 +150,9 @@ class PrintLayoutApp {
            if (this.rooms[room].session === data.session) {
                this._stopTimer(room);
                this.rooms[room].session = null; // force update
+               this.rooms[room].step = 1;
+               this.rooms[room].timerStarted = false;
+               this.rooms[room].lastImageTime = null;
                this._updateActiveSession(room);
                if (this.activeRoom === room) {
                    this._updateUIForRoom();
@@ -169,16 +175,23 @@ class PrintLayoutApp {
       const active = roomData.queue[0];
       if (roomData.session !== active.id && !onlyBadge) {
         roomData.session = active.id;
+        roomData.step = 1;
+        roomData.timerStarted = false;
+        roomData.lastImageTime = Date.now();
         roomData.images = active.images.map(url => {
           const id = 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
           this._preloadImage(id, url).then(() => this._renderCanvas());
           return { id, url, name: url.split('/').pop() };
         });
-        if (roomData.images.length > 0) this._startTimer(room);
+        if (roomData.images.length > 0) {
+          this._setStep(room, 1);
+        }
       }
     } else if (!onlyBadge) {
       roomData.session = null;
       roomData.images = [];
+      roomData.step = 1;
+      roomData.timerStarted = false;
       this._stopTimer(room);
     }
     
@@ -188,10 +201,9 @@ class PrintLayoutApp {
        if (lbl) {
          if (roomData.session) {
            lbl.innerText = "Phiên chụp: " + roomData.session;
-           if (roomData.queue.length > 1) {
-             lbl.innerText += ` (+${roomData.queue.length - 1} chờ)`;
-           }
-           lbl.style.display = 'inline-block';
+           lbl.style.display = 'inline';
+           const qLen = roomData.queue.length - 1;
+           if (qLen > 0) lbl.innerText += ` (+${qLen} chờ)`;
          } else {
            lbl.style.display = 'none';
          }
@@ -203,9 +215,11 @@ class PrintLayoutApp {
     const tabsContainer = document.getElementById('roomTabs');
     if (!tabsContainer) return;
     tabsContainer.innerHTML = '';
-    const rooms = Object.keys(this.rooms).sort();
     
-    if (rooms.length > 0 && !this.activeRoom) {
+    const rooms = Object.keys(this.rooms);
+    if (rooms.length === 0) return;
+    
+    if (!this.activeRoom && rooms.length > 0) {
       this.activeRoom = rooms[0];
       this._updateUIForRoom();
     }
@@ -215,7 +229,7 @@ class PrintLayoutApp {
       btn.innerText = room;
       btn.style.padding = '8px 12px';
       btn.style.border = '1px solid var(--pl-border)';
-      btn.style.borderRadius = '6px 6px 0 0';
+      btn.style.borderRadius = '6px';
       btn.style.cursor = 'pointer';
       btn.style.position = 'relative';
       btn.style.fontWeight = '600';
@@ -253,62 +267,214 @@ class PrintLayoutApp {
   
   _updateUIForRoom() {
     this._updateActiveSession(this.activeRoom, true);
+    const mainContainer = document.getElementById('mainContainer') || document.querySelector('.pl-main');
+    const timerEl = document.getElementById('countdownTimer');
+    const qrOverlay = document.getElementById('qrOverlay');
+    const lockOverlay = document.getElementById('lockOverlay');
+    const btnNext = document.getElementById('btnNextCustomer');
+    const stepBanner = document.getElementById('stepBanner');
+    const instructionText = document.getElementById('stepInstructionText');
+    const uploadBadge = document.getElementById('uploadStatusBadge');
+    const uploadText = document.getElementById('uploadStatusText');
+    const btnStepPrev = document.getElementById('btnStepPrev');
+    const btnStepNext = document.getElementById('btnStepNext');
+    const stepFooterInfo = document.getElementById('stepFooterInfo');
+
     if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) {
       this.images = [];
       this._renderImageList();
-      document.getElementById('countdownTimer').style.display = 'none';
-      document.getElementById('qrOverlay').style.display = 'none';
-      document.getElementById('lockOverlay').style.display = 'none';
-      const btnNext = document.getElementById('btnNextCustomer');
+      if (timerEl) timerEl.style.display = 'none';
+      if (qrOverlay) qrOverlay.style.display = 'none';
+      if (lockOverlay) lockOverlay.style.display = 'none';
       if (btnNext) btnNext.style.display = 'none';
+      if (mainContainer) mainContainer.className = 'pl-main pl-step-mode-1';
+      if (instructionText) instructionText.textContent = 'Chưa có phiên chụp nào đang hoạt động. Vui lòng chụp ảnh hoặc chọn phòng.';
+      if (uploadBadge) uploadBadge.style.display = 'none';
+      if (btnStepPrev) btnStepPrev.style.display = 'none';
+      if (btnStepNext) btnStepNext.style.display = 'none';
       return;
     }
     
-    const btnNext = document.getElementById('btnNextCustomer');
-    if (btnNext) btnNext.style.display = 'inline-flex';
-    
     const roomData = this.rooms[this.activeRoom];
+    const step = roomData.step || 1;
     this.images = roomData.images;
     this._renderImageList();
+
+    // Update main mode class
+    if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
+
+    // Update step banner active/completed items
+    if (stepBanner) {
+      stepBanner.querySelectorAll('.pl-step-item').forEach(item => {
+        const sNum = parseInt(item.dataset.step);
+        item.classList.toggle('active', sNum === step);
+        item.classList.toggle('completed', sNum < step);
+      });
+    }
+
+    // Check if waiting for quiet period (full images uploaded)
+    const isWaitingForPhotos = !roomData.timerStarted && (step === 1 || step === 2) && roomData.lastImageTime && (Date.now() - roomData.lastImageTime < 30000);
+    if (uploadBadge && uploadText) {
+      if (isWaitingForPhotos) {
+        uploadBadge.style.display = 'inline-flex';
+        uploadText.textContent = `📥 Đang nhận ảnh từ máy ảnh (${roomData.images.length} ảnh)...`;
+      } else {
+        uploadBadge.style.display = 'none';
+      }
+    }
+
+    // Instruction text & buttons based on step
+    if (instructionText && btnStepPrev && btnStepNext && stepFooterInfo) {
+      if (step === 1) {
+        instructionText.textContent = isWaitingForPhotos
+          ? '👉 Bước 1: Chọn mẫu Khung In trong khi đợi tải full ảnh từ máy ảnh...'
+          : '👉 Bước 1: Vuốt sang trái/phải và chạm chọn Mẫu Khung In (Frame) yêu thích của bạn';
+        btnStepPrev.style.display = 'none';
+        btnStepNext.style.display = 'inline-flex';
+        btnStepNext.innerHTML = 'Tiếp theo: Chọn Ảnh (B2) <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+        stepFooterInfo.textContent = 'Khách hàng chọn mẫu khung in phù hợp (60 giây)';
+        if (btnNext) btnNext.style.display = 'none';
+        if (qrOverlay) qrOverlay.style.display = 'none';
+      } else if (step === 2) {
+        const filledSlots = this.slots ? this.slots.filter(s => s.imageId).length : 0;
+        const totalSlots = this.slots ? this.slots.length : 0;
+        instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${totalSlots} ô)`;
+        btnStepPrev.style.display = 'inline-flex';
+        btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B1';
+        btnStepNext.style.display = 'inline-flex';
+        btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp (B3) <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+        stepFooterInfo.textContent = 'Chạm ảnh để điền ô trống. Hết giờ hệ thống sẽ tự động điền (Auto Fill)';
+        if (btnNext) btnNext.style.display = 'none';
+        if (qrOverlay) qrOverlay.style.display = 'none';
+      } else if (step === 3) {
+        instructionText.textContent = '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
+        btnStepPrev.style.display = 'inline-flex';
+        btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B2';
+        btnStepNext.style.display = 'inline-flex';
+        btnStepNext.innerHTML = '✅ Hoàn Tất (Gửi cho Nhân Viên)';
+        stepFooterInfo.textContent = 'Dùng 2 ngón tay kéo ra/vào để zoom, xoay 2 ngón tay để xoay ảnh';
+        if (btnNext) btnNext.style.display = 'none';
+        if (qrOverlay) qrOverlay.style.display = 'none';
+      } else if (step === 4) {
+        instructionText.textContent = '✨ Khách hàng đã hoàn tất! Nhân viên hỗ trợ kiểm tra, tải, in ảnh hoặc bấm Next Customer';
+        btnStepPrev.style.display = 'none';
+        btnStepNext.style.display = 'none';
+        stepFooterInfo.textContent = 'Màn hình nhân viên — Không đếm thời gian thao tác';
+        if (btnNext) btnNext.style.display = 'inline-flex';
+        if (qrOverlay) qrOverlay.style.display = 'block';
+      }
+    }
     
     // Timer update
-    const el = document.getElementById('countdownTimer');
-    el.style.display = 'block';
-    if (roomData.locked) {
-      document.getElementById('lockOverlay').style.display = 'flex';
-      el.innerText = '00:00';
-    } else {
-      document.getElementById('lockOverlay').style.display = 'none';
-      const m = Math.floor(roomData.timeLeft / 60).toString().padStart(2, '0');
-      const s = (roomData.timeLeft % 60).toString().padStart(2, '0');
-      el.innerText = `${m}:${s}`;
+    if (timerEl) {
+      if (step === 4 || !roomData.timerStarted) {
+        if (step === 4) {
+          timerEl.style.display = 'none';
+        } else {
+          timerEl.style.display = 'block';
+          timerEl.innerText = step === 1 ? '01:00' : (step === 2 ? '03:00' : '01:00');
+          timerEl.style.color = 'var(--pl-accent)';
+        }
+        if (lockOverlay) lockOverlay.style.display = 'none';
+      } else {
+        timerEl.style.display = 'block';
+        const m = Math.floor(roomData.timeLeft / 60).toString().padStart(2, '0');
+        const s = (roomData.timeLeft % 60).toString().padStart(2, '0');
+        timerEl.innerText = `${m}:${s}`;
+        if (roomData.timeLeft <= 15) {
+          timerEl.style.color = '#ef4444';
+        } else {
+          timerEl.style.color = 'var(--pl-accent)';
+        }
+        if (roomData.locked) {
+          if (lockOverlay) lockOverlay.style.display = 'flex';
+        } else {
+          if (lockOverlay) lockOverlay.style.display = 'none';
+        }
+      }
     }
     
     // QR Code
     if (roomData.session) {
       this._updateQRCode(this.activeRoom, roomData.session);
     }
+
+    // Re-adjust swiper padding after mode/layout change
+    requestAnimationFrame(() => {
+      if (this._updatePadding) this._updatePadding();
+    });
   }
 
-  _startTimer(room) {
-    if (this.rooms[room].timerInterval) clearInterval(this.rooms[room].timerInterval);
-    this.rooms[room].timeLeft = 180; // 3 minutes
-    this.rooms[room].locked = false;
+  _setStep(room, step) {
+    const roomData = this.rooms[room];
+    if (!roomData) return;
+    if (roomData.step === step && roomData.timerInterval) return;
+    roomData.step = step;
+    this._startStepTimer(room, step);
+    if (this.activeRoom === room) {
+      this._updateUIForRoom();
+      this._renderCanvas();
+    }
+  }
+
+  _startStepTimer(room, step) {
+    const roomData = this.rooms[room];
+    if (!roomData) return;
+    if (roomData.timerInterval) clearInterval(roomData.timerInterval);
     
-    this.rooms[room].timerInterval = setInterval(() => {
-      this.rooms[room].timeLeft--;
-      if (this.rooms[room].timeLeft <= 0) {
-        clearInterval(this.rooms[room].timerInterval);
-        this.rooms[room].locked = true;
+    roomData.step = step;
+    roomData.locked = false;
+    
+    if (step === 1) roomData.timeLeft = 60;
+    else if (step === 2) roomData.timeLeft = 180;
+    else if (step === 3) roomData.timeLeft = 60;
+    else {
+      roomData.timeLeft = 0;
+      if (this.activeRoom === room) this._updateUIForRoom();
+      return;
+    }
+
+    roomData.timerInterval = setInterval(() => {
+      // Smart timer check: wait until 30s of no new images arriving
+      if (!roomData.timerStarted && (step === 1 || step === 2)) {
+        if (!roomData.lastImageTime || (Date.now() - roomData.lastImageTime >= 30000)) {
+          roomData.timerStarted = true;
+        } else {
+          if (this.activeRoom === room) this._updateUIForRoom();
+          return; // hold countdown while photos are uploading
+        }
       }
+
+      roomData.timeLeft--;
+      if (roomData.timeLeft <= 0) {
+        clearInterval(roomData.timerInterval);
+        if (step === 1) {
+          this._setStep(room, 2);
+        } else if (step === 2) {
+          if (this._autoFill) this._autoFill();
+          this._setStep(room, 3);
+        } else if (step === 3) {
+          this._setStep(room, 4);
+        }
+      }
+
       if (this.activeRoom === room) {
         this._updateUIForRoom();
       }
     }, 1000);
   }
 
+  _startTimer(room) {
+    const roomData = this.rooms[room];
+    if (!roomData) return;
+    this._startStepTimer(room, roomData.step || 1);
+  }
+
   _stopTimer(room) {
-    if (this.rooms[room].timerInterval) clearInterval(this.rooms[room].timerInterval);
+    if (this.rooms[room] && this.rooms[room].timerInterval) {
+      clearInterval(this.rooms[room].timerInterval);
+      this.rooms[room].timerInterval = null;
+    }
   }
 
   _updateQRCode(room, session) {
@@ -628,6 +794,70 @@ class PrintLayoutApp {
     if (btnLockExportJPG) btnLockExportJPG.addEventListener('click', () => this._exportJPG());
     document.getElementById('btnExportPDF').addEventListener('click', () => this._exportPDF());
 
+    // Step Wizard Navigation Buttons
+    const btnStepPrev = document.getElementById('btnStepPrev');
+    if (btnStepPrev) {
+      btnStepPrev.addEventListener('click', () => {
+        if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
+        const cur = this.rooms[this.activeRoom].step || 1;
+        if (cur > 1) this._setStep(this.activeRoom, cur - 1);
+      });
+    }
+
+    const btnStepNext = document.getElementById('btnStepNext');
+    if (btnStepNext) {
+      btnStepNext.addEventListener('click', () => {
+        if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
+        const cur = this.rooms[this.activeRoom].step || 1;
+        if (cur === 1) {
+          this._setStep(this.activeRoom, 2);
+        } else if (cur === 2) {
+          if (this._autoFill) this._autoFill();
+          this._setStep(this.activeRoom, 3);
+        } else if (cur === 3) {
+          this._setStep(this.activeRoom, 4);
+        }
+      });
+    }
+
+    const btnNextCustomer = document.getElementById('btnNextCustomer');
+    if (btnNextCustomer) {
+      btnNextCustomer.addEventListener('click', () => {
+        if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) return;
+        if (confirm('Chuyển qua lượt khách hàng tiếp theo? (Phiên hiện tại sẽ được đánh dấu hoàn thành)')) {
+          const branch = localStorage.getItem('branchId') || 'CN01';
+          const sess = this.rooms[this.activeRoom].session;
+          fetch(`/api/stream-finish/${branch}/${this.activeRoom}/${sess}`, { method: 'POST' }).catch(() => {});
+          
+          if (this.rooms[this.activeRoom].queue && this.rooms[this.activeRoom].queue.length > 0) {
+            this.rooms[this.activeRoom].queue.shift();
+          }
+          this._stopTimer(this.activeRoom);
+          this.rooms[this.activeRoom].session = null;
+          this.rooms[this.activeRoom].step = 1;
+          this.rooms[this.activeRoom].timerStarted = false;
+          this._updateActiveSession(this.activeRoom);
+          this._updateUIForRoom();
+          this._renderCanvas();
+          this._renderTabs();
+        }
+      });
+    }
+
+    const stepBanner = document.getElementById('stepBanner');
+    if (stepBanner) {
+      stepBanner.querySelectorAll('.pl-step-item').forEach(item => {
+        item.style.cursor = 'pointer';
+        item.addEventListener('click', () => {
+          if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) return;
+          const targetStep = parseInt(item.dataset.step);
+          if (targetStep && targetStep >= 1 && targetStep <= 4) {
+            this._setStep(this.activeRoom, targetStep);
+          }
+        });
+      });
+    }
+
     // Import Custom Template
     const btnImport = document.getElementById('btnImportTemplateJson');
     const inputImport = document.getElementById('templateJsonInput');
@@ -671,25 +901,68 @@ class PrintLayoutApp {
     
 
 
-    // Touch support for pan
+    // Touch support for pan, zoom (pinch), and rotation (2-finger twist)
     let touchStartX, touchStartY;
+    let initialPinchDistance = 0, initialPinchAngle = 0;
+    let initialSlotZoom = 1.0, initialSlotRot = 0;
+
     this.canvas.addEventListener('touchstart', (e) => {
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];
       if (!slot || !slot.imageId) return;
-      const touch = e.touches[0];
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
+
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        const t0 = e.touches[0], t1 = e.touches[1];
+        initialPinchDistance = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+        initialPinchAngle = Math.atan2(t1.clientY - t0.clientY, t1.clientX - t0.clientX) * (180 / Math.PI);
+        initialSlotZoom = slot.zoom || 1.0;
+        initialSlotRot = slot.rotation || 0;
+      }
     }, { passive: true });
+
     this.canvas.addEventListener('touchmove', (e) => {
       if (this.selectedSlotIndex < 0) return;
-      const touch = e.touches[0];
-      const scale = this.canvas.width / this.canvas.offsetWidth;
-      const dx = (touch.clientX - touchStartX) * scale;
-      const dy = (touch.clientY - touchStartY) * scale;
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
-      this._panSlot(this.selectedSlotIndex, dx, dy);
+      const slot = this.slots[this.selectedSlotIndex];
+      if (!slot || !slot.imageId) return;
+
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const scale = this.canvas.width / this.canvas.offsetWidth;
+        const dx = (touch.clientX - touchStartX) * scale;
+        const dy = (touch.clientY - touchStartY) * scale;
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        this._panSlot(this.selectedSlotIndex, dx, dy);
+        e.preventDefault();
+      } else if (e.touches.length === 2 && initialPinchDistance > 0) {
+        const t0 = e.touches[0], t1 = e.touches[1];
+        const currentDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+        const scaleFactor = currentDist / initialPinchDistance;
+        const newZoom = Math.max(0.3, Math.min(4.0, initialSlotZoom * scaleFactor));
+
+        const currentAngle = Math.atan2(t1.clientY - t0.clientY, t1.clientX - t0.clientX) * (180 / Math.PI);
+        let deltaAngle = currentAngle - initialPinchAngle;
+        let newRot = (initialSlotRot + deltaAngle) % 360;
+        if (newRot < 0) newRot += 360;
+
+        slot.zoom = newZoom;
+        slot.rotation = newRot;
+        this._clampPan(this.selectedSlotIndex);
+        this._renderCanvas();
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // Mouse wheel zoom support for desktop testing/usage
+    this.canvas.addEventListener('wheel', (e) => {
+      if (this.selectedSlotIndex < 0) return;
+      const slot = this.slots[this.selectedSlotIndex];
+      if (!slot || !slot.imageId) return;
+      const delta = e.deltaY > 0 ? -0.05 : 0.05;
+      this._zoomSlot(this.selectedSlotIndex, Math.max(0.3, Math.min(4.0, (slot.zoom || 1.0) + delta)));
       e.preventDefault();
     }, { passive: false });
   }
@@ -1140,6 +1413,7 @@ class PrintLayoutApp {
 
   // ── Render Slot Properties Panel ──
   _renderSlotProps() {
+    if (!this.slotProps) return;
     if (this.selectedSlotIndex < 0) {
       this.slotProps.innerHTML = '<div class="pl-no-slot">Chọn một slot trên canvas để chỉnh sửa</div>';
       return;

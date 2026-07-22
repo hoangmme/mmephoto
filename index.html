@@ -65,16 +65,50 @@
       </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="pl-main">
-      <!-- Left Panel: Image List -->
-      <aside class="pl-panel pl-panel-left">
+    <!-- Top Navigation & Step Wizard -->
+    <div class="pl-top-wizard-area" id="topWizardArea">
+      <!-- Room Tabs (if multiple rooms configured) -->
+      <div id="roomTabs" class="pl-room-tabs"></div>
 
-        <div id="roomTabs" style="display:flex; flex-wrap:wrap; gap:5px; padding:10px 15px 0 15px; border-bottom:1px solid var(--pl-border);">
-          <!-- Tabs will be generated here -->
+      <!-- Step Wizard Banner -->
+      <div class="pl-step-banner" id="stepBanner">
+        <div class="pl-step-item active" data-step="1">
+          <span class="pl-step-num">1</span>
+          <span class="pl-step-label">B1: Chọn Khung <small>(01:00)</small></span>
         </div>
+        <div class="pl-step-connector"></div>
+        <div class="pl-step-item" data-step="2">
+          <span class="pl-step-num">2</span>
+          <span class="pl-step-label">B2: Chọn Ảnh <small>(03:00)</small></span>
+        </div>
+        <div class="pl-step-connector"></div>
+        <div class="pl-step-item" data-step="3">
+          <span class="pl-step-num">3</span>
+          <span class="pl-step-label">B3: Sắp Xếp <small>(01:00)</small></span>
+        </div>
+        <div class="pl-step-connector"></div>
+        <div class="pl-step-item" data-step="4">
+          <span class="pl-step-num">4</span>
+          <span class="pl-step-label">B4: Hoàn Tất</span>
+        </div>
+      </div>
+
+      <!-- Instruction & Upload Status Banner -->
+      <div class="pl-instruction-banner" id="instructionBanner">
+        <div class="pl-upload-status" id="uploadStatusBadge" style="display:none;">
+          <span class="pl-spinner-mini"></span>
+          <span id="uploadStatusText">📥 Đang nhận ảnh từ máy ảnh...</span>
+        </div>
+        <div class="pl-instruction-text" id="stepInstructionText">👉 Bước 1: Vuốt sang trái/phải để chọn Mẫu Khung In (Frame) yêu thích của bạn</div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="pl-main pl-step-mode-1" id="mainContainer">
+      <!-- Left Panel: Image List -->
+      <aside class="pl-panel pl-panel-left" id="panelLeft">
         <div class="pl-panel-header">
-          <h3>📷 Ảnh đã xử lý</h3>
+          <h3>📷 Ảnh đã chụp</h3>
           <span class="pl-image-count" id="imageCount">0 ảnh</span>
         </div>
         <div class="pl-actions">
@@ -92,24 +126,31 @@
         </div>
       </aside>
 
-      <!-- Center: Main Template Swiper -->
-      <div class="pl-main-swiper-area" id="mainSwiperArea" style="position:relative;">
+      <!-- Center: Main Template Swiper & Canvas -->
+      <div class="pl-main-swiper-area" id="mainSwiperArea">
         <div class="pl-swiper-container" id="mainSwiper">
           <!-- Slides injected by JS -->
         </div>
         <div class="pl-canvas-info" id="canvasInfo">A5 — 1748 × 2480 px — 300 DPI</div>
       </div>
-
-      <!-- Right Panel: Slot Properties -->
-      <aside class="pl-panel pl-panel-right">
-        <div class="pl-panel-header">
-          <h3>🔧 Slot Properties</h3>
-        </div>
-        <div class="pl-slot-props" id="slotProps">
-          <div class="pl-no-slot">Chọn một slot trên canvas để chỉnh sửa</div>
-        </div>
-      </aside>
     </main>
+
+    <!-- Bottom Step Controls Bar -->
+    <footer class="pl-step-footer" id="stepFooter">
+      <div class="pl-step-footer-inner">
+        <button class="pl-btn pl-btn-secondary" id="btnStepPrev" style="display:none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Quay lại B1
+        </button>
+        <div class="pl-step-footer-center">
+          <span id="stepFooterInfo" style="color:var(--pl-text-muted); font-size:14px;">Chọn khung in và tiếp tục chọn ảnh</span>
+        </div>
+        <button class="pl-btn pl-btn-primary pl-btn-lg" id="btnStepNext">
+          Tiếp theo: Chọn Ảnh (B2)
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </footer>
   </div>
 
   <!-- Processing overlay -->

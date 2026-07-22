@@ -375,97 +375,182 @@ body {
   color: var(--pl-text-muted);
 }
 
-/* ── Slot Properties ── */
-.pl-slot-props {
-  flex: 1;
-  padding: 12px;
-  overflow-y: auto;
-}
-
-.pl-no-slot {
-  padding: 30px 10px;
-  text-align: center;
-  color: var(--pl-text-muted);
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.pl-prop-group {
-  margin-bottom: 16px;
-}
-
-.pl-prop-label {
-  font-size: 11px;
-  color: var(--pl-text-muted);
-  margin-bottom: 6px;
-  display: block;
-}
-
-.pl-prop-value {
-  font-size: 13px;
-  color: var(--pl-text);
-  margin-bottom: 4px;
-}
-
-.pl-prop-actions {
+/* ── Top Wizard Area ── */
+.pl-top-wizard-area {
+  background: var(--pl-bg-panel);
+  border-bottom: 1px solid var(--pl-border);
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
+}
+
+.pl-room-tabs {
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  margin-top: 12px;
+  padding: 8px 16px 4px 16px;
 }
 
-.pl-prop-btn {
-  padding: 7px 10px;
-  background: var(--pl-bg-section);
-  border: 1px solid var(--pl-border);
-  border-radius: var(--pl-radius-sm);
-  color: var(--pl-text-secondary);
-  font-family: var(--pl-font);
-  font-size: 11px;
-  cursor: pointer;
-  transition: all var(--pl-transition);
-  text-align: center;
-}
-.pl-prop-btn:hover {
-  background: var(--pl-bg-hover);
-  color: var(--pl-text);
-}
-.pl-prop-btn.danger {
-  color: #f87171;
-  border-color: rgba(248,113,113,0.3);
-}
-.pl-prop-btn.danger:hover {
-  background: rgba(248,113,113,0.1);
+.pl-step-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  gap: 12px;
 }
 
-/* Zoom slider */
-.pl-zoom-row {
+.pl-step-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 6px;
+  opacity: 0.4;
+  transition: all var(--pl-transition);
 }
-.pl-zoom-row input[type="range"] {
-  flex: 1;
-  height: 4px;
-  -webkit-appearance: none;
+.pl-step-item.active {
+  opacity: 1;
+}
+.pl-step-item.completed {
+  opacity: 0.8;
+}
+
+.pl-step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--pl-bg-section);
+  border: 1px solid var(--pl-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--pl-text-secondary);
+}
+.pl-step-item.active .pl-step-num {
+  background: var(--pl-accent);
+  border-color: var(--pl-accent);
+  color: #000;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+.pl-step-item.completed .pl-step-num {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #fff;
+}
+
+.pl-step-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pl-text);
+}
+.pl-step-label small {
+  font-size: 12px;
+  color: var(--pl-accent);
+  margin-left: 2px;
+  font-weight: 500;
+}
+
+.pl-step-connector {
+  width: 30px;
+  height: 2px;
   background: var(--pl-border);
-  border-radius: 2px;
-  outline: none;
 }
-.pl-zoom-row input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
+@media (max-width: 768px) {
+  .pl-step-label small { display: none; }
+  .pl-step-connector { width: 12px; }
+}
+
+.pl-instruction-banner {
+  background: rgba(56, 189, 248, 0.08);
+  border-top: 1px solid rgba(56, 189, 248, 0.15);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.pl-upload-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  color: #facc15;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pl-spinner-mini {
   width: 14px;
   height: 14px;
+  border: 2px solid rgba(250, 204, 21, 0.3);
+  border-top-color: #facc15;
   border-radius: 50%;
-  background: var(--pl-accent);
-  cursor: pointer;
+  animation: plSpin 0.6s linear infinite;
 }
-.pl-zoom-value {
-  font-size: 11px;
-  color: var(--pl-text-muted);
-  min-width: 36px;
-  text-align: right;
+
+.pl-instruction-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pl-text);
+}
+
+/* ── Step Modes Layout ── */
+.pl-step-mode-1 #panelLeft,
+.pl-step-mode-3 #panelLeft,
+.pl-step-mode-4 #panelLeft {
+  display: none !important;
+}
+
+.pl-step-mode-2 #panelLeft {
+  display: flex !important;
+  width: 320px;
+  max-width: 42%;
+}
+
+.pl-step-mode-2 .pl-image-list {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 12px;
+}
+
+/* ── Step Footer Controls ── */
+.pl-step-footer {
+  background: var(--pl-bg-panel);
+  border-top: 1px solid var(--pl-border);
+  padding: 12px 20px;
+  flex-shrink: 0;
+}
+
+.pl-step-footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 16px;
+}
+
+.pl-btn-lg {
+  padding: 10px 22px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(56, 189, 248, 0.25);
+}
+
+.pl-btn-secondary {
+  background: var(--pl-bg-section);
+  color: var(--pl-text);
+  border: 1px solid var(--pl-border-light);
+}
+.pl-btn-secondary:hover {
+  background: var(--pl-bg-hover);
+  border-color: var(--pl-text-secondary);
 }
 
 /* ── Panel Footer ── */
