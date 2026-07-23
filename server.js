@@ -378,6 +378,8 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (r
   if (!sessionObj) {
     sessionObj = { id: session, images: [] };
     roomState[branch][room].sessions.push(sessionObj);
+  } else if (sessionObj.finished) {
+    sessionObj.finished = false;
   }
   sessionObj.images.push(imageUrl);
   saveRoomState();

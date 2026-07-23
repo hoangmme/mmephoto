@@ -162,21 +162,35 @@ class PrintLayoutApp {
         }
       } else if (data.type === 'sync') {
         const room = data.room;
-        if (this.rooms[room] && this.rooms[room].session === data.session) {
-          if (data.step !== undefined) this.rooms[room].step = data.step;
-          let templateChanged = false;
-          if (data.currentTemplate !== undefined && this.currentTemplate !== data.currentTemplate) {
-            this.currentTemplate = data.currentTemplate;
-            templateChanged = true;
+        if (this.rooms[room]) {
+          // Find the session in the queue and update it
+          let sessionObj = this.rooms[room].queue ? this.rooms[room].queue.find(s => s.id === data.session) : null;
+          if (sessionObj) {
+            if (data.step !== undefined) sessionObj.step = data.step;
+            if (data.currentTemplate !== undefined) sessionObj.currentTemplate = data.currentTemplate;
+            if (data.slots && data.slots.length > 0) sessionObj.slots = data.slots;
+            if (data.selectedImages) sessionObj.selectedImages = data.selectedImages;
           }
-          if (data.slots && data.slots.length > 0) this.slots = data.slots;
-          if (data.selectedImages) this.selectedPhotos = new Set(data.selectedImages);
-          
-          if (this.activeRoom === room) {
-             if (templateChanged) this._loadTemplateImages();
-             this._updateUIForRoom();
-             this._renderCanvas();
-             this._renderTabs();
+
+          // If this is the active session for this room
+          if (this.rooms[room].session === data.session) {
+            if (data.step !== undefined) this.rooms[room].step = data.step;
+            
+            // Only update globals if this room is the currently viewed tab
+            if (this.activeRoom === room) {
+              let templateChanged = false;
+              if (data.currentTemplate !== undefined && this.currentTemplate !== data.currentTemplate) {
+                this.currentTemplate = data.currentTemplate;
+                templateChanged = true;
+              }
+              if (data.slots && data.slots.length > 0) this.slots = data.slots;
+              if (data.selectedImages) this.selectedPhotos = new Set(data.selectedImages);
+              
+              if (templateChanged) this._loadTemplateImages();
+              this._updateUIForRoom();
+              this._renderCanvas();
+              this._renderTabs();
+            }
           }
         }
       } else if (data.type === 'session_finished') {
