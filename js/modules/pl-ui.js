@@ -207,6 +207,9 @@ _initMainSwiper() {
 
       if (this.isProgrammaticScroll) return;
 
+      const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+      if (step > 1) return;
+
       scrollTimeout = setTimeout(() => {
         let closest = null;
         let minDiff = Infinity;
@@ -350,11 +353,26 @@ _updateUIForRoom() {
     }
 
     // Sync swiper to current template without triggering slideChange
-    if (this.swiper && this.currentTemplate) {
-      const slides = Array.from(this.swiper.slides);
-      const index = slides.findIndex(s => s.dataset.id === this.currentTemplate);
-      if (index !== -1 && index !== this.swiper.activeIndex) {
-        this.swiper.slideTo(index, 0, false);
+    if (this.mainSwiper && this.currentTemplate) {
+      const activeSlide = Array.from(this.mainSwiper.children).find(s => s.dataset.id === this.currentTemplate);
+      if (activeSlide) {
+        Array.from(this.mainSwiper.children).forEach(s => {
+          s.classList.toggle('active', s === activeSlide);
+          if (s !== activeSlide && s.contains(this.canvas)) {
+            s.removeChild(this.canvas);
+          }
+        });
+        if (!activeSlide.contains(this.canvas)) {
+          activeSlide.appendChild(this.canvas);
+        }
+        
+        const parentArea = this.mainSwiper.parentElement;
+        if (parentArea && parentArea.offsetWidth > 0) {
+          const pad = Math.max(0, (parentArea.offsetWidth - activeSlide.offsetWidth) / 2);
+          this.isProgrammaticScroll = true;
+          this.mainSwiper.scrollLeft = activeSlide.offsetLeft - pad;
+          setTimeout(() => { this.isProgrammaticScroll = false; }, 500);
+        }
       }
     }
 
