@@ -229,6 +229,18 @@ class PrintLayoutApp {
           return { id, url, name: url.split('/').pop() };
         });
         
+        // Clean up invalid IDs from previous algorithm
+        const validIds = new Set(roomData.images.map(img => img.id));
+        this.selectedPhotos = new Set(Array.from(this.selectedPhotos).filter(id => validIds.has(id)));
+        if (this.slots) {
+          this.slots.forEach(slot => {
+            if (slot.imageId && !validIds.has(slot.imageId)) {
+              slot.imageId = null;
+            }
+          });
+        }
+
+        
         // Only set step to 1 if we don't have a saved step from server
         if (roomData.images.length > 0 && !active.step) {
           this._setStep(room, 1);
@@ -369,6 +381,15 @@ class PrintLayoutApp {
         item.classList.toggle('active', sNum === step);
         item.classList.toggle('completed', sNum < step);
       });
+    }
+
+    // Sync swiper to current template without triggering slideChange
+    if (this.swiper && this.currentTemplate) {
+      const slides = Array.from(this.swiper.slides);
+      const index = slides.findIndex(s => s.dataset.id === this.currentTemplate);
+      if (index !== -1 && index !== this.swiper.activeIndex) {
+        this.swiper.slideTo(index, 0, false);
+      }
     }
 
     // Check if waiting for quiet period (full images uploaded)
