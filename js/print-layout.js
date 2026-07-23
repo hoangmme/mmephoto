@@ -1688,29 +1688,23 @@ class PrintLayoutApp {
       slotData.zoom
     );
 
-    // Center + pan (relative to local cx,cy origin)
-    const drawX = -drawW / 2 + slotData.panX;
-    const drawY = -drawH / 2 + slotData.panY;
-
     // Clip to slot
     ctx.save();
     ctx.beginPath();
     ctx.rect(-slotDef.w/2, -slotDef.h/2, slotDef.w, slotDef.h);
     ctx.clip();
     
+    // Translate to pan position
+    ctx.translate(slotData.panX, slotData.panY);
+    
     if (slotData.rotation) {
       ctx.rotate(slotData.rotation * Math.PI / 180);
     }
     
-    // If rotated 90 or 270, the drawing dimensions are swapped relative to the rotated context
-    if (slotData.rotation === 90) {
-      ctx.drawImage(img, drawY, -drawX - drawW, drawH, drawW);
-    } else if (slotData.rotation === 270) {
-      ctx.drawImage(img, -drawY - drawH, drawX, drawH, drawW);
-    } else if (slotData.rotation === 180) {
-      ctx.drawImage(img, -drawX - drawW, -drawY - drawH, drawW, drawH);
+    if (isRotated) {
+      ctx.drawImage(img, -drawH / 2, -drawW / 2, drawH, drawW);
     } else {
-      ctx.drawImage(img, drawX, drawY, drawW, drawH);
+      ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
     }
     
     ctx.restore();
