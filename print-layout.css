@@ -532,8 +532,7 @@ body {
 }
 
 /* ── Step Modes Layout ── */
-.pl-step-mode-1 #panelLeft,
-.pl-step-mode-4 #panelLeft {
+.pl-step-mode-1 #panelLeft {
   display: none !important;
 }
 
@@ -571,12 +570,14 @@ body {
   padding: 20px;
 }
 
-.pl-step-mode-3 #panelLeft {
+.pl-step-mode-3 #panelLeft,
+.pl-step-mode-4 #panelLeft {
   display: flex !important;
   width: 320px;
   max-width: 42%;
 }
-.pl-step-mode-3 .pl-slide {
+.pl-step-mode-3 .pl-slide,
+.pl-step-mode-4 .pl-slide {
   height: min(calc(100vh - 300px), calc((100vw - 380px) * 1.418));
 }
 

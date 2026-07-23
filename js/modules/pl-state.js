@@ -149,22 +149,23 @@ _updateActiveSession(room, onlyBadge = false) {
     if (roomData.queue && roomData.queue.length > 0) {
       const activeSessionId = roomData.activeSessionId;
       const active = roomData.queue.find(s => s.id === activeSessionId) || roomData.queue[0];
-      if (roomData.session !== active.id && !onlyBadge) {
-        roomData.session = active.id;
-        roomData.step = active.step || 1;
-        
-        // Smart step recovery based on data integrity:
-        // If we have selected images, we must be at least at step 2 or 3
-        if (active.selectedImages && active.selectedImages.length > 0) {
-           if (roomData.step < 2) roomData.step = 3; 
-        }
-        // If we have slots filled, we must be at least at step 3 or 4
-        if (active.slots && active.slots.some(s => s.imageId)) {
-           if (roomData.step < 3) roomData.step = 4;
-        }
-        roomData.timerStarted = false;
-        roomData.lastImageTime = Date.now();
-        
+      
+      roomData.session = active.id;
+      roomData.step = active.step || 1;
+      
+      // Smart step recovery based on data integrity:
+      // If we have selected images, we must be at least at step 2 or 3
+      if (active.selectedImages && active.selectedImages.length > 0) {
+         if (roomData.step < 2) roomData.step = 3; 
+      }
+      // If we have slots filled, we must be at least at step 3 or 4
+      if (active.slots && active.slots.some(s => s.imageId)) {
+         if (roomData.step < 3) roomData.step = 4;
+      }
+      roomData.timerStarted = false;
+      roomData.lastImageTime = Date.now();
+      
+      if (!onlyBadge) {
         if (this.activeRoom === room) {
           if (active.currentTemplate) this.currentTemplate = active.currentTemplate;
           if (active.slots) this.slots = active.slots;
@@ -175,7 +176,7 @@ _updateActiveSession(room, onlyBadge = false) {
           }
         }
         
-        roomData.images = active.images
+        roomData.images = (active.images || [])
           .filter(url => !url.includes('00_frame.jpg'))
           .map(url => {
           const id = 'img_' + url.replace(/[^a-zA-Z0-9]/g, '_');
@@ -186,16 +187,10 @@ _updateActiveSession(room, onlyBadge = false) {
         });
         
         if (this.activeRoom === room) {
-          // Ensure template images are loaded when session is restored
           if (this.currentTemplate) {
             this._loadTemplateImages();
           }
-          
-          // We will NOT wipe slot data based on validIds because it causes F5 data loss
-          // if the server state and client state are momentarily out of sync.
-          // Keep selectedPhotos and slots as they came from the server.
         }
-
         
         // Only set step to 1 if we don't have a saved step from server AND smart recovery didn't bump the step
         if (roomData.images.length > 0 && !active.step && roomData.step === 1) {
