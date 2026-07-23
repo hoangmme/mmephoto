@@ -166,8 +166,23 @@ _updateActiveSession(room, onlyBadge = false) {
       
       if (!onlyBadge) {
         if (this.activeRoom === room) {
-          if (active.currentTemplate) this.currentTemplate = active.currentTemplate;
-          if (active.slots) this.slots = active.slots;
+          if (active.currentTemplate) {
+            this.currentTemplate = active.currentTemplate;
+          } else {
+            this.currentTemplate = Object.keys(ALL_TEMPLATES)[0];
+          }
+
+          if (active.slots && active.slots.length > 0) {
+            this.slots = JSON.parse(JSON.stringify(active.slots));
+          } else {
+            const t = ALL_TEMPLATES[this.currentTemplate] || Object.values(ALL_TEMPLATES)[0];
+            if (t && t.slots) {
+              this.slots = t.slots.map(s => ({ ...s, imageId: null, scale: 1, rotate: 0, x: 0, y: 0 }));
+            } else {
+              this.slots = [];
+            }
+          }
+
           if (active.selectedImages) {
             this.selectedPhotos = new Set(active.selectedImages);
           } else {

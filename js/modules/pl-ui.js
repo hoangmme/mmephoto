@@ -443,6 +443,7 @@ _updateUIForRoom() {
         }
 
         btnStepPrev.style.display = isStaffMode ? 'inline-flex' : 'none';
+        btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B3';
         btnStepNext.style.display = 'none';
         
         const btnStaffDownload = document.getElementById('btnStaffDownload');
@@ -607,9 +608,7 @@ _bindEvents() {
       btnStepPrev.addEventListener('click', () => {
         if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
         const cur = this.rooms[this.activeRoom].step || 1;
-        if (cur === 4) {
-          this._setStep(this.activeRoom, 1);
-        } else if (cur > 1) {
+        if (cur > 1) {
           this._setStep(this.activeRoom, cur - 1);
         }
       });
