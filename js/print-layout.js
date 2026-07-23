@@ -344,8 +344,7 @@ class PrintLayoutApp {
     }
 
     // Instruction text & buttons based on step
-    if (instructionText && btnStepPrev && btnStepNext && stepFooterInfo) {
-      if (stepFooterInfo) stepFooterInfo.textContent = ''; // Gom hướng dẫn về 1 chỗ (banner trên)
+    if (instructionText && btnStepPrev && btnStepNext) {
       
       if (step === 1) {
         instructionText.textContent = isWaitingForPhotos

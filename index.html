@@ -81,12 +81,24 @@
       </div>
 
       <!-- Instruction & Upload Status Banner -->
-      <div class="pl-instruction-banner" id="instructionBanner">
-        <div class="pl-upload-status" id="uploadStatusBadge" style="display:none;">
-          <span class="pl-spinner-mini"></span>
-          <span id="uploadStatusText">📥 Đang nhận ảnh từ máy ảnh...</span>
+      <div class="pl-instruction-banner" id="instructionBanner" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; gap: 10px; flex-wrap: wrap;">
+        <div class="pl-instruction-left" style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+          <div class="pl-upload-status" id="uploadStatusBadge" style="display:none;">
+            <span class="pl-spinner-mini"></span>
+            <span id="uploadStatusText">📥 Đang nhận ảnh từ máy ảnh...</span>
+          </div>
+          <div class="pl-instruction-text" id="stepInstructionText">👉 Bước 1: Vuốt sang trái/phải để chọn Mẫu Khung In (Frame) yêu thích của bạn</div>
         </div>
-        <div class="pl-instruction-text" id="stepInstructionText">👉 Bước 1: Vuốt sang trái/phải để chọn Mẫu Khung In (Frame) yêu thích của bạn</div>
+        <div class="pl-instruction-right" style="display: flex; gap: 8px; align-items: center;">
+          <button class="pl-btn pl-btn-secondary" id="btnStepPrev" style="display:none; padding: 6px 12px; font-size: 14px; white-space: nowrap;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Quay lại
+          </button>
+          <button class="pl-btn pl-btn-primary" id="btnStepNext" style="display:none; padding: 6px 12px; font-size: 14px; font-weight: bold; white-space: nowrap;">
+            Tiếp theo
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -136,21 +148,6 @@
     </main>
 
     <!-- Bottom Step Controls Bar -->
-    <footer class="pl-step-footer" id="stepFooter">
-      <div class="pl-step-footer-inner">
-        <button class="pl-btn pl-btn-secondary" id="btnStepPrev" style="display:none;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Quay lại B1
-        </button>
-        <div class="pl-step-footer-center">
-          <span id="stepFooterInfo" style="color:var(--pl-text-muted); font-size:14px;">Chọn khung in và tiếp tục chọn ảnh</span>
-        </div>
-        <button class="pl-btn pl-btn-primary pl-btn-lg" id="btnStepNext">
-          Tiếp theo: Chọn Ảnh (B2)
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-      </div>
-    </footer>
   </div>
 
   <!-- Processing overlay -->
