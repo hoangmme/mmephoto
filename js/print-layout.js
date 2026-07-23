@@ -314,6 +314,7 @@ class PrintLayoutApp {
     const roomData = this.rooms[this.activeRoom];
     const step = roomData.step || 1;
     this.images = roomData.images;
+    if (this.imageCount) this.imageCount.textContent = `${this.images.length} ảnh`;
     this._renderImageList();
 
     // Update main mode class
@@ -1164,8 +1165,8 @@ class PrintLayoutApp {
       assignedAt: null
     }));
     
-    // Default select first slot for easier tapping
-    this.selectedSlotIndex = 0;
+    // Don't auto-select first slot to avoid accidental overwrites
+    this.selectedSlotIndex = -1;
 
     // Auto-fill slots automatically for better UX
     setTimeout(() => {
@@ -1294,10 +1295,15 @@ class PrintLayoutApp {
 
   // ── Auto Fill ──
   _autoFill() {
+    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    const sourceImages = (step >= 2 && this.selectedPhotos && this.selectedPhotos.size > 0)
+      ? this.images.filter(img => this.selectedPhotos.has(img.id))
+      : this.images;
+
     let imgIndex = 0;
     for (let i = 0; i < this.slots.length; i++) {
-      if (!this.slots[i].imageId && imgIndex < this.images.length) {
-        this._assignToSlot(i, this.images[imgIndex].id);
+      if (!this.slots[i].imageId && imgIndex < sourceImages.length) {
+        this._assignToSlot(i, sourceImages[imgIndex].id);
         imgIndex++;
       }
     }
@@ -1589,8 +1595,8 @@ class PrintLayoutApp {
       } else if (step === 1 || isPreviewSwiper) {
         // Fill default image in Step 1 or swiper thumbnail
         let defaultImgToDraw = null;
-        if (isPreviewSwiper && this.images && this.images.length > 0) {
-           const sourceImages = (step >= 2 && this.selectedPhotos && this.selectedPhotos.size > 0) 
+        if (isPreviewSwiper && step >= 2 && this.images && this.images.length > 0) {
+           const sourceImages = (this.selectedPhotos && this.selectedPhotos.size > 0) 
                 ? this.images.filter(img => this.selectedPhotos.has(img.id))
                 : this.images;
            if (sourceImages.length > 0) {

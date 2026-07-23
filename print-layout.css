@@ -473,6 +473,7 @@ body {
   font-size: 14px;
   font-weight: 600;
   color: var(--pl-text);
+  white-space: nowrap;
 }
 .pl-step-label small {
   font-size: 12px;
@@ -482,7 +483,7 @@ body {
 }
 
 .pl-step-connector {
-  width: 30px;
+  flex: 1;
   height: 2px;
   background: var(--pl-border);
 }
