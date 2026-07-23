@@ -310,16 +310,19 @@ class StaffView {
         const editor = new StaffCanvasEditor(canvas, room, t, this);
 
         // Sidebar image click logic
-        const sidebarImages = document.querySelectorAll(`#canvasContainer_${room.session}`).item(0).previousElementSibling.querySelectorAll('img');
-        sidebarImages.forEach(img => {
-           img.addEventListener('click', (e) => {
-              const url = e.target.getAttribute('src');
-              this.selectedSidebarImage = url;
-              // Add border to selected image
-              sidebarImages.forEach(i => i.parentElement.style.borderColor = 'var(--pl-border)');
-              e.target.parentElement.style.borderColor = 'red';
+        const container = document.getElementById(`canvasContainer_${room.session}`);
+        if (container) {
+           const sidebarImages = container.previousElementSibling.querySelectorAll('img');
+           sidebarImages.forEach(img => {
+              img.addEventListener('click', (e) => {
+                 const url = e.target.getAttribute('src');
+                 this.selectedSidebarImage = url;
+                 // Add border to selected image
+                 sidebarImages.forEach(i => i.parentElement.style.borderColor = 'var(--pl-border)');
+                 e.target.parentElement.style.borderColor = 'red';
+              });
            });
-        });
+        }
 
         document.getElementById(`btnDownload_${room.session}`).addEventListener('click', () => {
            this._downloadCanvas(canvas, roomName, room.session);
