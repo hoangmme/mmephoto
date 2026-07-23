@@ -337,7 +337,7 @@ class PrintLayoutApp {
     if (uploadBadge && uploadText) {
       if (isWaitingForPhotos) {
         uploadBadge.style.display = 'inline-flex';
-        uploadText.textContent = `📥 Đang nhận ảnh từ máy ảnh (${roomData.images.length} ảnh)...`;
+        uploadText.textContent = `${roomData.images.length}`;
       } else {
         uploadBadge.style.display = 'none';
       }

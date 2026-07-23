@@ -30,6 +30,10 @@
           </svg>
           <span>Print <em>Layout</em></span>
           <span id="headerBranchName" style="margin-left:15px; padding-left:15px; border-left:1px solid var(--pl-border); color:#a1a1aa; font-weight:500; font-size:14px; display:none;"></span>
+          <div id="uploadStatusBadge" style="display:none; align-items:center; margin-left:15px; padding-left:15px; border-left:1px solid var(--pl-border); gap:6px;">
+            <span class="pl-spinner-mini" style="width:14px; height:14px; border-width:2px; border-top-color:#eab308;"></span>
+            <span id="uploadStatusText" style="color:#eab308; font-weight:700; font-size:14px;">0</span>
+          </div>
           <span id="headerSessionName" style="margin-left:15px; padding-left:15px; border-left:1px solid var(--pl-border); color:var(--pl-accent); font-weight:600; font-size:14px; display:none;"></span>
         </div>
       </div>
@@ -83,10 +87,6 @@
       <!-- Instruction & Upload Status Banner -->
       <div class="pl-instruction-banner" id="instructionBanner" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; gap: 10px; flex-wrap: wrap;">
         <div class="pl-instruction-left" style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
-          <div class="pl-upload-status" id="uploadStatusBadge" style="display:none;">
-            <span class="pl-spinner-mini"></span>
-            <span id="uploadStatusText">📥 Đang nhận ảnh từ máy ảnh...</span>
-          </div>
           <div class="pl-instruction-text" id="stepInstructionText">👉 Bước 1: Vuốt sang trái/phải để chọn Mẫu Khung In (Frame) yêu thích của bạn</div>
         </div>
         <div class="pl-instruction-right" style="display: flex; gap: 8px; align-items: center;">
