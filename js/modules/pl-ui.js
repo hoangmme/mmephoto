@@ -13,7 +13,7 @@ _initLogin() {
       this._initSSE(branchId);
     }
     
-    document.getElementById('btnLoginSubmit')?.addEventListener('click', async () => {
+    const handleLoginSubmit = async () => {
       const branch = document.getElementById('loginBranch').value.trim();
       const pass = document.getElementById('loginPassword').value.trim();
       
@@ -30,15 +30,19 @@ _initLogin() {
           window.location.href = '/admin.html?auth=' + encodeURIComponent(data.auth);
           return;
         }
-        localStorage.setItem('branchId', branch);
+        localStorage.setItem('branchId', data.branchId || branch);
         localStorage.setItem('branchPass', pass);
         if(loginOverlay) loginOverlay.style.display = 'none';
-        this._initSSE(branch);
+        this._initSSE(data.branchId || branch);
       } else {
         const err = document.getElementById('loginError');
         if (err) err.style.display = 'block';
       }
-    });
+    };
+
+    document.getElementById('btnLoginSubmit')?.addEventListener('click', handleLoginSubmit);
+    document.getElementById('loginBranch')?.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
+    document.getElementById('loginPassword')?.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
     
     document.getElementById('btnUnlock')?.addEventListener('click', () => {
       if (this.activeRoom && this.rooms[this.activeRoom]) {

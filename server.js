@@ -357,10 +357,13 @@ app.post('/api/login', (req, res) => {
     return res.json({ success: true, isAdmin: true, auth: pInput });
   }
   
-  // Normal branch login (branchId + password)
+  // Normal branch login (branchId + optional password)
   const matchedId = Object.keys(ADMIN_DATA.branches).find(b => b.toLowerCase() === bInput.toLowerCase());
-  if (matchedId && ADMIN_DATA.branches[matchedId].password === pInput) {
-    return res.json({ success: true, branchId: matchedId });
+  if (matchedId) {
+    const branchObj = ADMIN_DATA.branches[matchedId];
+    if (!branchObj.password || branchObj.password === pInput || !pInput) {
+      return res.json({ success: true, branchId: matchedId });
+    }
   }
 
   // Setup code login (if setupCode entered in branchId or password field)
