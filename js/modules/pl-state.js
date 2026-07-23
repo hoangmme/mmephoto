@@ -157,10 +157,17 @@ _updateActiveSession(room, onlyBadge = false) {
       const activeSessionId = roomData.activeSessionId;
       const active = roomData.queue.find(s => s.id === activeSessionId) || roomData.queue[0];
       
-      roomData.session = active.id;
-      roomData.step = active.step || 1;
+      if (roomData.session !== active.id) {
+        roomData.session = active.id;
+        roomData.step = active.step || 1;
+      } else {
+        if (roomData.step === undefined || roomData.step === null) {
+          roomData.step = active.step || 1;
+        } else {
+          active.step = roomData.step;
+        }
+      }
       
-
       roomData.timerStarted = false;
       roomData.lastImageTime = Date.now();
       
