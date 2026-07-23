@@ -12,6 +12,7 @@ class StaffView {
     
     this.rooms = {};
     this.sessions = {};
+    this.activeRoom = null;
     this.eventSource = null;
     this.imageObjects = {}; // Cache images
 
@@ -92,15 +93,16 @@ class StaffView {
         const templatesObj = {};
         arr.forEach(t => {
           templatesObj[t.id] = {
+            ...t,
             name: t.name || 'Template',
             slots: t.slots.map(s => ({
+              ...s,
               x: s.cx !== undefined ? s.cx : (s.x + (s.width||s.w||0)/2),
               y: s.cy !== undefined ? s.cy : (s.y + (s.height||s.h||0)/2),
               w: s.width || s.w,
               h: s.height || s.h,
               rotation: s.rotation || 0
             })),
-            frame_url: t.frame_url,
             canvas_width: t.canvas_width || 1748,
             canvas_height: t.canvas_height || 2480
           };
@@ -133,19 +135,25 @@ class StaffView {
         const data = JSON.parse(e.data);
         if (data.type === 'init') {
            const roomName = data.room;
+           this.rooms[roomName] = true;
            if (data.sessions && data.sessions.length > 0) {
              data.sessions.forEach(sess => {
                this.sessions[sess.id] = {
                  room: roomName,
                  session: sess.id,
                  step: sess.step || 1,
-                 currentTemplate: sess.currentTemplate || null,
-                 selectedImages: sess.selectedImages || [],
+                 currentTemplate: sess.currentTemplate,
                  slots: sess.slots || [],
                  images: sess.images || []
                };
              });
            }
+           
+           if (!this.activeRoom && Object.keys(this.rooms).length > 0) {
+             this.activeRoom = Object.keys(this.rooms)[0];
+           }
+           
+           this._renderTabs();
            this._renderGrid();
         } else if (data.type === 'sync') {
            this.sessions[data.session] = {
@@ -157,6 +165,8 @@ class StaffView {
              slots: data.slots || [],
              images: data.images || []
            };
+           this.rooms[data.room] = true;
+           this._renderTabs();
            this._renderGrid();
         } else if (data.type === 'session_finished') {
            // We no longer hide the session when it finishes.
@@ -168,19 +178,49 @@ class StaffView {
     };
   }
 
+  _renderTabs() {
+    const tabsContainer = document.getElementById('roomTabs');
+    if (!tabsContainer) return;
+    
+    const rooms = Object.keys(this.rooms);
+    if (rooms.length === 0) {
+      tabsContainer.style.display = 'none';
+      return;
+    }
+    
+    tabsContainer.style.display = 'flex';
+    tabsContainer.innerHTML = '';
+    
+    if (!this.activeRoom || !rooms.includes(this.activeRoom)) {
+      this.activeRoom = rooms[0];
+    }
+
+    rooms.forEach(room => {
+      const btn = document.createElement('button');
+      btn.className = `pl-tab ${room === this.activeRoom ? 'active' : ''}`;
+      btn.textContent = `Phòng: ${room}`;
+      btn.onclick = () => {
+        this.activeRoom = room;
+        this._renderTabs();
+        this._renderGrid();
+      };
+      tabsContainer.appendChild(btn);
+    });
+  }
+
   _renderGrid() {
     const grid = document.getElementById('staffGrid');
+    if (!grid) return;
     grid.innerHTML = '';
-    
+
     let hasCompletedRooms = false;
 
-    // Filter only sessions that are at step 4
-    Object.keys(this.sessions).forEach(sessionId => {
-      const room = this.sessions[sessionId];
-      if (!room.session) return;
-      if (room.step < 4) return; // Only show completed sessions (Step 4)
-      if (!room.currentTemplate) return;
+    // Filter sessions by active room and step >= 4
+    const roomSessions = Object.keys(this.sessions)
+      .map(id => this.sessions[id])
+      .filter(room => room.room === this.activeRoom && room.session && room.step >= 4);
 
+    roomSessions.forEach(room => {
       const roomName = room.room;
       hasCompletedRooms = true;
       const tId = room.currentTemplate;
@@ -204,10 +244,9 @@ class StaffView {
       card.innerHTML = `
         <div class="staff-card-header">
           <div>
-            <div class="staff-card-title">Phòng: ${roomName}</div>
-            <div class="staff-card-subtitle">Phiên: ${room.session}</div>
+            <div class="staff-card-title">Phiên: ${room.session}</div>
           </div>
-          <button class="pl-btn pl-btn-primary" style="padding: 6px 12px; font-size: 13px;" id="btnDownload_${roomName}" ${!t ? 'disabled title="Thiếu template"' : ''}>
+          <button class="pl-btn pl-btn-primary" style="padding: 6px 12px; font-size: 13px;" id="btnDownload_${room.session}" ${!t ? 'disabled title="Thiếu template"' : ''}>
              Tải Ảnh Layout
           </button>
         </div>
@@ -215,8 +254,8 @@ class StaffView {
           <div style="width: 100px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-right: 5px;">
             ${imagesHtml}
           </div>
-          <div class="staff-card-canvas" id="canvasContainer_${roomName}" style="flex: 1; max-width: calc(100% - 115px);">
-             ${t ? `<canvas width="${t.canvas_width || A5_WIDTH}" height="${t.canvas_height || A5_HEIGHT}" id="canvas_${roomName}"></canvas>` 
+          <div class="staff-card-canvas" id="canvasContainer_${room.session}" style="flex: 1; max-width: calc(100% - 115px);">
+             ${t ? `<canvas width="${t.canvas_width || A5_WIDTH}" height="${t.canvas_height || A5_HEIGHT}" id="canvas_${room.session}"></canvas>` 
                  : `<div style="padding:20px; text-align:center; color:var(--pl-text-muted); width: 100%;">Template <b>${tId}</b> chưa được đồng bộ sang máy này.<br>Hãy tạo JSON và import vào màn hình này.</div>`}
           </div>
         </div>
@@ -224,17 +263,17 @@ class StaffView {
       grid.appendChild(card);
 
       if (t) {
-        const canvas = document.getElementById(`canvas_${roomName}`);
+        const canvas = document.getElementById(`canvas_${room.session}`);
         this._drawRoomCanvas(canvas, room, t);
 
-        document.getElementById(`btnDownload_${roomName}`).addEventListener('click', () => {
+        document.getElementById(`btnDownload_${room.session}`).addEventListener('click', () => {
            this._downloadCanvas(canvas, roomName, room.session);
         });
       }
     });
 
     if (!hasCompletedRooms) {
-      grid.innerHTML = `<div class="empty-state">Hiện không có phiên chụp nào đã hoàn thành (Bước 4).</div>`;
+      grid.innerHTML = `<div class="empty-state">Phòng ${this.activeRoom || ''} hiện không có phiên chụp nào đã hoàn thành (Bước 4).</div>`;
     }
   }
 
