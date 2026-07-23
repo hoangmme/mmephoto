@@ -369,7 +369,8 @@ class PrintLayoutApp {
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 4) {
         instructionText.textContent = '✨ Khách hàng đã hoàn tất! Nhân viên hỗ trợ kiểm tra, tải, in ảnh hoặc bấm Next Customer';
-        btnStepPrev.style.display = 'none';
+        btnStepPrev.style.display = 'inline-flex';
+        btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B1 (Sửa)';
         btnStepNext.style.display = 'none';
         if (btnNext) btnNext.style.display = 'inline-flex';
         if (qrOverlay) qrOverlay.style.display = 'block';
@@ -808,7 +809,11 @@ class PrintLayoutApp {
       btnStepPrev.addEventListener('click', () => {
         if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
         const cur = this.rooms[this.activeRoom].step || 1;
-        if (cur > 1) this._setStep(this.activeRoom, cur - 1);
+        if (cur === 4) {
+          this._setStep(this.activeRoom, 1);
+        } else if (cur > 1) {
+          this._setStep(this.activeRoom, cur - 1);
+        }
       });
     }
 
@@ -835,7 +840,7 @@ class PrintLayoutApp {
         if (confirm('Chuyển qua lượt khách hàng tiếp theo? (Phiên hiện tại sẽ được đánh dấu hoàn thành)')) {
           const branch = localStorage.getItem('branchId') || 'CN01';
           const sess = this.rooms[this.activeRoom].session;
-          fetch(`/api/stream-finish/${branch}/${this.activeRoom}/${sess}`, { method: 'POST' }).catch(() => {});
+          fetch(`/api/finish-session/${branch}/${this.activeRoom}/${sess}`, { method: 'POST' }).catch(() => {});
           
           if (this.rooms[this.activeRoom].queue && this.rooms[this.activeRoom].queue.length > 0) {
             this.rooms[this.activeRoom].queue.shift();

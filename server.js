@@ -82,7 +82,17 @@ async function initStyleA() {
 }
 initStyleA();
 
+const ROOM_STATE_FILE = path.join(DATA_DIR, 'room_state.json');
 let roomState = {};
+if (fs.existsSync(ROOM_STATE_FILE)) {
+  try {
+    roomState = JSON.parse(fs.readFileSync(ROOM_STATE_FILE, 'utf8'));
+  } catch(e) { console.error('Error loading room state:', e); }
+}
+
+function saveRoomState() {
+  fs.writeFileSync(ROOM_STATE_FILE, JSON.stringify(roomState, null, 2));
+}
 let clients = {};
 
 const processor = new ImageProcessor();
@@ -370,6 +380,7 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (r
     roomState[branch][room].sessions.push(sessionObj);
   }
   sessionObj.images.push(imageUrl);
+  saveRoomState();
   
   // Notify SSE clients
   if (clients[branch]) {
@@ -386,6 +397,7 @@ app.post('/api/finish-session/:branch/:room/:session', (req, res) => {
   
   if (roomState[branch] && roomState[branch][room]) {
     roomState[branch][room].sessions = roomState[branch][room].sessions.filter(s => s.id !== session);
+    saveRoomState();
   }
   
   if (clients[branch]) {
