@@ -322,6 +322,15 @@ _updateUIForRoom() {
     const stepFooterInfo = document.getElementById('stepFooterInfo');
     const stepFooter = document.getElementById('stepFooter');
 
+    if (this.activeRoom && this.rooms[this.activeRoom]) {
+      const roomD = this.rooms[this.activeRoom];
+      if (!roomD.session && roomD.queue && roomD.queue.length > 0) {
+        roomD.session = roomD.activeSessionId || roomD.queue[0].id;
+        roomD.activeSessionId = roomD.session;
+        this._updateActiveSession(this.activeRoom, false);
+      }
+    }
+
     if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) {
       this.images = [];
       this._renderImageList();

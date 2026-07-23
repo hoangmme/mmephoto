@@ -93,6 +93,58 @@ if (fs.existsSync(ROOM_STATE_FILE)) {
 function saveRoomState() {
   fs.writeFileSync(ROOM_STATE_FILE, JSON.stringify(roomState, null, 2));
 }
+
+function scanDiskSessions() {
+  if (!fs.existsSync(UPLOADS_DIR)) return;
+  try {
+    const branches = fs.readdirSync(UPLOADS_DIR);
+    branches.forEach(b => {
+      const bPath = path.join(UPLOADS_DIR, b);
+      if (!fs.statSync(bPath).isDirectory()) return;
+      
+      let branchKey = Object.keys(roomState).find(k => k.toLowerCase() === b.toLowerCase()) || b;
+      if (!roomState[branchKey]) roomState[branchKey] = {};
+      
+      const rooms = fs.readdirSync(bPath);
+      rooms.forEach(r => {
+        const rPath = path.join(bPath, r);
+        if (!fs.statSync(rPath).isDirectory()) return;
+        
+        let roomKey = Object.keys(roomState[branchKey]).find(k => k.toLowerCase() === r.toLowerCase()) || r;
+        if (!roomState[branchKey][roomKey]) {
+          roomState[branchKey][roomKey] = { sessions: [], activeSessionId: null };
+        }
+        
+        const sessions = fs.readdirSync(rPath);
+        sessions.forEach(s => {
+          const sPath = path.join(rPath, s);
+          if (!fs.statSync(sPath).isDirectory()) return;
+          
+          const files = fs.readdirSync(sPath).filter(f => !f.startsWith('.'));
+          const images = files.map(f => `/uploads/${b}/${r}/${s}/${f}`);
+          
+          let sessObj = roomState[branchKey][roomKey].sessions.find(x => x.id.toLowerCase() === s.toLowerCase());
+          if (!sessObj) {
+            sessObj = {
+              id: s,
+              images: images,
+              finished: true,
+              step: 4
+            };
+            roomState[branchKey][roomKey].sessions.push(sessObj);
+          } else {
+            if (!sessObj.images || sessObj.images.length === 0) {
+              sessObj.images = images;
+            }
+          }
+        });
+      });
+    });
+  } catch (err) {
+    console.error('Error scanning disk sessions:', err);
+  }
+}
+scanDiskSessions();
 let clients = {};
 
 const processor = new ImageProcessor();
