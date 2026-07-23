@@ -387,8 +387,7 @@ class PrintLayoutApp {
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 4) {
         instructionText.textContent = '✨ Xin chúc mừng bạn đã hoàn thành, xin vui lòng đợi nhân viên kiểm tra và in ảnh nhé';
-        btnStepPrev.style.display = 'inline-flex';
-        btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B1 (Sửa)';
+        btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'none';
         if (btnNext) btnNext.style.display = 'inline-flex';
         if (qrOverlay) qrOverlay.style.display = 'block';
