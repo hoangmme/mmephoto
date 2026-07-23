@@ -163,7 +163,9 @@ _initMainSwiper() {
               requestAnimationFrame(() => {
                 const activeSlide = this.mainSwiper.querySelector(`[data-id="${this.currentTemplate}"]`);
                 if (activeSlide) {
+                  this.isProgrammaticScroll = true;
                   this.mainSwiper.scrollLeft = activeSlide.offsetLeft - pad;
+                  setTimeout(() => { this.isProgrammaticScroll = false; }, 50);
                 }
               });
            }
@@ -292,11 +294,10 @@ _renderTabs() {
 _updateUIForRoom() {
     this._updateActiveSession(this.activeRoom, true);
     
-    // SAFEGUARD: If step is 4, but we have NO images in slots, we must be missing data. Revert to step 1.
+    // SAFEGUARD: Removed dangerous step 1 revert that caused user data wipe on sync.
     if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].step === 4) {
       if (!this.slots || !this.slots.some(s => s.imageId)) {
-        console.warn("Safeguard triggered: step 4 but no slots filled! Reverting to step 1.");
-        this.rooms[this.activeRoom].step = 1;
+        console.warn("Safeguard warning: step 4 but no slots filled! (Not reverting to prevent data wipe)");
       }
     }
 
