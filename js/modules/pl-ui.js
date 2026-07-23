@@ -215,21 +215,26 @@ _initMainSwiper() {
       if (step > 1) return;
 
       scrollTimeout = setTimeout(() => {
+        if (this.isProgrammaticScroll) return;
+        const stepNow = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+        if (stepNow > 1) return;
+
+        const currentCenter = this.mainSwiper.scrollLeft + this.mainSwiper.offsetWidth / 2;
         let closest = null;
         let minDiff = Infinity;
         Array.from(this.mainSwiper.children).forEach(slide => {
            const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
-           const diff = Math.abs(center - slideCenter);
+           const diff = Math.abs(currentCenter - slideCenter);
            if (diff < minDiff) {
               minDiff = diff;
               closest = slide;
            }
         });
         
-        if (closest && closest.dataset.id !== this.currentTemplate) {
+        if (closest && closest.dataset.id !== this.currentTemplate && minDiff < (closest.offsetWidth || 300) * 0.4) {
            this._selectSlide(closest.dataset.id);
         }
-      }, 150);
+      }, 200);
     });
 
     // Add click listener to all slides for direct tap selection
@@ -430,8 +435,7 @@ _updateUIForRoom() {
         const tmpl = ALL_TEMPLATES[this.currentTemplate];
         const maxSlots = tmpl ? tmpl.slots.length : (this.slots ? this.slots.length : 0);
         instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
-        const step1TimedOut = roomData.timedOutSteps && roomData.timedOutSteps.has(1);
-        btnStepPrev.style.display = (isStaffMode || !step1TimedOut) ? 'inline-flex' : 'none';
+        btnStepPrev.style.display = isStaffMode ? 'inline-flex' : 'none';
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B1';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp (B3) <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
@@ -439,8 +443,7 @@ _updateUIForRoom() {
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 3) {
         instructionText.textContent = '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
-        const step2TimedOut = roomData.timedOutSteps && (roomData.timedOutSteps.has(2) || roomData.timedOutSteps.has(1));
-        btnStepPrev.style.display = (isStaffMode || !step2TimedOut) ? 'inline-flex' : 'none';
+        btnStepPrev.style.display = isStaffMode ? 'inline-flex' : 'none';
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B2';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = isStaffMode ? '✅ Hoàn Tất (Gửi cho User)' : '✅ Hoàn Tất (Gửi cho Nhân Viên)';
@@ -696,13 +699,9 @@ _bindEvents() {
           if (!targetStep) return;
 
           if (!isStaffMode) {
-            if (cur === 4) return;
             if (targetStep < cur) {
-              const hasTimedOut = roomData.timedOutSteps && (roomData.timedOutSteps.has(targetStep) || roomData.timedOutSteps.has(cur - 1) || roomData.timedOutSteps.has(cur));
-              if (hasTimedOut) {
-                alert('Bước trước đã hết thời gian, không thể quay lại!');
-                return;
-              }
+              alert('Khách hàng không thể quay lại bước trước!');
+              return;
             }
           }
 
