@@ -7,6 +7,7 @@
 const A5_WIDTH = 1748;
 const A5_HEIGHT = 2480;
 const PADDING = 40;
+const isStaffMode = window.location.pathname.includes('staff.html');
 
 const TEMPLATES = {
   '1photo': {
@@ -386,11 +387,15 @@ class PrintLayoutApp {
         if (btnNext) btnNext.style.display = 'none';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 4) {
-        instructionText.textContent = '✨ Xin chúc mừng bạn đã hoàn thành, xin vui lòng đợi nhân viên kiểm tra và in ảnh nhé';
-        btnStepPrev.style.display = 'none';
+        instructionText.textContent = isStaffMode ? '✨ Vui lòng kiểm tra lại bố cục, tải ảnh layout và nhận khách tiếp theo.' : '✨ Xin chúc mừng bạn đã hoàn thành, xin vui lòng đợi nhân viên kiểm tra và in ảnh nhé';
+        btnStepPrev.style.display = isStaffMode ? 'inline-flex' : 'none';
         btnStepNext.style.display = 'none';
-        if (btnNext) btnNext.style.display = 'inline-flex';
-        if (qrOverlay) qrOverlay.style.display = 'block';
+        
+        const btnStaffDownload = document.getElementById('btnStaffDownload');
+        if (btnStaffDownload) btnStaffDownload.style.display = isStaffMode ? 'inline-flex' : 'none';
+        
+        if (btnNext) btnNext.style.display = isStaffMode ? 'inline-flex' : 'none';
+        if (qrOverlay) qrOverlay.style.display = isStaffMode ? 'none' : 'block';
       }
     }
     
@@ -831,6 +836,9 @@ class PrintLayoutApp {
     const btnExportJPG = document.getElementById('btnExportJPG');
     if (btnExportJPG) btnExportJPG.addEventListener('click', () => this._exportJPG());
     
+    const btnStaffDownload = document.getElementById('btnStaffDownload');
+    if (btnStaffDownload) btnStaffDownload.addEventListener('click', () => this._exportJPG());
+    
     const btnLockExportJPG = document.getElementById('btnLockExportJPG');
     if (btnLockExportJPG) btnLockExportJPG.addEventListener('click', () => this._exportJPG());
     
@@ -912,8 +920,8 @@ class PrintLayoutApp {
         item.addEventListener('click', () => {
           if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) return;
           const roomData = this.rooms[this.activeRoom];
-          // Block navigating back if already completed
-          if (roomData.step === 4) return;
+          // Block navigating back if already completed (unless staff)
+          if (roomData.step === 4 && !isStaffMode) return;
 
           const targetStep = parseInt(item.dataset.step);
           if (targetStep && targetStep >= 1 && targetStep <= 4) {
