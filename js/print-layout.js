@@ -59,6 +59,7 @@ class PrintLayoutApp {
     this.selectedImageId = null;
     this.selectedSlotIndex = -1;
     this.currentTemplate = '2photos';
+    this.selectedPhotos = new Set();
 
     // Default preview images for Step 1
     this.defaultPreviewImages = [];
@@ -189,6 +190,7 @@ class PrintLayoutApp {
         roomData.step = 1;
         roomData.timerStarted = false;
         roomData.lastImageTime = Date.now();
+        this.selectedPhotos.clear();
         roomData.images = active.images.map(url => {
           const id = 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
           this._preloadImage(id, url).then(() => this._renderCanvas());
@@ -203,6 +205,7 @@ class PrintLayoutApp {
       roomData.images = [];
       roomData.step = 1;
       roomData.timerStarted = false;
+      this.selectedPhotos.clear();
       this._stopTimer(room);
     }
     
@@ -825,7 +828,20 @@ class PrintLayoutApp {
         if (cur === 1) {
           this._setStep(this.activeRoom, 2);
         } else if (cur === 2) {
-          if (this._autoFill) this._autoFill();
+          if (this.selectedPhotos.size > 0) {
+            // Clear existing slots first
+            this.slots.forEach(s => s.imageId = null);
+            let imgIndex = 0;
+            const selectedArr = Array.from(this.selectedPhotos);
+            for (let i = 0; i < this.slots.length; i++) {
+              if (imgIndex < selectedArr.length) {
+                this._assignToSlot(i, selectedArr[imgIndex]);
+                imgIndex++;
+              }
+            }
+          } else {
+            if (this._autoFill) this._autoFill();
+          }
           this._setStep(this.activeRoom, 3);
         } else if (cur === 3) {
           this._setStep(this.activeRoom, 4);
@@ -1156,12 +1172,18 @@ class PrintLayoutApp {
   _renderImageList() {
     this.imageList.innerHTML = '';
     const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
+    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
 
     this.images.forEach(img => {
       const thumb = document.createElement('div');
       thumb.className = 'pl-thumb';
-      if (img.id === this.selectedImageId) thumb.classList.add('selected');
-      if (usedIds.has(img.id)) thumb.classList.add('used');
+      
+      if (step === 2) {
+        if (this.selectedPhotos.has(img.id)) thumb.classList.add('selected');
+      } else {
+        if (img.id === this.selectedImageId) thumb.classList.add('selected');
+        if (usedIds.has(img.id)) thumb.classList.add('used');
+      }
 
       const srcUrl = img.objectUrl || img.url;
       const imgName = img.name || img.id;
@@ -1172,12 +1194,21 @@ class PrintLayoutApp {
       `;
 
       thumb.addEventListener('click', () => {
-        this.selectedImageId = img.id;
-        this._renderImageList();
-
-        // If a slot is selected, assign image to it
-        if (this.selectedSlotIndex >= 0) {
-          this._assignToSlot(this.selectedSlotIndex, img.id);
+        const currentStep = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+        if (currentStep === 2) {
+          if (this.selectedPhotos.has(img.id)) {
+            this.selectedPhotos.delete(img.id);
+          } else {
+            this.selectedPhotos.add(img.id);
+          }
+          this._renderImageList();
+        } else {
+          this.selectedImageId = img.id;
+          this._renderImageList();
+          // If a slot is selected, assign image to it
+          if (this.selectedSlotIndex >= 0) {
+            this._assignToSlot(this.selectedSlotIndex, img.id);
+          }
         }
       });
 
@@ -1541,7 +1572,7 @@ class PrintLayoutApp {
       } else if (step === 1 || isPreviewSwiper) {
         // Fill default image in Step 1 or swiper thumbnail
         let defaultImgToDraw = null;
-        if (this.images && this.images.length > 0) {
+        if (isPreviewSwiper && this.images && this.images.length > 0) {
            const cachedImg = this._imageCache[this.images[i % this.images.length].id];
            if (cachedImg) defaultImgToDraw = cachedImg;
         }

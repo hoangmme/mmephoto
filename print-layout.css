@@ -243,7 +243,8 @@ body {
   cursor: pointer;
   border: 2px solid transparent;
   transition: all var(--pl-transition);
-  aspect-ratio: 1/1;
+  padding-bottom: 100%;
+  height: 0;
 }
 .pl-thumb:hover {
   border-color: var(--pl-border-light);
@@ -251,6 +252,22 @@ body {
 .pl-thumb.selected {
   border-color: var(--pl-accent);
   box-shadow: 0 0 0 1px var(--pl-accent);
+}
+.pl-thumb.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  background: var(--pl-accent);
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
 }
 .pl-thumb.used {
   opacity: 0.5;
@@ -516,6 +533,13 @@ body {
 /* ── Step Modes Layout ── */
 .pl-step-mode-1 #panelLeft,
 .pl-step-mode-4 #panelLeft {
+  display: none !important;
+}
+
+.pl-step-mode-2 .pl-actions,
+.pl-step-mode-3 .pl-actions,
+.pl-step-mode-2 .pl-panel-footer,
+.pl-step-mode-3 .pl-panel-footer {
   display: none !important;
 }
 
