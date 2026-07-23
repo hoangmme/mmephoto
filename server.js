@@ -94,6 +94,28 @@ function saveRoomState() {
   fs.writeFileSync(ROOM_STATE_FILE, JSON.stringify(roomState, null, 2));
 }
 
+function getAllImagesRecursive(dirPath, urlPrefix) {
+  let results = [];
+  if (!fs.existsSync(dirPath)) return results;
+  const items = fs.readdirSync(dirPath);
+  for (const item of items) {
+    if (item.startsWith('.')) continue;
+    const fullPath = path.join(dirPath, item);
+    try {
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory()) {
+        results = results.concat(getAllImagesRecursive(fullPath, `${urlPrefix}/${encodeURIComponent(item)}`));
+      } else {
+        const ext = path.extname(item).toLowerCase();
+        if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.cr2', '.raw'].includes(ext)) {
+          results.push(`${urlPrefix}/${encodeURIComponent(item)}`);
+        }
+      }
+    } catch (e) {}
+  }
+  return results;
+}
+
 function scanDiskSessions() {
   if (!fs.existsSync(UPLOADS_DIR)) return;
   try {
@@ -120,8 +142,7 @@ function scanDiskSessions() {
           const sPath = path.join(rPath, s);
           if (!fs.statSync(sPath).isDirectory()) return;
           
-          const files = fs.readdirSync(sPath).filter(f => !f.startsWith('.'));
-          const images = files.map(f => `/uploads/${b}/${r}/${s}/${f}`);
+          const images = getAllImagesRecursive(sPath, `/uploads/${encodeURIComponent(b)}/${encodeURIComponent(r)}/${encodeURIComponent(s)}`);
           
           let sessObj = roomState[branchKey][roomKey].sessions.find(x => x.id.toLowerCase() === s.toLowerCase());
           if (!sessObj) {
@@ -517,6 +538,17 @@ app.post('/api/delete-session/:branch/:room/:session', (req, res) => {
       roomState[branch][room].activeSessionId = remaining.length > 0 ? remaining[0].id : (roomState[branch][room].sessions[0] ? roomState[branch][room].sessions[0].id : null);
     }
     saveRoomState();
+  }
+
+  // Physically delete session folder from disk
+  const sessDir = path.join(UPLOADS_DIR, branch, room, session);
+  if (fs.existsSync(sessDir)) {
+    try {
+      fs.rmSync(sessDir, { recursive: true, force: true });
+      console.log(`[DELETE] Removed session directory from disk: ${sessDir}`);
+    } catch (err) {
+      console.error(`[DELETE ERROR] Failed to remove directory ${sessDir}:`, err);
+    }
   }
   
   if (clients[branch]) {

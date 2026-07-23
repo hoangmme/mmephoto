@@ -181,6 +181,24 @@ def process_and_upload(file_path, room_id, session_id):
         print(f"    [LỖI] Xử lý file {filename} thất bại: {str(e)}")
 
 
+def scan_existing_files():
+    print(f"[*] Đang quét tất cả thư mục & thư mục con trong {WATCH_FOLDER}...")
+    for root, dirs, files in os.walk(WATCH_FOLDER):
+        if root.startswith(ARCHIVE_FOLDER):
+            continue
+        for file in files:
+            ext = os.path.splitext(file)[1].lower()
+            if ext in ['.jpg', '.jpeg', '.png', '.cr2', '.raw']:
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, WATCH_FOLDER)
+                parts = rel_path.split(os.sep)
+                if len(parts) >= 2:
+                    session_id = parts[0]
+                else:
+                    session_id = "default"
+                t = threading.Thread(target=process_and_upload, args=(file_path, ROOM_ID, session_id))
+                t.start()
+
 class PhotoHandler(FileSystemEventHandler):
     def on_created(self, event):
         if event.is_directory:
@@ -199,8 +217,7 @@ class PhotoHandler(FileSystemEventHandler):
             rel_path = os.path.relpath(file_path, WATCH_FOLDER)
             parts = rel_path.split(os.sep)
             
-            # The structure could be: WATCH_FOLDER / SESSION_ID / file.jpg
-            # Or WATCH_FOLDER / file.jpg
+            # Supports structure: WATCH_FOLDER / SESSION_ID / SUBDIR / file.jpg
             if len(parts) >= 2:
                 session_id = parts[0]
             else:
@@ -211,6 +228,7 @@ class PhotoHandler(FileSystemEventHandler):
             t.start()
 
 if __name__ == "__main__":
+    scan_existing_files()
     event_handler = PhotoHandler()
     observer = Observer()
     observer.schedule(event_handler, path=WATCH_FOLDER, recursive=True)
