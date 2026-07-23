@@ -153,15 +153,7 @@ _updateActiveSession(room, onlyBadge = false) {
       roomData.session = active.id;
       roomData.step = active.step || 1;
       
-      // Smart step recovery based on data integrity:
-      // If we have selected images, we must be at least at step 2 or 3
-      if (active.selectedImages && active.selectedImages.length > 0) {
-         if (roomData.step < 2) roomData.step = 3; 
-      }
-      // If we have slots filled, we must be at least at step 3 or 4
-      if (active.slots && active.slots.some(s => s.imageId)) {
-         if (roomData.step < 3) roomData.step = 4;
-      }
+
       roomData.timerStarted = false;
       roomData.lastImageTime = Date.now();
       

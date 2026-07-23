@@ -581,8 +581,7 @@ body {
   height: min(calc(100vh - 300px), calc((100vw - 380px) * 1.418));
 }
 
-.pl-step-mode-1 .pl-slide,
-.pl-step-mode-4 .pl-slide {
+.pl-step-mode-1 .pl-slide {
   height: min(calc(100vh - 300px), calc((100vw - 80px) * 1.418));
 }
 
