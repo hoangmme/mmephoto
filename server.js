@@ -455,6 +455,26 @@ app.post('/api/finish-session/:branch/:room/:session', (req, res) => {
   res.json({ success: true });
 });
 
+app.post('/api/delete-session/:branch/:room/:session', (req, res) => {
+  const { branch, room, session } = req.params;
+  
+  if (roomState[branch] && roomState[branch][room]) {
+    roomState[branch][room].sessions = (roomState[branch][room].sessions || []).filter(s => s.id !== session);
+    if (roomState[branch][room].activeSessionId === session) {
+      const remaining = roomState[branch][room].sessions.filter(s => !s.finished);
+      roomState[branch][room].activeSessionId = remaining.length > 0 ? remaining[0].id : (roomState[branch][room].sessions[0] ? roomState[branch][room].sessions[0].id : null);
+    }
+    saveRoomState();
+  }
+  
+  if (clients[branch]) {
+    clients[branch].forEach(client => {
+      client.write(`data: ${JSON.stringify({ type: 'session_deleted', room, session })}\n\n`);
+    });
+  }
+  res.json({ success: true });
+});
+
 app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) => {
   const { branch, room, session } = req.params;
   const { step, currentTemplate, selectedImages, slots } = req.body;

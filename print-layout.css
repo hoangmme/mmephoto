@@ -404,6 +404,7 @@ body {
   margin-top: 10px;
   font-size: 11px;
   color: var(--pl-text-muted);
+  text-align: center;
 }
 
 /* ── Top Wizard Area ── */

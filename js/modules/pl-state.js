@@ -119,19 +119,26 @@ _initSSE(branch) {
       } else if (data.type === 'session_finished') {
         const room = data.room;
         if (this.rooms[room]) {
-           this.rooms[room].queue = this.rooms[room].queue.filter(s => s.id !== data.session);
-           // If the finished session is the active one, advance queue
-           if (this.rooms[room].session === data.session) {
-               this._stopTimer(room);
-               this.rooms[room].session = null; // force update
-               this.rooms[room].step = 1;
-               this.rooms[room].timerStarted = false;
-               this.rooms[room].lastImageTime = null;
+           const sess = (this.rooms[room].queue || []).find(s => s.id === data.session);
+           if (sess) sess.finished = true;
+           if (this.activeRoom === room) {
+               this._updateUIForRoom();
+               if (this._renderQueueModal) this._renderQueueModal();
+           }
+           this._renderTabs();
+        }
+      } else if (data.type === 'session_deleted') {
+        const room = data.room;
+        if (this.rooms[room]) {
+           this.rooms[room].queue = (this.rooms[room].queue || []).filter(s => s.id !== data.session);
+           if (this.rooms[room].activeSessionId === data.session) {
+               const remaining = this.rooms[room].queue.filter(s => !s.finished);
+               this.rooms[room].activeSessionId = remaining.length > 0 ? remaining[0].id : null;
                this._updateActiveSession(room);
-               if (this.activeRoom === room) {
-                   this._updateUIForRoom();
-                   this._renderCanvas();
-               }
+           }
+           if (this.activeRoom === room) {
+               this._updateUIForRoom();
+               if (this._renderQueueModal) this._renderQueueModal();
            }
            this._renderTabs();
         }
