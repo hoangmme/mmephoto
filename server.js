@@ -458,6 +458,8 @@ app.get('/api/stream/:branch', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  if (res.flushHeaders) res.flushHeaders();
   
   if (!clients[branch]) clients[branch] = [];
   clients[branch].push(res);
@@ -481,7 +483,13 @@ app.get('/api/stream/:branch', (req, res) => {
     })}\n\n`);
   });
   
+  // Keep-alive ping every 15s to prevent Nginx/Cloudflare timeouts
+  const keepAlive = setInterval(() => {
+    res.write(':\n\n');
+  }, 15000);
+  
   req.on('close', () => {
+    clearInterval(keepAlive);
     clients[branch] = clients[branch].filter(c => c !== res);
   });
 });

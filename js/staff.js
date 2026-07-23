@@ -285,9 +285,10 @@ class StaffView {
       }
     }
 
-    // Overlay
-    if (templateData.overlay_image) {
-      const ovImg = await this._loadImage(templateData.overlay_image);
+    // Frame / Overlay
+    const frameSrc = templateData.frame_url || templateData.overlay_image;
+    if (frameSrc) {
+      const ovImg = await this._loadImage(frameSrc);
       if (ovImg) {
         ctx.drawImage(ovImg, 0, 0, canvas.width, canvas.height);
       }

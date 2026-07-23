@@ -386,7 +386,7 @@ class PrintLayoutApp {
         if (btnNext) btnNext.style.display = 'none';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 4) {
-        instructionText.textContent = '✨ Khách hàng đã hoàn tất! Nhân viên hỗ trợ kiểm tra, tải, in ảnh hoặc bấm Next Customer';
+        instructionText.textContent = '✨ Xin chúc mừng bạn đã hoàn thành, xin vui lòng đợi nhân viên kiểm tra và in ảnh nhé';
         btnStepPrev.style.display = 'inline-flex';
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B1 (Sửa)';
         btnStepNext.style.display = 'none';
@@ -457,7 +457,7 @@ class PrintLayoutApp {
     const roomData = this.rooms[room];
     if (!roomData || !this.branch || !roomData.session) return;
     
-    fetch(`/api/sync-state/${this.branch}/${room}/${roomData.session}`, {
+    fetch(`/api/sync-state/${encodeURIComponent(this.branch)}/${encodeURIComponent(room)}/${encodeURIComponent(roomData.session)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
