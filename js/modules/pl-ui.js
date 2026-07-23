@@ -55,15 +55,35 @@ _initLogin() {
     });
     
     const handleNextCustomer = async () => {
-      const b = localStorage.getItem('branchId');
+      if (!confirm('Chuyển qua lượt khách hàng tiếp theo? (Phiên hiện tại sẽ được đánh dấu hoàn thành)')) return;
+      const b = localStorage.getItem('branchId') || 'CN01';
       const r = this.activeRoom;
       if (b && r && this.rooms[r] && this.rooms[r].session) {
-        await fetch(`/api/finish-session/${b}/${r}/${this.rooms[r].session}`, { method: 'POST' });
+        const sessId = this.rooms[r].session;
+        try {
+          const res = await fetch(`/api/finish-session/${b}/${r}/${encodeURIComponent(sessId)}`, { method: 'POST' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.activeSessionId) {
+              this.rooms[r].activeSessionId = data.activeSessionId;
+            } else {
+              const remaining = (this.rooms[r].queue || []).filter(s => !s.finished && s.id !== sessId);
+              this.rooms[r].activeSessionId = remaining.length > 0 ? remaining[0].id : null;
+            }
+          }
+        } catch (err) {}
       }
       const btnNext = document.getElementById('btnNextCustomer');
       if (btnNext) btnNext.style.display = 'none';
       const lockOverlay = document.getElementById('lockOverlay');
       if (lockOverlay) lockOverlay.style.display = 'none';
+      if (r) {
+        this._stopTimer(r);
+        this._updateActiveSession(r);
+        this._updateUIForRoom();
+        this._renderCanvas();
+        this._renderTabs();
+      }
     };
     
     document.getElementById('btnNextCustomer')?.addEventListener('click', handleNextCustomer);
@@ -673,30 +693,6 @@ _bindEvents() {
         } else if (cur === 3) {
           this._uploadFinalFrame();
           this._setStep(this.activeRoom, 4);
-        }
-      });
-    }
-
-    const btnNextCustomer = document.getElementById('btnNextCustomer');
-    if (btnNextCustomer) {
-      btnNextCustomer.addEventListener('click', () => {
-        if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) return;
-        if (confirm('Chuyển qua lượt khách hàng tiếp theo? (Phiên hiện tại sẽ được đánh dấu hoàn thành)')) {
-          const branch = localStorage.getItem('branchId') || 'CN01';
-          const sess = this.rooms[this.activeRoom].session;
-          fetch(`/api/finish-session/${branch}/${this.activeRoom}/${sess}`, { method: 'POST' }).catch(() => {});
-          
-          if (this.rooms[this.activeRoom].queue && this.rooms[this.activeRoom].queue.length > 0) {
-            this.rooms[this.activeRoom].queue.shift();
-          }
-          this._stopTimer(this.activeRoom);
-          this.rooms[this.activeRoom].session = null;
-          this.rooms[this.activeRoom].step = 1;
-          this.rooms[this.activeRoom].timerStarted = false;
-          this._updateActiveSession(this.activeRoom);
-          this._updateUIForRoom();
-          this._renderCanvas();
-          this._renderTabs();
         }
       });
     }

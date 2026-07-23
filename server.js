@@ -508,24 +508,40 @@ app.post('/api/set-active-session/:branch/:room/:session', (req, res) => {
 
 app.post('/api/finish-session/:branch/:room/:session', (req, res) => {
   const { branch, room, session } = req.params;
+  let activeSessionId = null;
   
   if (roomState[branch] && roomState[branch][room]) {
-    // Keep session so staff can still see it. Just limit array size to 30.
-    const sess = roomState[branch][room].sessions.find(s => s.id === session);
-    if (sess) sess.finished = true;
+    const roomD = roomState[branch][room];
+    const sess = roomD.sessions.find(s => s.id === session);
+    if (sess) {
+      sess.finished = true;
+      sess.step = 4;
+    }
     
-    if (roomState[branch][room].sessions.length > 30) {
-      roomState[branch][room].sessions = roomState[branch][room].sessions.slice(-30);
+    // Auto-advance activeSessionId to next unfinished session
+    const remainingUnfinished = roomD.sessions.filter(s => !s.finished);
+    if (remainingUnfinished.length > 0) {
+      roomD.activeSessionId = remainingUnfinished[0].id;
+      if (!remainingUnfinished[0].step || remainingUnfinished[0].step === 4) {
+        remainingUnfinished[0].step = 1;
+      }
+    } else {
+      roomD.activeSessionId = null;
+    }
+    activeSessionId = roomD.activeSessionId;
+
+    if (roomD.sessions.length > 50) {
+      roomD.sessions = roomD.sessions.slice(-50);
     }
     saveRoomState();
   }
   
   if (clients[branch]) {
     clients[branch].forEach(client => {
-      client.write(`data: ${JSON.stringify({ type: 'session_finished', room, session })}\n\n`);
+      client.write(`data: ${JSON.stringify({ type: 'session_finished', room, session, activeSessionId })}\n\n`);
     });
   }
-  res.json({ success: true });
+  res.json({ success: true, activeSessionId });
 });
 
 app.post('/api/delete-session/:branch/:room/:session', (req, res) => {

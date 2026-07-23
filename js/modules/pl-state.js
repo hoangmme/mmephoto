@@ -121,9 +121,20 @@ _initSSE(branch) {
         const room = data.room;
         if (this.rooms[room]) {
            const sess = (this.rooms[room].queue || []).find(s => s.id === data.session);
-           if (sess) sess.finished = true;
+           if (sess) {
+             sess.finished = true;
+             sess.step = 4;
+           }
+           if (data.activeSessionId !== undefined) {
+             this.rooms[room].activeSessionId = data.activeSessionId;
+           } else {
+             const remaining = (this.rooms[room].queue || []).filter(s => !s.finished);
+             this.rooms[room].activeSessionId = remaining.length > 0 ? remaining[0].id : null;
+           }
+           this._updateActiveSession(room);
            if (this.activeRoom === room) {
                this._updateUIForRoom();
+               this._renderCanvas();
                if (this._renderQueueModal) this._renderQueueModal();
            }
            this._renderTabs();
@@ -155,24 +166,38 @@ _updateActiveSession(room, onlyBadge = false) {
     if (!roomData.queue) roomData.queue = [];
     
     if (roomData.queue && roomData.queue.length > 0) {
+      const unfinished = roomData.queue.filter(s => !s.finished);
       const activeSessionId = roomData.activeSessionId;
-      const active = roomData.queue.find(s => s.id === activeSessionId) || roomData.queue[0];
+      let active = roomData.queue.find(s => s.id === activeSessionId && !s.finished);
+      if (!active && unfinished.length > 0) {
+        active = unfinished[0];
+        roomData.activeSessionId = active.id;
+      }
       
-      if (roomData.session !== active.id) {
-        roomData.session = active.id;
-        roomData.step = active.step || 1;
-      } else {
-        if (roomData.step === undefined || roomData.step === null) {
+      if (active) {
+        if (roomData.session !== active.id) {
+          roomData.session = active.id;
           roomData.step = active.step || 1;
         } else {
-          active.step = roomData.step;
+          if (roomData.step === undefined || roomData.step === null) {
+            roomData.step = active.step || 1;
+          } else {
+            active.step = roomData.step;
+          }
+        }
+      } else {
+        roomData.session = null;
+        roomData.step = 1;
+        if (this.activeRoom === room) {
+          this.slots = [];
+          this.selectedPhotos = new Set();
         }
       }
       
       roomData.timerStarted = false;
       roomData.lastImageTime = Date.now();
       
-      if (!onlyBadge) {
+      if (!onlyBadge && active) {
         if (this.activeRoom === room) {
           if (this.currentTemplate) {
             active.currentTemplate = this.currentTemplate;
