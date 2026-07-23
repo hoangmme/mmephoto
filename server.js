@@ -357,26 +357,20 @@ app.post('/api/login', (req, res) => {
     return res.json({ success: true, isAdmin: true, auth: pInput });
   }
   
-  // Normal branch login (branchId + optional password)
-  const matchedId = Object.keys(ADMIN_DATA.branches).find(b => b.toLowerCase() === bInput.toLowerCase());
-  if (matchedId) {
-    const branchObj = ADMIN_DATA.branches[matchedId];
-    if (!branchObj.password || branchObj.password === pInput || !pInput) {
-      return res.json({ success: true, branchId: matchedId });
-    }
+  // Find case-insensitive match
+  let matchedId = Object.keys(ADMIN_DATA.branches).find(b => b.toLowerCase() === bInput.toLowerCase());
+  
+  if (!matchedId) {
+    // Auto-create branch if not exists
+    matchedId = bInput;
+    ADMIN_DATA.branches[matchedId] = {
+      password: pInput,
+      rooms: ['Room1']
+    };
+    saveAdminData();
   }
 
-  // Setup code login (if setupCode entered in branchId or password field)
-  const setupMatch = Object.keys(ADMIN_DATA.branches).find(b => {
-    const sCode = ADMIN_DATA.branches[b].setupCode;
-    return sCode && (sCode.toLowerCase() === bInput.toLowerCase() || sCode.toLowerCase() === pInput.toLowerCase());
-  });
-
-  if (setupMatch) {
-    return res.json({ success: true, branchId: setupMatch });
-  }
-
-  res.status(401).json({ error: 'Sai ID, Mật khẩu hoặc Mã cài đặt' });
+  res.json({ success: true, branchId: matchedId });
 });
 
 app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (req, res) => {
