@@ -204,7 +204,8 @@ _updateActiveSession(room, onlyBadge = false) {
                ${qLen}
              </span>`;
            }
-           html += `Phiên: ${roomData.session}`;
+           const imgCount = roomData.images ? roomData.images.length : 0;
+           html += `Phiên: ${roomData.session} (${imgCount} ảnh)`;
            lbl.innerHTML = html;
            lbl.style.display = 'inline-flex';
            lbl.style.alignItems = 'center';

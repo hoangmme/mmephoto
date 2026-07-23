@@ -165,7 +165,7 @@ _initMainSwiper() {
                 if (activeSlide) {
                   this.isProgrammaticScroll = true;
                   this.mainSwiper.scrollLeft = activeSlide.offsetLeft - pad;
-                  setTimeout(() => { this.isProgrammaticScroll = false; }, 50);
+                  setTimeout(() => { this.isProgrammaticScroll = false; }, 500);
                 }
               });
            }

@@ -122,10 +122,13 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
 ,
 
 _autoFill(skipSync = false) {
-    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    const roomData = this.activeRoom && this.rooms[this.activeRoom];
+    const step = roomData ? (roomData.step || 1) : 1;
+    const currentImages = roomData && roomData.images ? roomData.images : [];
+    
     const sourceImages = (step >= 2 && this.selectedPhotos && this.selectedPhotos.size > 0)
-      ? this.images.filter(img => this.selectedPhotos.has(img.id))
-      : this.images;
+      ? currentImages.filter(img => this.selectedPhotos.has(img.id))
+      : currentImages;
 
     let imgIndex = 0;
     for (let i = 0; i < this.slots.length; i++) {
