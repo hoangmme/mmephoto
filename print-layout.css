@@ -271,9 +271,12 @@ body {
   color: white;
 }
 .pl-thumb img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 .pl-thumb-info {
   position: absolute;
@@ -512,28 +515,39 @@ body {
 
 /* ── Step Modes Layout ── */
 .pl-step-mode-1 #panelLeft,
-.pl-step-mode-3 #panelLeft,
 .pl-step-mode-4 #panelLeft {
   display: none !important;
 }
 
 .pl-step-mode-2 #panelLeft {
   display: flex !important;
+  width: 100%;
+  max-width: 100%;
+}
+.pl-step-mode-2 #mainSwiperArea {
+  display: none !important;
+}
+.pl-step-mode-2 .pl-image-list {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+
+.pl-step-mode-3 #panelLeft {
+  display: flex !important;
   width: 320px;
   max-width: 42%;
 }
-
-.pl-step-mode-2 .pl-slide {
+.pl-step-mode-3 .pl-slide {
   height: min(calc(100vh - 300px), calc((100vw - 380px) * 1.418));
 }
 
 .pl-step-mode-1 .pl-slide,
-.pl-step-mode-3 .pl-slide,
 .pl-step-mode-4 .pl-slide {
   height: min(calc(100vh - 300px), calc((100vw - 80px) * 1.418));
 }
 
-.pl-step-mode-2 .pl-image-list {
+.pl-step-mode-3 .pl-image-list {
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   padding: 12px;

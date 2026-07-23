@@ -338,6 +338,8 @@ class PrintLayoutApp {
 
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext && stepFooterInfo) {
+      if (stepFooterInfo) stepFooterInfo.textContent = ''; // Gom hướng dẫn về 1 chỗ (banner trên)
+      
       if (step === 1) {
         instructionText.textContent = isWaitingForPhotos
           ? '👉 Bước 1: Chọn mẫu Khung In trong khi đợi tải full ảnh từ máy ảnh...'
@@ -345,7 +347,6 @@ class PrintLayoutApp {
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Chọn Ảnh (B2) <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-        stepFooterInfo.textContent = 'Khách hàng chọn mẫu khung in phù hợp (60 giây)';
         if (btnNext) btnNext.style.display = 'none';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 2) {
@@ -356,7 +357,6 @@ class PrintLayoutApp {
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B1';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp (B3) <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-        stepFooterInfo.textContent = 'Chạm ảnh để điền ô trống. Hết giờ hệ thống sẽ tự động điền (Auto Fill)';
         if (btnNext) btnNext.style.display = 'none';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 3) {
@@ -365,14 +365,12 @@ class PrintLayoutApp {
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B2';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = '✅ Hoàn Tất (Gửi cho Nhân Viên)';
-        stepFooterInfo.textContent = 'Dùng 2 ngón tay kéo ra/vào để zoom, xoay 2 ngón tay để xoay ảnh';
         if (btnNext) btnNext.style.display = 'none';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 4) {
         instructionText.textContent = '✨ Khách hàng đã hoàn tất! Nhân viên hỗ trợ kiểm tra, tải, in ảnh hoặc bấm Next Customer';
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'none';
-        stepFooterInfo.textContent = 'Màn hình nhân viên — Không đếm thời gian thao tác';
         if (btnNext) btnNext.style.display = 'inline-flex';
         if (qrOverlay) qrOverlay.style.display = 'block';
       }
@@ -407,8 +405,8 @@ class PrintLayoutApp {
       }
     }
     
-    // QR Code
-    if (roomData.session) {
+    // QR Code (chỉ render & hiện ở step 4)
+    if (roomData.session && step === 4) {
       this._updateQRCode(this.activeRoom, roomData.session);
     }
 
@@ -1523,7 +1521,7 @@ class PrintLayoutApp {
     // Draw slots (layer 2)
     for (let i = 0; i < tmpl.slots.length; i++) {
       const slotDef = tmpl.slots[i];
-      const slotData = overrideTemplate ? null : this.slots[i]; // If rendering swiper preview, no slots data
+      const slotData = (overrideTemplate || step === 1) ? null : this.slots[i]; // If rendering swiper preview or step 1, no slots data
 
       ctx.save();
       ctx.translate(slotDef.cx, slotDef.cy);
