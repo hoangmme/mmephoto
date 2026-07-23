@@ -72,7 +72,7 @@ class StaffView {
 
   async _checkLogin(branch, password) {
     try {
-      const res = await fetch(`${this.serverUrl}/api/rooms/${branch}`, {
+      const res = await fetch(`/api/rooms/${branch}`, {
         headers: { 'Authorization': password }
       });
       return res.status === 200;
@@ -107,7 +107,7 @@ class StaffView {
   _connectSSE() {
     if (this.eventSource) this.eventSource.close();
     
-    this.eventSource = new EventSource(`${this.serverUrl}/api/stream/${this.branch}`);
+    this.eventSource = new EventSource(`/api/stream/${this.branch}`);
     
     this.eventSource.onmessage = (e) => {
       try {
@@ -219,7 +219,7 @@ class StaffView {
         if (imgObj) {
            const srcUrl = imgObj.url;
            if (srcUrl) {
-             const userImg = await this._loadImage(this.serverUrl + srcUrl);
+             const userImg = await this._loadImage(srcUrl);
              if (userImg) {
                ctx.save();
                ctx.translate(slotDef.x, slotDef.y);
