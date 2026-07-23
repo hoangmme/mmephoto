@@ -253,8 +253,7 @@ body {
   border-color: var(--pl-accent);
   box-shadow: 0 0 0 1px var(--pl-accent);
 }
-.pl-thumb.selected::after {
-  content: '✓';
+.pl-thumb-badge {
   position: absolute;
   top: 4px;
   right: 4px;
@@ -268,6 +267,7 @@ body {
   justify-content: center;
   font-size: 12px;
   font-weight: bold;
+  z-index: 10;
 }
 .pl-thumb.used {
   opacity: 0.5;
@@ -531,16 +531,25 @@ body {
 }
 
 /* ── Step Modes Layout ── */
-.pl-step-mode-1 #panelLeft,
-.pl-step-mode-4 #panelLeft {
+.pl-step-mode-1 #panelLeft {
   display: none !important;
 }
 
 .pl-step-mode-2 .pl-actions,
 .pl-step-mode-3 .pl-actions,
+.pl-step-mode-4 .pl-actions,
 .pl-step-mode-2 .pl-panel-footer,
-.pl-step-mode-3 .pl-panel-footer {
+.pl-step-mode-3 .pl-panel-footer,
+.pl-step-mode-4 .pl-panel-footer {
   display: none !important;
+}
+
+.pl-step-mode-4 .pl-slide:not(.active) {
+  display: none !important;
+}
+.pl-step-mode-4 .pl-swiper-container {
+  overflow: hidden;
+  justify-content: center;
 }
 
 .pl-step-mode-2 #panelLeft {

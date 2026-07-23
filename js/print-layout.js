@@ -427,6 +427,7 @@ class PrintLayoutApp {
     roomData.step = step;
     this._startStepTimer(room, step);
     if (this.activeRoom === room) {
+      if (step === 3) this._initMainSwiper();
       this._updateUIForRoom();
       this._renderCanvas();
     }
@@ -622,6 +623,10 @@ class PrintLayoutApp {
       const slide = document.createElement('div');
       slide.className = 'pl-slide';
       slide.dataset.id = k;
+      
+      if (k === this.currentTemplate) {
+        slide.classList.add('active');
+      }
       
       const preview = document.createElement('div');
       preview.className = 'pl-slide-preview';
@@ -844,6 +849,7 @@ class PrintLayoutApp {
           }
           this._setStep(this.activeRoom, 3);
         } else if (cur === 3) {
+          this._uploadFinalFrame();
           this._setStep(this.activeRoom, 4);
         }
       });
@@ -1174,12 +1180,23 @@ class PrintLayoutApp {
     const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
 
-    this.images.forEach(img => {
+    let imagesToRender = this.images;
+    if (step === 3 && this.selectedPhotos.size > 0) {
+      imagesToRender = this.images.filter(img => this.selectedPhotos.has(img.id));
+    }
+
+    imagesToRender.forEach(img => {
       const thumb = document.createElement('div');
       thumb.className = 'pl-thumb';
       
       if (step === 2) {
-        if (this.selectedPhotos.has(img.id)) thumb.classList.add('selected');
+        if (this.selectedPhotos.has(img.id)) {
+          thumb.classList.add('selected');
+          const badge = document.createElement('div');
+          badge.className = 'pl-thumb-badge';
+          badge.textContent = Array.from(this.selectedPhotos).indexOf(img.id) + 1;
+          thumb.appendChild(badge);
+        }
       } else {
         if (img.id === this.selectedImageId) thumb.classList.add('selected');
         if (usedIds.has(img.id)) thumb.classList.add('used');
@@ -1573,8 +1590,13 @@ class PrintLayoutApp {
         // Fill default image in Step 1 or swiper thumbnail
         let defaultImgToDraw = null;
         if (isPreviewSwiper && this.images && this.images.length > 0) {
-           const cachedImg = this._imageCache[this.images[i % this.images.length].id];
-           if (cachedImg) defaultImgToDraw = cachedImg;
+           const sourceImages = (step >= 2 && this.selectedPhotos && this.selectedPhotos.size > 0) 
+                ? this.images.filter(img => this.selectedPhotos.has(img.id))
+                : this.images;
+           if (sourceImages.length > 0) {
+             const cachedImg = this._imageCache[sourceImages[i % sourceImages.length].id];
+             if (cachedImg) defaultImgToDraw = cachedImg;
+           }
         }
         if (!defaultImgToDraw && this.defaultPreviewImages && this.defaultPreviewImages.length > 0) {
            const d = this.defaultPreviewImages[i % this.defaultPreviewImages.length];
@@ -1705,6 +1727,27 @@ class PrintLayoutApp {
     }
 
     this._showOverlay(false);
+  }
+
+  async _uploadFinalFrame() {
+    if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) return;
+    try {
+      const exportCanvas = document.createElement('canvas');
+      this._drawToCanvas(exportCanvas, false);
+      exportCanvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const branch = localStorage.getItem('branchId') || 'CN01';
+        const session = this.rooms[this.activeRoom].session;
+        const formData = new FormData();
+        formData.append('image', blob, '00_frame.jpg'); // Bắt đầu bằng 00_ để hiện đầu tiên
+        await fetch(`/api/stream-upload/${branch}/${this.activeRoom}/${session}`, {
+          method: 'POST',
+          body: formData
+        });
+      }, 'image/jpeg', 0.95);
+    } catch (err) {
+      console.error('Upload final frame failed:', err);
+    }
   }
 
   async _exportPDF() {
