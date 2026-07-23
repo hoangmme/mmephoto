@@ -541,7 +541,8 @@ body {
 .pl-step-mode-4 .pl-actions,
 .pl-step-mode-2 .pl-panel-footer,
 .pl-step-mode-3 .pl-panel-footer,
-.pl-step-mode-4 .pl-panel-footer {
+.pl-step-mode-4 .pl-panel-footer,
+.pl-step-mode-3 .pl-panel-header {
   display: none !important;
 }
 

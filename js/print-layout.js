@@ -123,6 +123,7 @@ class PrintLayoutApp {
       } else if (data.type === 'new_image') {
         const room = data.room;
         if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false };
+        if (data.imageUrl && data.imageUrl.includes('00_frame.jpg')) return;
         
         // Find if session is in queue
         let sessionObj = this.rooms[room].queue.find(s => s.id === data.session);
@@ -191,7 +192,9 @@ class PrintLayoutApp {
         roomData.timerStarted = false;
         roomData.lastImageTime = Date.now();
         this.selectedPhotos.clear();
-        roomData.images = active.images.map(url => {
+        roomData.images = active.images
+          .filter(url => !url.includes('00_frame.jpg'))
+          .map(url => {
           const id = 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
           this._preloadImage(id, url).then(() => this._renderCanvas());
           return { id, url, name: url.split('/').pop() };
@@ -378,7 +381,12 @@ class PrintLayoutApp {
         btnStepNext.style.display = 'none';
         if (btnNext) btnNext.style.display = 'inline-flex';
         if (qrOverlay) qrOverlay.style.display = 'block';
+        const btnExport = document.getElementById('btnExportJPG');
+        if (btnExport) btnExport.style.display = 'inline-flex';
       }
+      
+      const btnExport = document.getElementById('btnExportJPG');
+      if (btnExport && step !== 4) btnExport.style.display = 'none';
     }
     
     // Timer update

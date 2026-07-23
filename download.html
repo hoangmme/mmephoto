@@ -73,6 +73,7 @@
       color: var(--text-muted);
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -135,15 +136,38 @@
             const btnDownloadAll = document.getElementById('btnDownloadAll');
             btnDownloadAll.style.display = 'block';
             btnDownloadAll.addEventListener('click', async () => {
-              const links = document.querySelectorAll('.single-download');
-              for (let i = 0; i < links.length; i++) {
-                const a = document.createElement('a');
-                a.href = links[i].href;
-                a.download = links[i].download;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                await new Promise(r => setTimeout(r, 500)); // Delay to prevent browser blocking
+              btnDownloadAll.innerText = 'Đang nén file (0%)...';
+              btnDownloadAll.disabled = true;
+              try {
+                const JSZip = window.JSZip;
+                const zip = new JSZip();
+                
+                for (let i = 0; i < data.images.length; i++) {
+                  const url = data.images[i];
+                  const filename = url.split('/').pop();
+                  const response = await fetch(url);
+                  const blob = await response.blob();
+                  zip.file(filename, blob);
+                  btnDownloadAll.innerText = `Đang nén file (${Math.round(((i + 1) / data.images.length) * 100)}%)...`;
+                }
+
+                btnDownloadAll.innerText = 'Đang tạo file tải xuống...';
+                const zipBlob = await zip.generateAsync({type: "blob"});
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(zipBlob);
+                link.download = `LL_Photobooth_${session}.zip`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                btnDownloadAll.innerText = 'Tải Toàn Bộ Ảnh (ZIP)';
+              } catch (err) {
+                console.error(err);
+                alert('Có lỗi xảy ra khi tạo file zip!');
+                btnDownloadAll.innerText = 'Tải Toàn Bộ Ảnh (Lỗi)';
+              } finally {
+                btnDownloadAll.disabled = false;
               }
             });
           } else {
