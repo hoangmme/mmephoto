@@ -88,10 +88,27 @@ class StaffView {
     try {
       const res = await fetch(`/api/templates`);
       if (res.ok) {
-        ALL_TEMPLATES = await res.json();
+        const arr = await res.json();
+        const templatesObj = {};
+        arr.forEach(t => {
+          templatesObj[t.id] = {
+            name: t.name || 'Template',
+            slots: t.slots.map(s => ({
+              x: s.cx !== undefined ? s.cx : (s.x + (s.width||s.w||0)/2),
+              y: s.cy !== undefined ? s.cy : (s.y + (s.height||s.h||0)/2),
+              w: s.width || s.w,
+              h: s.height || s.h,
+              rotation: s.rotation || 0
+            })),
+            frame_url: t.frame_url,
+            canvas_width: t.canvas_width || 1748,
+            canvas_height: t.canvas_height || 2480
+          };
+        });
+        ALL_TEMPLATES = { ...ALL_TEMPLATES, ...templatesObj };
       }
     } catch(e) {
-      console.error('Failed to load templates.json', e);
+      console.error('Failed to load templates', e);
     }
     
     // Load custom templates from local storage
@@ -172,6 +189,18 @@ class StaffView {
       const card = document.createElement('div');
       card.className = 'staff-card';
 
+      // Render images list
+      const rawImages = (room.images || []).filter(img => typeof img === 'string' ? !img.includes('00_frame.jpg') : (img.url ? !img.url.includes('00_frame.jpg') : true));
+      const imagesHtml = rawImages.map((img, idx) => {
+        const url = typeof img === 'string' ? img : img.url;
+        return `
+          <div style="position: relative; border: 1px solid var(--pl-border); border-radius: 4px; overflow: hidden; background: #000; flex-shrink: 0;">
+            <img src="${url}" style="width: 100%; height: auto; display: block;">
+            <a href="${url}" download="${roomName}_${room.session}_img${idx+1}.jpg" target="_blank" style="position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; text-decoration: none;">Tải</a>
+          </div>
+        `;
+      }).join('');
+
       card.innerHTML = `
         <div class="staff-card-header">
           <div>
@@ -179,12 +208,17 @@ class StaffView {
             <div class="staff-card-subtitle">Phiên: ${room.session}</div>
           </div>
           <button class="pl-btn pl-btn-primary" style="padding: 6px 12px; font-size: 13px;" id="btnDownload_${roomName}" ${!t ? 'disabled title="Thiếu template"' : ''}>
-             Tải Ảnh
+             Tải Ảnh Layout
           </button>
         </div>
-        <div class="staff-card-canvas" id="canvasContainer_${roomName}">
-           ${t ? `<canvas width="${t.canvas_width || A5_WIDTH}" height="${t.canvas_height || A5_HEIGHT}" id="canvas_${roomName}"></canvas>` 
-               : `<div style="padding:20px; text-align:center; color:var(--pl-text-muted);">Template <b>${tId}</b> chưa được đồng bộ sang máy này.<br>Hãy tạo JSON và import vào màn hình này nếu cần xem layout.</div>`}
+        <div style="display: flex; gap: 15px; flex: 1; min-height: 0;">
+          <div style="width: 100px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-right: 5px;">
+            ${imagesHtml}
+          </div>
+          <div class="staff-card-canvas" id="canvasContainer_${roomName}" style="flex: 1; max-width: calc(100% - 115px);">
+             ${t ? `<canvas width="${t.canvas_width || A5_WIDTH}" height="${t.canvas_height || A5_HEIGHT}" id="canvas_${roomName}"></canvas>` 
+                 : `<div style="padding:20px; text-align:center; color:var(--pl-text-muted); width: 100%;">Template <b>${tId}</b> chưa được đồng bộ sang máy này.<br>Hãy tạo JSON và import vào màn hình này.</div>`}
+          </div>
         </div>
       `;
       grid.appendChild(card);

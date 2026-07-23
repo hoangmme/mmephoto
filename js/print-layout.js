@@ -392,12 +392,7 @@ class PrintLayoutApp {
         btnStepNext.style.display = 'none';
         if (btnNext) btnNext.style.display = 'inline-flex';
         if (qrOverlay) qrOverlay.style.display = 'block';
-        const btnExport = document.getElementById('btnExportJPG');
-        if (btnExport) btnExport.style.display = 'inline-flex';
       }
-      
-      const btnExport = document.getElementById('btnExportJPG');
-      if (btnExport && step !== 4) btnExport.style.display = 'none';
     }
     
     // Timer update
