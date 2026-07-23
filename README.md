@@ -1,90 +1,80 @@
-# Hướng dẫn đưa PhotoTune Pro lên VPS
+# 📸 LL PHOTOBOOTH - MMEPHOTO MANAGEMENT & SYNC SYSTEM
 
-Hiện tại, PhotoTune Pro là một ứng dụng thuần Front-end (Static Web App). Nó chỉ bao gồm các file HTML, CSS, và JS, mọi tính năng xử lý ảnh đều được thực hiện trực tiếp trên trình duyệt của người dùng (Client-side).
-
-Do đó, việc đưa webtool này lên VPS cực kỳ đơn giản. Bạn không cần cài đặt Node.js hay Database, chỉ cần một Web Server như **Nginx**.
-
-## Yêu cầu chuẩn bị
-- Một VPS chạy Linux (khuyến nghị Ubuntu 20.04 hoặc 22.04).
-- Một tên miền (Domain) đã trỏ IP về VPS.
+Hệ thống quản lý phòng chụp Photobooth tự động: đồng bộ ảnh trực tiếp từ máy ảnh PC lên VPS, xử lý ghép khung in A5, hiển thị mã QR tải ảnh và quản lý hàng chờ chuyên nghiệp.
 
 ---
 
-## Các bước triển khai (Deployment)
+## 🚀 1. Hướng Dẫn Cài Đặt Cho Máy Tính Phòng Chụp (PC Client - Windows)
 
-### Bước 1: Cài đặt Nginx trên VPS
-SSH vào VPS của bạn và chạy các lệnh sau:
+### 📌 Bước 1: Yêu cầu chuẩn bị trên PC
+1. **Python 3.x**: Đã cài đặt (tích chọn `Add Python to PATH` khi cài đặt).
+2. **Git**: Đã cài đặt trên Windows.
+
+---
+
+### 📥 Bước 2: Lệnh cài đặt nhanh (Run via PowerShell)
+
+Mở **PowerShell (Run as Administrator)** trên Windows và dán câu lệnh sau:
+
+```powershell
+git clone https://github.com/hoangmme/mmephoto.git C:\mmephoto; cd C:\mmephoto; .\install.ps1
+```
+
+*(Script sẽ tự động cài thư viện `requests`, `watchdog`, `pillow`, thêm `mmephoto` vào biến môi trường PATH và tạo Shortcut khởi động cùng Windows)*.
+
+---
+
+### ⚙️ Bước 3: Đăng ký mã Setup Phòng Chụp
+
+Sau khi cài đặt xong, gõ lệnh sau ở bất kỳ đâu trong Terminal / Cmd:
+
+```cmd
+mmephoto setup
+```
+
+1. **Nhập Mã Cài Đặt (Setup Code)** do Admin cấp.
+2. **Chọn Tên Phòng** tương ứng với PC này.
+3. **Nhập Đường Dẫn Thư Mục Ảnh Máy Ảnh** (ví dụ: `D:\Photos` hoặc `C:\DSLR_HotFolder`).
+
+> 💡 **Tính năng nổi bật:** Script hỗ trợ **quét đệ quy tất cả các thư mục con** (ví dụ: `D:\Photos\user1\image` và `D:\Photos\user1`). Tất cả ảnh thuộc các thư mục con đều được tự động nén WebP và đẩy lên máy chủ theo phiên chụp tương ứng.
+
+---
+
+### 🛠️ Các Lệnh Quản Lý Nhanh Trên PC (`mmephoto`)
+
+Bạn có thể gõ các lệnh sau ở bất kỳ đâu trong Command Prompt (`cmd`) hoặc PowerShell:
+
+| Lệnh | Công dụng |
+| :--- | :--- |
+| `mmephoto update` | **Lấy code mới nhất từ Git** và tự động Khởi động lại service chạy ngầm |
+| `mmephoto setup` | Nhập Mã Cài Đặt mới & Đăng ký phòng chụp |
+| `mmephoto reset` | Xóa cấu hình phòng cũ & Đăng ký lại từ đầu |
+| `mmephoto start` | Bật lại service đồng bộ chạy ngầm |
+| `mmephoto stop` | Tắt service đồng bộ chạy ngầm |
+
+---
+
+## 🌐 2. Hướng Dẫn Cài Đặt Máy Chủ VPS (Server)
+
+### 📌 Bước 1: Cài đặt Node.js & Git trên VPS
 ```bash
 sudo apt update
-sudo apt install nginx -y
+sudo apt install nodejs npm git -y
 ```
 
-### Bước 2: Đưa source code lên VPS
-Tạo một thư mục chứa source code trên VPS:
+### 📥 Bước 2: Tải code và khởi chạy Server
 ```bash
-sudo mkdir -p /var/www/phototune
+git clone https://github.com/hoangmme/mmephoto.git /var/www/mmephoto
+cd /var/www/mmephoto
+npm install
+node server.js &
 ```
-
-Bạn có thể dùng phần mềm như FileZilla, WinSCP (trên Windows) hoặc lệnh `scp` (trên Mac/Linux) để copy toàn bộ thư mục code hiện tại (bao gồm `index.html`, `style.css`, thư mục `js`, thư mục `luts`) vào đường dẫn `/var/www/phototune` trên VPS.
-
-```bash
-# Ví dụ lệnh scp từ máy tính của bạn lên VPS
-scp -r /Users/hoji/Documents/code/photo-editor/* root@IP_CUA_VPS:/var/www/phototune/
-```
-
-Sau khi copy xong, phân quyền lại cho thư mục:
-```bash
-sudo chown -R www-data:www-data /var/www/phototune
-sudo chmod -R 755 /var/www/phototune
-```
-
-### Bước 3: Cấu hình Nginx
-Tạo một file cấu hình Nginx mới cho tên miền của bạn:
-```bash
-sudo nano /etc/nginx/sites-available/phototune
-```
-
-Dán nội dung sau vào file (thay `tenmien-cua-ban.com` bằng tên miền thực tế):
-```nginx
-server {
-    listen 80;
-    server_name tenmien-cua-ban.com www.tenmien-cua-ban.com;
-    root /var/www/phototune;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ =404;
-    }
-
-    # Cache file tĩnh (tuỳ chọn nhưng khuyên dùng)
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|cube)$ {
-        expires 30d;
-        add_header Cache-Control "public, no-transform";
-    }
-}
-```
-
-Kích hoạt cấu hình và khởi động lại Nginx:
-```bash
-sudo ln -s /etc/nginx/sites-available/phototune /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
-```
-
-### Bước 4: Cài đặt SSL miễn phí (HTTPS) - RẤT QUAN TRỌNG
-Vì app sử dụng một số API trình duyệt mới, bạn **bắt buộc** phải có HTTPS.
-Cài đặt Certbot để lấy chứng chỉ SSL Let's Encrypt miễn phí:
-```bash
-sudo apt install certbot python3-certbot-nginx -y
-sudo certbot --nginx -d tenmien-cua-ban.com -d www.tenmien-cua-ban.com
-```
-Làm theo hướng dẫn trên màn hình. Sau khi xong, trang web của bạn đã có thể truy cập bằng `https://tenmien-cua-ban.com`.
 
 ---
 
-## Định hướng hệ thống mới (Luồng có API, Tự động chỉnh ảnh, Webtool 2)
-Nếu bạn muốn hệ thống có API nhận ảnh, tự động xử lý và sinh mã QR như yêu cầu mới nhất, chúng ta không thể dùng cấu hình Static Web App đơn giản như trên nữa.
+## ✨ 3. Các Tính Năng Nổi Bật Đã Cập Nhật
 
-Hệ thống sẽ phải trở thành một hệ thống **Client-Server hoàn chỉnh**, cần cài đặt Docker, Node.js Backend, và Redis/Database để quản lý "Phiên chụp" (Sessions). 
-
-Vui lòng xem file **`implementation_plan.md`** mà tôi vừa tạo ra trong giao diện để xem kiến trúc cho hệ thống mới này và trả lời các câu hỏi để chúng ta bắt đầu!
+1. **Đồng bộ ảnh siêu tốc WebP**: Tự động nén ảnh trên RAM và stream upload lên VPS trong thời gian thực.
+2. **Quét đệ quy thư mục con**: Tự động nhận diện tất cả ảnh trong thư mục gốc và thư mục con của phần mềm máy ảnh.
+3. **Quản Lý Hàng Chờ & Xóa Vật Lý**: Khi xóa phiên chụp trong bảng *Quản Lý Hàng Chờ*, hệ thống sẽ tự động xóa sạch thư mục ảnh đó khỏi đĩa VPS.
+4. **Xem QR / Tải Ảnh**: Mở trực tiếp trang download mã QR (`download.html`) chuẩn cho khách hàng.
