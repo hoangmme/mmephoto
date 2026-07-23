@@ -2,11 +2,29 @@ import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5
 
 export const StateMixin = {
 _initSSE(branch) {
+    this.branch = branch;
     const branchNameEl = document.getElementById('headerBranchName');
     if (branchNameEl) {
       branchNameEl.textContent = `Chi nhánh: ${branch}`;
       branchNameEl.style.display = 'inline';
     }
+
+    // Immediate REST fetch for initial state (works even if SSE is buffered)
+    fetch(`/api/init-state/${encodeURIComponent(branch)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.rooms) {
+          data.rooms.forEach(r => {
+            const room = r.room;
+            if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false };
+            this.rooms[room].queue = r.sessions || [];
+            if (r.activeSessionId) this.rooms[room].activeSessionId = r.activeSessionId;
+            this._updateActiveSession(room);
+          });
+          this._renderTabs();
+          if (this.activeRoom) this._updateUIForRoom();
+        }
+      }).catch(err => console.error('Init REST fetch error:', err));
 
     if (this.sse) this.sse.close();
     this.sse = new EventSource(`/api/stream/${branch}`);

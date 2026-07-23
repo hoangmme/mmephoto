@@ -538,6 +538,9 @@ app.get('/api/stream/:branch', (req, res) => {
   if (roomState[branch]) {
     Object.keys(roomState[branch]).forEach(r => allRooms.add(r));
   }
+  if (allRooms.size === 0) {
+    allRooms.add('Room1');
+  }
   
   allRooms.forEach(room => {
     const state = (roomState[branch] && roomState[branch][room]) || { sessions: [], activeSessionId: null };
@@ -558,6 +561,33 @@ app.get('/api/stream/:branch', (req, res) => {
     clearInterval(keepAlive);
     clients[branch] = clients[branch].filter(c => c !== res);
   });
+});
+
+app.get('/api/init-state/:branch', (req, res) => {
+  const { branch } = req.params;
+  const allRooms = new Set();
+  const branchData = ADMIN_DATA.branches[branch];
+  if (branchData && branchData.rooms) {
+    branchData.rooms.forEach(r => allRooms.add(r));
+  }
+  if (roomState[branch]) {
+    Object.keys(roomState[branch]).forEach(r => allRooms.add(r));
+  }
+  if (allRooms.size === 0) {
+    allRooms.add('Room1');
+  }
+  
+  const roomsData = [];
+  allRooms.forEach(room => {
+    const state = (roomState[branch] && roomState[branch][room]) || { sessions: [], activeSessionId: null };
+    roomsData.push({
+      room: room,
+      activeSessionId: state.activeSessionId,
+      sessions: (state.sessions || []).filter(s => !s.finished)
+    });
+  });
+  
+  res.json({ success: true, branch, rooms: roomsData });
 });
 
 // ==========================================
