@@ -143,7 +143,7 @@ body {
   color: white;
 }
 .pl-btn-primary:hover {
-  opacity: 0.9;
+  background: #373b18 !important;
   color: white;
 }
 

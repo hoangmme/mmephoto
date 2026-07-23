@@ -1180,12 +1180,39 @@ class PrintLayoutApp {
   _initTemplate() {
     const tmpl = ALL_TEMPLATES[this.currentTemplate];
     
-    // Check if we need to load frame image
+    // Check if we need to load frame/bg image
     this.frameImageObj = null;
+    this.bgImageObj = null;
+
+    let loadedCount = 0;
+    let imagesToLoad = 0;
+
+    const tryRender = () => {
+       loadedCount++;
+       if (loadedCount >= imagesToLoad) {
+          this._renderCanvas();
+       }
+    };
+
+    if (tmpl.frame_url) imagesToLoad++;
+    if (tmpl.background_image) imagesToLoad++;
+
     if (tmpl.frame_url) {
       this.frameImageObj = new Image();
-      this.frameImageObj.onload = () => this._renderCanvas();
+      this.frameImageObj.crossOrigin = 'anonymous';
+      this.frameImageObj.onload = tryRender;
       this.frameImageObj.src = tmpl.frame_url;
+    }
+
+    if (tmpl.background_image) {
+      this.bgImageObj = new Image();
+      this.bgImageObj.crossOrigin = 'anonymous';
+      this.bgImageObj.onload = tryRender;
+      this.bgImageObj.src = tmpl.background_image;
+    }
+    
+    if (imagesToLoad === 0) {
+       this._renderCanvas();
     }
 
     const oldSlots = [...(this.slots || [])];
@@ -1632,9 +1659,19 @@ class PrintLayoutApp {
 
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
 
-    // White background (layer 1)
-    ctx.fillStyle = '#ffffff';
+    // Layer 1 (Background)
+    ctx.fillStyle = tmpl.background_color || '#ffffff';
     ctx.fillRect(0, 0, w, h);
+
+    if (isPreviewSwiper && tmpl.background_image) {
+       // async draw for swiper
+       const bgImg = new Image();
+       bgImg.onload = () => { ctx.drawImage(bgImg, 0, 0, w, h); };
+       bgImg.src = tmpl.background_image;
+       if (bgImg.complete && bgImg.naturalWidth > 0) ctx.drawImage(bgImg, 0, 0, w, h);
+    } else if (this.bgImageObj && !overrideTemplate) {
+       ctx.drawImage(this.bgImageObj, 0, 0, w, h);
+    }
 
     // Draw slots (layer 2)
     for (let i = 0; i < tmpl.slots.length; i++) {
