@@ -1,9 +1,52 @@
 // Màn hình Nhân Viên (Staff View)
 const SERVER_URL = 'http://localhost:3000'; // Sẽ lấy từ localStorage nếu có
 
-let ALL_TEMPLATES = {};
 const A5_WIDTH = 1748;
 const A5_HEIGHT = 2480;
+const PADDING = 40;
+
+const TEMPLATES = {
+  '1photo': {
+    name: '1 Photo',
+    slots: [
+      { x: PADDING, y: PADDING, w: A5_WIDTH - PADDING * 2, h: A5_HEIGHT - PADDING * 2 }
+    ]
+  },
+  '2photos': {
+    name: '2 Photos',
+    slots: [
+      { x: PADDING, y: PADDING, w: A5_WIDTH - PADDING * 2, h: (A5_HEIGHT - PADDING * 3) / 2 },
+      { x: PADDING, y: PADDING * 2 + (A5_HEIGHT - PADDING * 3) / 2, w: A5_WIDTH - PADDING * 2, h: (A5_HEIGHT - PADDING * 3) / 2 }
+    ]
+  },
+  '4photos': {
+    name: '4 Photos',
+    slots: [
+      { x: PADDING, y: PADDING, w: (A5_WIDTH - PADDING * 3) / 2, h: (A5_HEIGHT - PADDING * 3) / 2 },
+      { x: PADDING * 2 + (A5_WIDTH - PADDING * 3) / 2, y: PADDING, w: (A5_WIDTH - PADDING * 3) / 2, h: (A5_HEIGHT - PADDING * 3) / 2 },
+      { x: PADDING, y: PADDING * 2 + (A5_HEIGHT - PADDING * 3) / 2, w: (A5_WIDTH - PADDING * 3) / 2, h: (A5_HEIGHT - PADDING * 3) / 2 },
+      { x: PADDING * 2 + (A5_WIDTH - PADDING * 3) / 2, y: PADDING * 2 + (A5_HEIGHT - PADDING * 3) / 2, w: (A5_WIDTH - PADDING * 3) / 2, h: (A5_HEIGHT - PADDING * 3) / 2 }
+    ]
+  }
+};
+
+const parsedDefaults = {};
+Object.keys(TEMPLATES).forEach(k => {
+  parsedDefaults[k] = {
+    name: TEMPLATES[k].name,
+    slots: TEMPLATES[k].slots.map(s => ({
+      cx: s.x + s.w/2,
+      cy: s.y + s.h/2,
+      w: s.w,
+      h: s.h,
+      rotation: 0
+    })),
+    canvas_width: A5_WIDTH,
+    canvas_height: A5_HEIGHT
+  };
+});
+
+let ALL_TEMPLATES = { ...parsedDefaults };
 
 class StaffView {
   constructor() {
