@@ -21,24 +21,15 @@ try {
     exit
 }
 
-# 2. Xac dinh thu muc cai dat
-$CurrentDir = (Get-Location).Path
+# 2. Xac dinh thu muc cai dat (Thu muc hien tai)
+$InstallDir = (Get-Location).Path
 
-if (Test-Path (Join-Path $CurrentDir ".git")) {
-    $InstallDir = $CurrentDir
+if (Test-Path (Join-Path $InstallDir ".git")) {
     Write-Host "[*] Dang o san trong thu muc code. Dang cap nhat..." -ForegroundColor Yellow
     git pull
 } else {
-    $InstallDir = Join-Path $CurrentDir "mmephoto"
-    if (Test-Path $InstallDir) {
-        Write-Host "[*] Thu muc $InstallDir da ton tai. Dang cap nhat..." -ForegroundColor Yellow
-        Set-Location $InstallDir
-        git pull
-    } else {
-        Write-Host "[*] Dang tai ban clone tu Github vao $InstallDir..." -ForegroundColor Yellow
-        git clone https://github.com/hoangmme/mmephoto.git $InstallDir
-        Set-Location $InstallDir
-    }
+    Write-Host "[*] Dang tai mmephoto vao thu muc hien tai: $InstallDir..." -ForegroundColor Yellow
+    git clone https://github.com/hoangmme/mmephoto.git .
 }
 
 # 3. Them thu muc cai dat vao PATH (de chay lenh mmephoto o moi noi)
@@ -47,7 +38,7 @@ $userPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
 if ($userPath -notlike "*$InstallDir*") {
     [Environment]::SetEnvironmentVariable('PATH', "$userPath;$InstallDir", 'User')
 }
-$env:PATH = "$env:PATH;$InstallDir" # Update current session
+$env:PATH = "$env:PATH;$InstallDir"
 
 # 4. Chay cac buoc cai dat thong qua mmephoto.bat
 Write-Host "[*] Dang cai dat thu vien va tao Startup script..." -ForegroundColor Yellow
@@ -56,10 +47,5 @@ cmd.exe /c "mmephoto.bat install"
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host "[XONG] CAI DAT HOAN TAT!" -ForegroundColor Green
 Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "Neu day la lan dau tien cai dat PC nay, hay mo Terminal và go lenh duoi day de dang ky Thong tin Phong:" -ForegroundColor Yellow
-Write-Host "  mmephoto setup"
-Write-Host ""
-Write-Host "Cac lenh ho tro sau nay (co the go o bat ky dau):" -ForegroundColor Cyan
-Write-Host "  mmephoto update   (De lay code moi va restart)"
-Write-Host "  mmephoto reset    (De dang ky lai phong)"
-Write-Host "================================================" -ForegroundColor Cyan
+Write-Host "Dang mo giao dien Dang ky Phong & Thu muc anh..." -ForegroundColor Yellow
+cmd.exe /c "mmephoto.bat setup"

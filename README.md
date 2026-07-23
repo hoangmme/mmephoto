@@ -4,57 +4,45 @@ Hệ thống quản lý phòng chụp Photobooth tự động: đồng bộ ản
 
 ---
 
-## 🚀 1. Hướng Dẫn Cài Đặt Cho Máy Tính Phòng Chụp (PC Client - Windows)
+## 🚀 1. Lệnh Cài Đặt 1 Dòng Cho Máy Tính Phòng Chụp (PC Client - Windows)
 
-### 📌 Bước 1: Yêu cầu chuẩn bị trên PC
-1. **Python 3.x**: Đã cài đặt (tích chọn `Add Python to PATH` khi cài đặt).
-2. **Git**: Đã cài đặt trên Windows.
-
----
-
-### 📥 Bước 2: Lệnh cài đặt nhanh (Run via PowerShell)
-
-Mở **PowerShell (Run as Administrator)** trên Windows và dán câu lệnh sau:
+Mở **PowerShell (Run as Administrator)** trên Windows tại thư mục bạn muốn cài đặt và dán câu lệnh 1 dòng duy nhất sau:
 
 ```powershell
-git clone https://github.com/hoangmme/mmephoto.git C:\mmephoto; cd C:\mmephoto; .\install.ps1
+iwr -useb https://raw.githubusercontent.com/hoangmme/mmephoto/main/install.ps1 | iex
 ```
 
-*(Script sẽ tự động cài thư viện `requests`, `watchdog`, `pillow`, thêm `mmephoto` vào biến môi trường PATH và tạo Shortcut khởi động cùng Windows)*.
+*(Lệnh trên sẽ tự động tải code trực tiếp vào **thư mục hiện tại**, cài thư viện Python `requests`, `watchdog`, `pillow`, thêm bộ lệnh `mmephoto` vào biến môi trường PATH hệ thống, cài đặt Shortcut khởi động ngầm cùng Windows và mở ngay màn hình đăng ký Mã Phong & Thư mục Ảnh máy ảnh)*.
 
 ---
 
-### ⚙️ Bước 3: Đăng ký mã Setup Phòng Chụp
+## ⚙️ 2. Quy Trình Cài Đặt & Đăng Ký Phòng Chụp
 
-Sau khi cài đặt xong, gõ lệnh sau ở bất kỳ đâu trong Terminal / Cmd:
+Khi màn hình Setup hiện ra (hoặc khi gõ lệnh `mmephoto setup` trong Cmd/PowerShell):
 
-```cmd
-mmephoto setup
-```
-
-1. **Nhập Mã Cài Đặt (Setup Code)** do Admin cấp.
-2. **Chọn Tên Phòng** tương ứng với PC này.
+1. **Nhập Mã Cài Đặt (Setup Code)** do Admin cấp (ví dụ: `123456`).
+2. **Chọn Tên Phòng** tương ứng với máy PC này (ví dụ: `ROOM_01`).
 3. **Nhập Đường Dẫn Thư Mục Ảnh Máy Ảnh** (ví dụ: `D:\Photos` hoặc `C:\DSLR_HotFolder`).
 
-> 💡 **Tính năng nổi bật:** Script hỗ trợ **quét đệ quy tất cả các thư mục con** (ví dụ: `D:\Photos\user1\image` và `D:\Photos\user1`). Tất cả ảnh thuộc các thư mục con đều được tự động nén WebP và đẩy lên máy chủ theo phiên chụp tương ứng.
+> 💡 **Tính năng quét đệ quy:** Script tự động **quét đệ quy tất cả các thư mục con** (ví dụ: `D:\Photos\user1\image` và `D:\Photos\user1`). Tất cả ảnh thuộc các thư mục con đều được tự động nén WebP và đẩy lên máy chủ theo phiên chụp tương ứng.
 
 ---
 
-### 🛠️ Các Lệnh Quản Lý Nhanh Trên PC (`mmephoto`)
+## 🛠️ 3. Các Lệnh Quản Lý Nhanh Trên PC (`mmephoto`)
 
 Bạn có thể gõ các lệnh sau ở bất kỳ đâu trong Command Prompt (`cmd`) hoặc PowerShell:
 
 | Lệnh | Công dụng |
 | :--- | :--- |
-| `mmephoto update` | **Lấy code mới nhất từ Git** và tự động Khởi động lại service chạy ngầm |
-| `mmephoto setup` | Nhập Mã Cài Đặt mới & Đăng ký phòng chụp |
-| `mmephoto reset` | Xóa cấu hình phòng cũ & Đăng ký lại từ đầu |
-| `mmephoto start` | Bật lại service đồng bộ chạy ngầm |
-| `mmephoto stop` | Tắt service đồng bộ chạy ngầm |
+| **`mmephoto update`** | **Lấy code mới nhất từ Git** và tự động Khởi động lại service chạy ngầm |
+| **`mmephoto setup`** | Nhập Mã Cài Đặt mới & Đăng ký phòng chụp |
+| **`mmephoto reset`** | Xóa cấu hình phòng cũ & Đăng ký lại từ đầu |
+| **`mmephoto start`** | Bật lại service đồng bộ chạy ngầm |
+| **`mmephoto stop`** | Tắt service đồng bộ chạy ngầm |
 
 ---
 
-## 🌐 2. Hướng Dẫn Cài Đặt Máy Chủ VPS (Server)
+## 🌐 4. Hướng Dẫn Cài Đặt Máy Chủ VPS (Server)
 
 ### 📌 Bước 1: Cài đặt Node.js & Git trên VPS
 ```bash
