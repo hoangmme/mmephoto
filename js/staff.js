@@ -85,7 +85,7 @@ class StaffView {
 
   async _initTemplates() {
     try {
-      const res = await fetch('templates.json?v=' + Date.now());
+      const res = await fetch(`/api/templates`);
       if (res.ok) {
         ALL_TEMPLATES = await res.json();
       }
@@ -113,7 +113,23 @@ class StaffView {
     this.eventSource.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
-        if (data.type === 'init' || data.type === 'sync') {
+        if (data.type === 'init') {
+           const room = data.room;
+           if (!this.rooms[room]) this.rooms[room] = {};
+           
+           if (data.sessions && data.sessions.length > 0) {
+             const latestSession = data.sessions[data.sessions.length - 1];
+             this.rooms[room] = {
+               session: latestSession.id,
+               step: latestSession.step || 1,
+               currentTemplate: latestSession.currentTemplate || null,
+               selectedImages: latestSession.selectedImages || [],
+               slots: latestSession.slots || [],
+               images: latestSession.images || []
+             };
+           }
+           this._renderGrid();
+        } else if (data.type === 'sync') {
            const room = data.room;
            if (!this.rooms[room]) this.rooms[room] = {};
            
@@ -126,6 +142,11 @@ class StaffView {
              images: data.images || []
            };
            this._renderGrid();
+        } else if (data.type === 'session_finished') {
+           if (this.rooms[data.room] && this.rooms[data.room].session === data.session) {
+             this.rooms[data.room].step = 1;
+             this._renderGrid();
+           }
         }
       } catch (err) {
         console.error('SSE Error:', err);
@@ -149,7 +170,6 @@ class StaffView {
       hasCompletedRooms = true;
       const tId = room.currentTemplate;
       const t = ALL_TEMPLATES[tId];
-      if (!t) return;
 
       const card = document.createElement('div');
       card.className = 'staff-card';
@@ -160,22 +180,25 @@ class StaffView {
             <div class="staff-card-title">Phòng: ${roomName}</div>
             <div class="staff-card-subtitle">Phiên: ${room.session}</div>
           </div>
-          <button class="pl-btn pl-btn-primary" style="padding: 6px 12px; font-size: 13px;" id="btnDownload_${roomName}">
+          <button class="pl-btn pl-btn-primary" style="padding: 6px 12px; font-size: 13px;" id="btnDownload_${roomName}" ${!t ? 'disabled title="Thiếu template"' : ''}>
              Tải Ảnh
           </button>
         </div>
         <div class="staff-card-canvas" id="canvasContainer_${roomName}">
-           <canvas width="${t.canvas_width || A5_WIDTH}" height="${t.canvas_height || A5_HEIGHT}" id="canvas_${roomName}"></canvas>
+           ${t ? `<canvas width="${t.canvas_width || A5_WIDTH}" height="${t.canvas_height || A5_HEIGHT}" id="canvas_${roomName}"></canvas>` 
+               : `<div style="padding:20px; text-align:center; color:var(--pl-text-muted);">Template <b>${tId}</b> chưa được đồng bộ sang máy này.<br>Hãy tạo JSON và import vào màn hình này nếu cần xem layout.</div>`}
         </div>
       `;
       grid.appendChild(card);
 
-      const canvas = document.getElementById(`canvas_${roomName}`);
-      this._drawRoomCanvas(canvas, room, t);
+      if (t) {
+        const canvas = document.getElementById(`canvas_${roomName}`);
+        this._drawRoomCanvas(canvas, room, t);
 
-      document.getElementById(`btnDownload_${roomName}`).addEventListener('click', () => {
-         this._downloadCanvas(canvas, roomName, room.session);
-      });
+        document.getElementById(`btnDownload_${roomName}`).addEventListener('click', () => {
+           this._downloadCanvas(canvas, roomName, room.session);
+        });
+      }
     });
 
     if (!hasCompletedRooms) {

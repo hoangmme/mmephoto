@@ -405,6 +405,43 @@ app.post('/api/finish-session/:branch/:room/:session', (req, res) => {
       client.write(`data: ${JSON.stringify({ type: 'session_finished', room, session })}\n\n`);
     });
   }
+  res.json({ success: true });
+});
+
+app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) => {
+  const { branch, room, session } = req.params;
+  const { step, currentTemplate, selectedImages, slots } = req.body;
+  
+  if (!roomState[branch]) roomState[branch] = {};
+  if (!roomState[branch][room]) roomState[branch][room] = { sessions: [] };
+  
+  let sessionObj = roomState[branch][room].sessions.find(s => s.id === session);
+  if (!sessionObj) {
+    sessionObj = { id: session, images: [] };
+    roomState[branch][room].sessions.push(sessionObj);
+  }
+  
+  if (step !== undefined) sessionObj.step = step;
+  if (currentTemplate !== undefined) sessionObj.currentTemplate = currentTemplate;
+  if (selectedImages !== undefined) sessionObj.selectedImages = selectedImages;
+  if (slots !== undefined) sessionObj.slots = slots;
+  
+  saveRoomState();
+  
+  if (clients[branch]) {
+    clients[branch].forEach(client => {
+      client.write(`data: ${JSON.stringify({ 
+        type: 'sync', 
+        room, 
+        session,
+        step: sessionObj.step,
+        currentTemplate: sessionObj.currentTemplate,
+        selectedImages: sessionObj.selectedImages,
+        slots: sessionObj.slots,
+        images: sessionObj.images
+      })}\n\n`);
+    });
+  }
   
   res.json({ success: true });
 });

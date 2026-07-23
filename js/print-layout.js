@@ -79,8 +79,12 @@ class PrintLayoutApp {
     this._imageCache = {};     // id -> HTMLImageElement
 
     // Canvas
-    // Not needed in Main Swiper logic: this.canvas = document.getElementById('printCanvas');
-    // this.ctx = this.canvas.getContext('2d');
+    this.canvas = document.getElementById('printCanvas');
+    if (!this.canvas) {
+      this.canvas = document.createElement('canvas');
+      this.canvas.id = 'printCanvas';
+    }
+    this.ctx = this.canvas.getContext('2d');
 
     // DOM
     this.imageList = document.getElementById('imageList');
@@ -217,10 +221,18 @@ class PrintLayoutApp {
        const lbl = document.getElementById('headerSessionName');
        if (lbl) {
          if (roomData.session) {
-           lbl.innerText = "Phiên chụp: " + roomData.session;
-           lbl.style.display = 'inline';
-           const qLen = roomData.queue.length - 1;
-           if (qLen > 0) lbl.innerText += ` (+${qLen} chờ)`;
+           const qLen = roomData.queue ? roomData.queue.length - 1 : 0;
+           let html = '';
+           if (qLen > 0) {
+             html += `<span style="color:#eab308; margin-right:6px; display:inline-flex; align-items:center;">
+               <svg class="pl-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px; animation: pl-spin 2s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="4.93" x2="19.07" y2="7.76"></line></svg>
+               ${qLen}
+             </span>`;
+           }
+           html += `Phiên: ${roomData.session}`;
+           lbl.innerHTML = html;
+           lbl.style.display = 'inline-flex';
+           lbl.style.alignItems = 'center';
          } else {
            lbl.style.display = 'none';
          }
@@ -253,7 +265,7 @@ class PrintLayoutApp {
       
       if (room === this.activeRoom) {
         btn.style.background = 'var(--pl-accent)';
-        btn.style.color = '#000';
+        btn.style.color = '#fff';
       } else {
         btn.style.background = 'var(--pl-bg-section)';
         btn.style.color = 'var(--pl-text)';
@@ -438,6 +450,23 @@ class PrintLayoutApp {
       this._updateUIForRoom();
       this._renderCanvas();
     }
+    this._syncState(room);
+  }
+
+  _syncState(room) {
+    const roomData = this.rooms[room];
+    if (!roomData || !this.branch || !roomData.session) return;
+    
+    fetch(`/api/sync-state/${this.branch}/${room}/${roomData.session}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        step: roomData.step,
+        currentTemplate: this.currentTemplate,
+        selectedImages: Array.from(this.selectedPhotos || []),
+        slots: this.slots || []
+      })
+    }).catch(err => console.error('Sync error:', err));
   }
 
   _startStepTimer(room, step) {
@@ -608,13 +637,8 @@ class PrintLayoutApp {
     }
 
     this.mainSwiper = document.getElementById('mainSwiper');
-    this.canvas = document.getElementById('printCanvas');
-    if (!this.canvas) {
-      this.canvas = document.createElement('canvas');
-      this.canvas.id = 'printCanvas';
-    }
-    this.ctx = this.canvas.getContext('2d');
-
+    this.canvas = document.getElementById('printCanvas') || this.canvas;
+    
     this._initMainSwiper();
     this._bindEvents();
     this._initTemplate();
@@ -1164,12 +1188,15 @@ class PrintLayoutApp {
       this.frameImageObj.src = tmpl.frame_url;
     }
 
-    this.slots = tmpl.slots.map(() => ({
-      imageId: null,
-      zoom: 1.0,
-      panX: 0,
-      panY: 0,
-      assignedAt: null
+    const oldSlots = [...(this.slots || [])];
+    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    this.slots = tmpl.slots.map((s, i) => ({
+      imageId: (oldSlots[i] && (oldSlots.length === tmpl.slots.length || step > 1)) ? oldSlots[i].imageId : null,
+      zoom: (oldSlots[i] && step > 1) ? (oldSlots[i].zoom || 1.0) : 1.0,
+      panX: (oldSlots[i] && step > 1) ? (oldSlots[i].panX || 0) : 0,
+      panY: (oldSlots[i] && step > 1) ? (oldSlots[i].panY || 0) : 0,
+      assignedAt: (oldSlots[i] && step > 1) ? oldSlots[i].assignedAt : null
     }));
     
     // Don't auto-select first slot to avoid accidental overwrites
@@ -1322,6 +1349,7 @@ class PrintLayoutApp {
     this._renderCanvas();
     this._renderSlotProps();
     this._renderImageList();
+    this._syncState(this.activeRoom);
   }
 
   // ── Auto Fill ──
@@ -1626,14 +1654,8 @@ class PrintLayoutApp {
       } else if (step === 1 || isPreviewSwiper) {
         // Fill default image in Step 1 or swiper thumbnail
         let defaultImgToDraw = null;
-        if (isPreviewSwiper && step >= 2 && this.images && this.images.length > 0) {
-           const sourceImages = (this.selectedPhotos && this.selectedPhotos.size > 0) 
-                ? this.images.filter(img => this.selectedPhotos.has(img.id))
-                : this.images;
-           if (sourceImages.length > 0) {
-             const cachedImg = this._imageCache[sourceImages[i % sourceImages.length].id];
-             if (cachedImg) defaultImgToDraw = cachedImg;
-           }
+        if (isPreviewSwiper) {
+           // Always use default images for swiper previews
         }
         if (!defaultImgToDraw && this.defaultPreviewImages && this.defaultPreviewImages.length > 0) {
            const d = this.defaultPreviewImages[i % this.defaultPreviewImages.length];

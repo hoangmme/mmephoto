@@ -3,17 +3,17 @@
    ============================================ */
 
 :root {
-  --pl-bg: #0a0a0c;
-  --pl-bg-panel: #111114;
-  --pl-bg-section: #18181b;
-  --pl-bg-hover: #27272a;
-  --pl-border: #27272a;
-  --pl-border-light: #3f3f46;
-  --pl-text: #fafafa;
-  --pl-text-secondary: #a1a1aa;
+  --pl-bg: #ffffff;
+  --pl-bg-panel: #fafafa;
+  --pl-bg-section: #f4f4f5;
+  --pl-bg-hover: #e4e4e7;
+  --pl-border: #e4e4e7;
+  --pl-border-light: #d4d4d8;
+  --pl-text: #18181b;
+  --pl-text-secondary: #3f3f46;
   --pl-text-muted: #71717a;
-  --pl-accent: #38bdf8;
-  --pl-accent2: #818cf8;
+  --pl-accent: #4f3219;
+  --pl-accent2: #8b5e34;
   --pl-font: 'Inter', system-ui, -apple-system, sans-serif;
   --pl-radius: 8px;
   --pl-radius-sm: 6px;
@@ -260,7 +260,7 @@ body {
   width: 20px;
   height: 20px;
   background: var(--pl-accent);
-  color: #000;
+  color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -460,7 +460,7 @@ body {
 .pl-step-item.active .pl-step-num {
   background: var(--pl-accent);
   border-color: var(--pl-accent);
-  color: #000;
+  color: #fff;
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
 }
 .pl-step-item.completed .pl-step-num {
@@ -584,6 +584,13 @@ body {
   height: min(calc(100vh - 300px), calc((100vw - 80px) * 1.418));
 }
 
+.pl-step-mode-3 .swiper-button-next,
+.pl-step-mode-3 .swiper-button-prev,
+.pl-step-mode-4 .swiper-button-next,
+.pl-step-mode-4 .swiper-button-prev {
+  display: none !important;
+}
+
 .pl-step-mode-3 .pl-image-list {
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
@@ -701,9 +708,12 @@ body {
     border-bottom: none;
     overflow-y: hidden;
   }
-  .pl-step-mode-2 .pl-panel-left {
+  .pl-step-mode-2 .pl-panel-left,
+  .pl-step-mode-3 .pl-panel-left {
     height: auto;
     flex: 1;
+    max-width: 100% !important;
+    width: 100% !important;
   }
   .pl-main-swiper-area {
     order: 1;
@@ -711,8 +721,13 @@ body {
     min-height: 350px;
     padding: 10px 0;
   }
-  .pl-slide {
+  .pl-step-mode-1 .pl-slide,
+  .pl-step-mode-2 .pl-slide,
+  .pl-step-mode-4 .pl-slide {
     height: min(calc(100vh - 350px), calc(100vw * 1.418)) !important;
+  }
+  .pl-step-mode-3 .pl-slide {
+    height: min(calc(100vh - 250px), calc(100vw * 1.418)) !important;
   }
   .pl-image-list {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));

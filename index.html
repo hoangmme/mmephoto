@@ -87,17 +87,17 @@
       </div>
 
       <!-- Instruction & Upload Status Banner -->
-      <div class="pl-instruction-banner" id="instructionBanner" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; gap: 10px; flex-wrap: wrap;">
-        <div class="pl-instruction-left" style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
-          <div class="pl-instruction-text" id="stepInstructionText">👉 Bước 1: Vuốt sang trái/phải để chọn Mẫu Khung In (Frame) yêu thích của bạn</div>
+      <div class="pl-instruction-banner" id="instructionBanner" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; gap: 8px;">
+        <div class="pl-instruction-left" style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;">
+          <div class="pl-instruction-text" id="stepInstructionText" style="font-size: 13px; line-height: 1.4; white-space: normal;">👉 Bước 1: Vuốt sang trái/phải để chọn Mẫu Khung In (Frame) yêu thích của bạn</div>
         </div>
-        <div class="pl-instruction-right" style="display: flex; gap: 8px; align-items: center;">
-          <button class="pl-btn pl-btn-secondary" id="btnStepPrev" style="display:none; padding: 6px 12px; font-size: 14px; white-space: nowrap;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Quay lại
+        <div class="pl-instruction-right" style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+          <button class="pl-btn pl-btn-secondary" id="btnStepPrev" style="display:none; padding: 6px 10px; font-size: 13px; white-space: nowrap;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Lùi
           </button>
-          <button class="pl-btn pl-btn-primary" id="btnStepNext" style="display:none; padding: 6px 12px; font-size: 14px; font-weight: bold; white-space: nowrap;">
-            Tiếp theo
+          <button class="pl-btn pl-btn-primary" id="btnStepNext" style="display:none; padding: 6px 10px; font-size: 13px; font-weight: bold; white-space: nowrap;">
+            Tiếp
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         </div>
@@ -159,8 +159,8 @@
   </div>
 
   <!-- Core Scripts -->
-  <script src="js/jszip.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=5"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script type="module" src="js/print-layout.js?v=6"></script>
 
   <!-- LOGIN OVERLAY -->
   <div id="loginOverlay" style="position:fixed; inset:0; background:var(--pl-bg); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column;">
