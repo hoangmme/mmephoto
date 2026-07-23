@@ -271,7 +271,7 @@ _startStepTimer(room, step) {
     
     if (step === 1) roomData.timeLeft = 60;
     else if (step === 2) roomData.timeLeft = 180;
-    else if (step === 3) roomData.timeLeft = 60;
+    else if (step === 3) roomData.timeLeft = 180;
     else {
       roomData.timeLeft = 0;
       if (this.activeRoom === room) this._updateUIForRoom();

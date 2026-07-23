@@ -454,32 +454,33 @@ _updateUIForRoom() {
       }
     }
     
-    // Timer update
-    if (timerEl) {
-      if (step === 4 || !roomData.timerStarted) {
-        if (step === 4) {
-          timerEl.style.display = 'none';
-        } else {
-          timerEl.style.display = 'block';
-          timerEl.innerText = step === 1 ? '01:00' : (step === 2 ? '03:00' : '01:00');
-          timerEl.style.color = 'var(--pl-accent)';
-        }
-        if (lockOverlay) lockOverlay.style.display = 'none';
+    // Timer update (update step banner timers for Step 1, 2, 3)
+    const t1 = document.getElementById('stepTimer1');
+    const t2 = document.getElementById('stepTimer2');
+    const t3 = document.getElementById('stepTimer3');
+
+    const m = Math.floor((roomData.timeLeft || 0) / 60).toString().padStart(2, '0');
+    const s = ((roomData.timeLeft || 0) % 60).toString().padStart(2, '0');
+    const activeTimeStr = `(${m}:${s})`;
+
+    if (t1) {
+      t1.textContent = (step === 1 && roomData.timerStarted) ? activeTimeStr : '(01:00)';
+      t1.style.color = (step === 1 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
+    }
+    if (t2) {
+      t2.textContent = (step === 2 && roomData.timerStarted) ? activeTimeStr : '(03:00)';
+      t2.style.color = (step === 2 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
+    }
+    if (t3) {
+      t3.textContent = (step === 3 && roomData.timerStarted) ? activeTimeStr : '(03:00)';
+      t3.style.color = (step === 3 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
+    }
+
+    if (lockOverlay) {
+      if (roomData.locked && roomData.timerStarted) {
+        lockOverlay.style.display = 'flex';
       } else {
-        timerEl.style.display = 'block';
-        const m = Math.floor(roomData.timeLeft / 60).toString().padStart(2, '0');
-        const s = (roomData.timeLeft % 60).toString().padStart(2, '0');
-        timerEl.innerText = `${m}:${s}`;
-        if (roomData.timeLeft <= 15) {
-          timerEl.style.color = '#ef4444';
-        } else {
-          timerEl.style.color = 'var(--pl-accent)';
-        }
-        if (roomData.locked) {
-          if (lockOverlay) lockOverlay.style.display = 'flex';
-        } else {
-          if (lockOverlay) lockOverlay.style.display = 'none';
-        }
+        lockOverlay.style.display = 'none';
       }
     }
     
