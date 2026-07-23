@@ -225,7 +225,13 @@ if (fs.existsSync(ADMIN_FILE)) {
       }
     });
   } catch(e) { console.error('Error loading admin data:', e); }
-} else {
+}
+
+if (!ADMIN_DATA.branches['CN01']) {
+  ADMIN_DATA.branches['CN01'] = {
+    password: '123',
+    rooms: ['Room1']
+  };
   fs.writeFileSync(ADMIN_FILE, JSON.stringify(ADMIN_DATA, null, 2));
 }
 
@@ -341,16 +347,33 @@ app.post('/api/setup-room', (req, res) => {
 
 app.post('/api/login', (req, res) => {
   const { branchId, password } = req.body;
+  if (!branchId) return res.status(400).json({ error: 'Thiếu mã chi nhánh' });
   
-  if (branchId.toLowerCase() === 'cnadmin' && password === ADMIN_DATA.adminPass) {
-    return res.json({ success: true, isAdmin: true, auth: password });
+  const bInput = branchId.trim();
+  const pInput = (password || '').trim();
+
+  // Admin login
+  if (bInput.toLowerCase() === 'cnadmin' && pInput === ADMIN_DATA.adminPass) {
+    return res.json({ success: true, isAdmin: true, auth: pInput });
   }
   
-  if (ADMIN_DATA.branches[branchId] && ADMIN_DATA.branches[branchId].password === password) {
-    res.json({ success: true, branchId });
-  } else {
-    res.status(401).json({ error: 'Sai ID hoặc Mật khẩu' });
+  // Normal branch login (branchId + password)
+  const matchedId = Object.keys(ADMIN_DATA.branches).find(b => b.toLowerCase() === bInput.toLowerCase());
+  if (matchedId && ADMIN_DATA.branches[matchedId].password === pInput) {
+    return res.json({ success: true, branchId: matchedId });
   }
+
+  // Setup code login (if setupCode entered in branchId or password field)
+  const setupMatch = Object.keys(ADMIN_DATA.branches).find(b => {
+    const sCode = ADMIN_DATA.branches[b].setupCode;
+    return sCode && (sCode.toLowerCase() === bInput.toLowerCase() || sCode.toLowerCase() === pInput.toLowerCase());
+  });
+
+  if (setupMatch) {
+    return res.json({ success: true, branchId: setupMatch });
+  }
+
+  res.status(401).json({ error: 'Sai ID, Mật khẩu hoặc Mã cài đặt' });
 });
 
 app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (req, res) => {
