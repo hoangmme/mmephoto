@@ -372,12 +372,15 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (r
   
   // Update state
   if (!roomState[branch]) roomState[branch] = {};
-  if (!roomState[branch][room]) roomState[branch][room] = { sessions: [] };
+  if (!roomState[branch][room]) roomState[branch][room] = { sessions: [], activeSessionId: null };
   
   let sessionObj = roomState[branch][room].sessions.find(s => s.id === session);
   if (!sessionObj) {
     sessionObj = { id: session, images: [] };
     roomState[branch][room].sessions.push(sessionObj);
+    if (!roomState[branch][room].activeSessionId) {
+      roomState[branch][room].activeSessionId = session;
+    }
   } else if (sessionObj.finished) {
     sessionObj.finished = false;
   }
@@ -392,6 +395,22 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (r
   }
   
   res.json({ success: true, imageUrl });
+});
+
+app.post('/api/set-active-session/:branch/:room/:session', (req, res) => {
+  const { branch, room, session } = req.params;
+  
+  if (roomState[branch] && roomState[branch][room]) {
+    roomState[branch][room].activeSessionId = session;
+    saveRoomState();
+  }
+  
+  if (clients[branch]) {
+    clients[branch].forEach(client => {
+      client.write(`data: ${JSON.stringify({ type: 'active_session_changed', room, session })}\n\n`);
+    });
+  }
+  res.json({ success: true });
 });
 
 app.post('/api/finish-session/:branch/:room/:session', (req, res) => {
@@ -421,12 +440,15 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
   const { step, currentTemplate, selectedImages, slots } = req.body;
   
   if (!roomState[branch]) roomState[branch] = {};
-  if (!roomState[branch][room]) roomState[branch][room] = { sessions: [] };
+  if (!roomState[branch][room]) roomState[branch][room] = { sessions: [], activeSessionId: null };
   
   let sessionObj = roomState[branch][room].sessions.find(s => s.id === session);
   if (!sessionObj) {
     sessionObj = { id: session, images: [] };
     roomState[branch][room].sessions.push(sessionObj);
+    if (!roomState[branch][room].activeSessionId) {
+      roomState[branch][room].activeSessionId = session;
+    }
   }
   
 
@@ -498,10 +520,11 @@ app.get('/api/stream/:branch', (req, res) => {
   }
   
   allRooms.forEach(room => {
-    const state = (roomState[branch] && roomState[branch][room]) || { sessions: [] };
+    const state = (roomState[branch] && roomState[branch][room]) || { sessions: [], activeSessionId: null };
     res.write(`data: ${JSON.stringify({ 
       type: 'init', 
       room: room,
+      activeSessionId: state.activeSessionId,
       sessions: (state.sessions || []).filter(s => !s.finished)
     })}\n\n`);
   });
