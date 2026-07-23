@@ -62,7 +62,7 @@ export const QueueMixin = {
       displayList.forEach((sess) => {
         const isActive = sess.id === roomData.activeSessionId;
         const stepStr = sess.finished ? 'Hoàn tất' : (sess.step ? `Bước ${sess.step}` : 'Đang xử lý');
-        const folderUrl = `${window.location.origin}/uploads/${encodeURIComponent(this.branch)}/${encodeURIComponent(this.activeRoom)}/${encodeURIComponent(sess.id)}/`;
+        const qrUrl = `${window.location.origin}/download.html?branch=${encodeURIComponent(this.branch)}&room=${encodeURIComponent(this.activeRoom)}&session=${encodeURIComponent(sess.id)}`;
         
         html += `
           <div style="background: ${isActive ? 'var(--pl-bg-section)' : 'var(--pl-bg-panel)'}; border: 1px solid ${isActive ? 'var(--pl-accent)' : 'var(--pl-border)'}; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
@@ -80,9 +80,9 @@ export const QueueMixin = {
                   Chọn
                 </button>
               ` : (isActive ? '<span style="font-size:11px; font-weight:bold; color:var(--pl-accent); padding:4px 6px;">ĐANG CHỌN</span>' : '')}
-              <a href="${folderUrl}" target="_blank" class="pl-btn" style="padding: 5px 10px; font-size: 12px; background: var(--pl-bg-section); color: var(--pl-text); border: 1px solid var(--pl-border); font-weight: 500; text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Xem thư mục ảnh chụp">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                Thư mục
+              <a href="${qrUrl}" target="_blank" class="pl-btn" style="padding: 5px 10px; font-size: 12px; background: var(--pl-bg-section); color: var(--pl-text); border: 1px solid var(--pl-border); font-weight: 500; text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Xem QR code & Tải ảnh phiên này">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                Xem QR / Ảnh
               </a>
               <button class="pl-btn" style="padding: 5px 10px; font-size: 12px; background: #ef4444; color: #fff; border: none; font-weight: 600; cursor: pointer; display:inline-flex; align-items:center; gap:4px;" onclick="window.printApp._deleteSessionFromQueue('${sess.id}')">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
