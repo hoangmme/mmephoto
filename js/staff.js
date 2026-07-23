@@ -72,10 +72,12 @@ class StaffView {
 
   async _checkLogin(branch, password) {
     try {
-      const res = await fetch(`/api/rooms/${branch}`, {
-        headers: { 'Authorization': password }
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({branchId: branch, password: password})
       });
-      return res.status === 200;
+      return res.ok;
     } catch (err) {
       console.error(err);
       return false;
