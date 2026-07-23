@@ -101,6 +101,7 @@ async _initApp() {
     this._initTemplate();
     this._loadBatch();
     this._initLogin();
+    if (this._initQueueManager) this._initQueueManager();
   }
 ,
 
