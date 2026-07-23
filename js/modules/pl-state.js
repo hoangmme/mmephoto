@@ -2,11 +2,31 @@ import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5
 
 export const StateMixin = {
 _initSSE(branch) {
+    this.branch = branch;
+    this.rooms = {};
+    this.activeRoom = null;
     const branchNameEl = document.getElementById('headerBranchName');
     if (branchNameEl) {
       branchNameEl.textContent = `Chi nhánh: ${branch}`;
       branchNameEl.style.display = 'inline';
     }
+
+    // Immediate REST fetch for initial state (works even if SSE is buffered)
+    fetch(`/api/init-state/${encodeURIComponent(branch)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.rooms) {
+          data.rooms.forEach(r => {
+            const room = r.room;
+            if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false };
+            this.rooms[room].queue = r.sessions || [];
+            if (r.activeSessionId) this.rooms[room].activeSessionId = r.activeSessionId;
+            this._updateActiveSession(room);
+          });
+          this._renderTabs();
+          if (this.activeRoom) this._updateUIForRoom();
+        }
+      }).catch(err => console.error('Init REST fetch error:', err));
 
     if (this.sse) this.sse.close();
     this.sse = new EventSource(`/api/stream/${branch}`);
@@ -18,8 +38,8 @@ _initSSE(branch) {
         if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false };
         this.rooms[room].queue = data.sessions || [];
         if (data.activeSessionId) this.rooms[room].activeSessionId = data.activeSessionId;
-        this._renderTabs();
         this._updateActiveSession(room);
+        this._renderTabs();
         this._updateUIForRoom();
       } else if (data.type === 'active_session_changed') {
           if (this.rooms[data.room]) {
@@ -44,7 +64,7 @@ _initSSE(branch) {
         // If this is the active session
         if (this.rooms[room].session === data.session) {
             this.rooms[room].lastImageTime = Date.now();
-            if (this.rooms[room].images.length === 0) {
+            if (this.rooms[room].images.length === 0 && this.rooms[room].step === 1) {
               this._setStep(room, 1);
             }
             const newImg = { id: 'img_' + data.imageUrl.replace(/[^a-zA-Z0-9]/g, '_'), url: data.imageUrl, name: data.imageUrl.split('/').pop() };
@@ -89,29 +109,37 @@ _initSSE(branch) {
               if (data.slots && data.slots.length > 0) this.slots = data.slots;
               if (data.selectedImages) this.selectedPhotos = new Set(data.selectedImages);
               
-              if (templateChanged) this._loadTemplateImages();
-              this._updateUIForRoom();
-              this._renderCanvas();
-              this._renderTabs();
+              if (templateChanged) {
+                this._loadTemplateImages();
+                this._updateUIForRoom();
+                this._renderCanvas();
+              }
             }
           }
         }
       } else if (data.type === 'session_finished') {
         const room = data.room;
         if (this.rooms[room]) {
-           this.rooms[room].queue = this.rooms[room].queue.filter(s => s.id !== data.session);
-           // If the finished session is the active one, advance queue
-           if (this.rooms[room].session === data.session) {
-               this._stopTimer(room);
-               this.rooms[room].session = null; // force update
-               this.rooms[room].step = 1;
-               this.rooms[room].timerStarted = false;
-               this.rooms[room].lastImageTime = null;
+           const sess = (this.rooms[room].queue || []).find(s => s.id === data.session);
+           if (sess) sess.finished = true;
+           if (this.activeRoom === room) {
+               this._updateUIForRoom();
+               if (this._renderQueueModal) this._renderQueueModal();
+           }
+           this._renderTabs();
+        }
+      } else if (data.type === 'session_deleted') {
+        const room = data.room;
+        if (this.rooms[room]) {
+           this.rooms[room].queue = (this.rooms[room].queue || []).filter(s => s.id !== data.session);
+           if (this.rooms[room].activeSessionId === data.session) {
+               const remaining = this.rooms[room].queue.filter(s => !s.finished);
+               this.rooms[room].activeSessionId = remaining.length > 0 ? remaining[0].id : null;
                this._updateActiveSession(room);
-               if (this.activeRoom === room) {
-                   this._updateUIForRoom();
-                   this._renderCanvas();
-               }
+           }
+           if (this.activeRoom === room) {
+               this._updateUIForRoom();
+               if (this._renderQueueModal) this._renderQueueModal();
            }
            this._renderTabs();
         }
@@ -129,25 +157,40 @@ _updateActiveSession(room, onlyBadge = false) {
     if (roomData.queue && roomData.queue.length > 0) {
       const activeSessionId = roomData.activeSessionId;
       const active = roomData.queue.find(s => s.id === activeSessionId) || roomData.queue[0];
-      if (roomData.session !== active.id && !onlyBadge) {
+      
+      if (roomData.session !== active.id) {
         roomData.session = active.id;
         roomData.step = active.step || 1;
-        
-        // Smart step recovery based on data integrity:
-        // If we have selected images, we must be at least at step 2 or 3
-        if (active.selectedImages && active.selectedImages.length > 0) {
-           if (roomData.step < 2) roomData.step = 3; 
+      } else {
+        if (roomData.step === undefined || roomData.step === null) {
+          roomData.step = active.step || 1;
+        } else {
+          active.step = roomData.step;
         }
-        // If we have slots filled, we must be at least at step 3 or 4
-        if (active.slots && active.slots.some(s => s.imageId)) {
-           if (roomData.step < 3) roomData.step = 4;
-        }
-        roomData.timerStarted = false;
-        roomData.lastImageTime = Date.now();
-        
+      }
+      
+      roomData.timerStarted = false;
+      roomData.lastImageTime = Date.now();
+      
+      if (!onlyBadge) {
         if (this.activeRoom === room) {
-          if (active.currentTemplate) this.currentTemplate = active.currentTemplate;
-          if (active.slots) this.slots = active.slots;
+          if (active.currentTemplate) {
+            this.currentTemplate = active.currentTemplate;
+          } else {
+            this.currentTemplate = Object.keys(ALL_TEMPLATES)[0];
+          }
+
+          if (active.slots && active.slots.length > 0) {
+            this.slots = JSON.parse(JSON.stringify(active.slots));
+          } else {
+            const t = ALL_TEMPLATES[this.currentTemplate] || Object.values(ALL_TEMPLATES)[0];
+            if (t && t.slots) {
+              this.slots = t.slots.map(s => ({ ...s, imageId: null, scale: 1, rotate: 0, x: 0, y: 0 }));
+            } else {
+              this.slots = [];
+            }
+          }
+
           if (active.selectedImages) {
             this.selectedPhotos = new Set(active.selectedImages);
           } else {
@@ -155,7 +198,7 @@ _updateActiveSession(room, onlyBadge = false) {
           }
         }
         
-        roomData.images = active.images
+        roomData.images = (active.images || [])
           .filter(url => !url.includes('00_frame.jpg'))
           .map(url => {
           const id = 'img_' + url.replace(/[^a-zA-Z0-9]/g, '_');
@@ -166,16 +209,10 @@ _updateActiveSession(room, onlyBadge = false) {
         });
         
         if (this.activeRoom === room) {
-          // Ensure template images are loaded when session is restored
           if (this.currentTemplate) {
             this._loadTemplateImages();
           }
-          
-          // We will NOT wipe slot data based on validIds because it causes F5 data loss
-          // if the server state and client state are momentarily out of sync.
-          // Keep selectedPhotos and slots as they came from the server.
         }
-
         
         // Only set step to 1 if we don't have a saved step from server AND smart recovery didn't bump the step
         if (roomData.images.length > 0 && !active.step && roomData.step === 1) {
@@ -195,23 +232,14 @@ _updateActiveSession(room, onlyBadge = false) {
     if (this.activeRoom === room) {
        const lbl = document.getElementById('headerSessionName');
        if (lbl) {
-         if (roomData.session) {
-           const qLen = roomData.queue ? roomData.queue.length - 1 : 0;
-           let html = '';
-           if (qLen > 0) {
-             html += `<span style="color:#eab308; margin-right:6px; display:inline-flex; align-items:center;">
-               <svg class="pl-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px; animation: pl-spin 2s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="4.93" x2="19.07" y2="7.76"></line></svg>
-               ${qLen}
-             </span>`;
-           }
-           const imgCount = roomData.images ? roomData.images.length : 0;
-           html += `Phiên: ${roomData.session} (${imgCount} ảnh)`;
-           lbl.innerHTML = html;
-           lbl.style.display = 'inline-flex';
-           lbl.style.alignItems = 'center';
-         } else {
-           lbl.style.display = 'none';
-         }
+          if (roomData.session) {
+            const imgCount = roomData.images ? roomData.images.length : 0;
+            lbl.textContent = `Phiên: ${roomData.session} (${imgCount} ảnh)`;
+            lbl.style.display = 'inline-flex';
+            lbl.style.alignItems = 'center';
+          } else {
+            lbl.style.display = 'none';
+          }
        }
     }
   }
@@ -241,10 +269,12 @@ _startStepTimer(room, step) {
     
     roomData.step = step;
     roomData.locked = false;
+    roomData.timerStarted = true;
+    if (!roomData.timedOutSteps) roomData.timedOutSteps = new Set();
     
     if (step === 1) roomData.timeLeft = 60;
     else if (step === 2) roomData.timeLeft = 180;
-    else if (step === 3) roomData.timeLeft = 60;
+    else if (step === 3) roomData.timeLeft = 180;
     else {
       roomData.timeLeft = 0;
       if (this.activeRoom === room) this._updateUIForRoom();
@@ -252,25 +282,25 @@ _startStepTimer(room, step) {
     }
 
     roomData.timerInterval = setInterval(() => {
-      // Smart timer check: wait until 30s of no new images arriving
-      if (!roomData.timerStarted && (step === 1 || step === 2)) {
-        if (!roomData.lastImageTime || (Date.now() - roomData.lastImageTime >= 30000)) {
-          roomData.timerStarted = true;
-        } else {
-          if (this.activeRoom === room) this._updateUIForRoom();
-          return; // hold countdown while photos are uploading
-        }
+      // In Staff Mode, timer does NOT count down and does not auto-advance steps!
+      if (isStaffMode) {
+        if (this.activeRoom === room) this._updateUIForRoom();
+        return;
       }
 
       roomData.timeLeft--;
       if (roomData.timeLeft <= 0) {
+        roomData.timeLeft = 0;
+        roomData.timedOutSteps.add(step);
         clearInterval(roomData.timerInterval);
+
         if (step === 1) {
           this._setStep(room, 2);
         } else if (step === 2) {
           if (this._autoFill) this._autoFill();
           this._setStep(room, 3);
         } else if (step === 3) {
+          this._uploadFinalFrame();
           this._setStep(room, 4);
         }
       }

@@ -404,6 +404,7 @@ body {
   margin-top: 10px;
   font-size: 11px;
   color: var(--pl-text-muted);
+  text-align: center;
 }
 
 /* ── Top Wizard Area ── */
@@ -570,17 +571,18 @@ body {
   padding: 20px;
 }
 
-.pl-step-mode-3 #panelLeft {
+.pl-step-mode-3 #panelLeft,
+.pl-step-mode-4 #panelLeft {
   display: flex !important;
   width: 320px;
   max-width: 42%;
 }
-.pl-step-mode-3 .pl-slide {
+.pl-step-mode-3 .pl-slide,
+.pl-step-mode-4 .pl-slide {
   height: min(calc(100vh - 300px), calc((100vw - 380px) * 1.418));
 }
 
-.pl-step-mode-1 .pl-slide,
-.pl-step-mode-4 .pl-slide {
+.pl-step-mode-1 .pl-slide {
   height: min(calc(100vh - 300px), calc((100vw - 80px) * 1.418));
 }
 

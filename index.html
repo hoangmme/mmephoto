@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="print-layout.css?v=3">
+  <link rel="stylesheet" href="print-layout.css?v=44">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
 </head>
@@ -30,17 +30,13 @@
           </svg>
           <span>Print <em>Layout</em></span>
           <span id="headerBranchName" style="margin-left:15px; padding-left:15px; border-left:1px solid var(--pl-border); color:#a1a1aa; font-weight:500; font-size:14px; display:none;"></span>
-          <div id="uploadStatusBadge" style="display:none; align-items:center; margin-left:15px; padding-left:15px; border-left:1px solid var(--pl-border); gap:6px;">
-            <span class="pl-spinner-mini" style="width:14px; height:14px; border-width:2px; border-top-color:#eab308;"></span>
-            <span id="uploadStatusText" style="color:#eab308; font-weight:700; font-size:14px;">0</span>
-          </div>
           <span id="headerSessionName" style="margin-left:15px; padding-left:15px; border-left:1px solid var(--pl-border); color:var(--pl-accent); font-weight:600; font-size:14px; display:none;"></span>
         </div>
       </div>
       <div class="pl-header-center">
         <div style="display: flex; gap: 8px; align-items: center;">
           <div id="countdownTimer" style="display:none; font-variant-numeric: tabular-nums; font-weight:700; color:var(--pl-accent); background:var(--pl-bg-section); border:1px solid var(--pl-border); padding:4px 10px; border-radius:var(--pl-radius-sm); font-size:14px;">03:00</div>
-          <a href="template-builder.html" target="_blank" class="pl-btn" title="Tạo Template mới">
+          <a href="template-builder.html" target="_blank" class="pl-btn" id="btnBuilder" title="Tạo Template mới" style="display:none;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
             Builder
           </a>
@@ -75,17 +71,17 @@
       <div class="pl-step-banner" id="stepBanner">
         <div class="pl-step-item active" data-step="1">
           <span class="pl-step-num">1</span>
-          <span class="pl-step-label">B1: Chọn Khung <small>(01:00)</small></span>
+          <span class="pl-step-label">B1: Chọn Khung <small id="stepTimer1">(01:00)</small></span>
         </div>
         <div class="pl-step-connector"></div>
         <div class="pl-step-item" data-step="2">
           <span class="pl-step-num">2</span>
-          <span class="pl-step-label">B2: Chọn Ảnh <small>(03:00)</small></span>
+          <span class="pl-step-label">B2: Chọn Ảnh <small id="stepTimer2">(03:00)</small></span>
         </div>
         <div class="pl-step-connector"></div>
         <div class="pl-step-item" data-step="3">
           <span class="pl-step-num">3</span>
-          <span class="pl-step-label">B3: Sắp Xếp <small>(01:00)</small></span>
+          <span class="pl-step-label">B3: Sắp Xếp <small id="stepTimer3">(03:00)</small></span>
         </div>
         <div class="pl-step-connector"></div>
         <div class="pl-step-item" data-step="4">
@@ -164,13 +160,13 @@
 
   <!-- Core Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=25"></script>
+  <script type="module" src="js/print-layout.js?v=44"></script>
 
   <!-- LOGIN OVERLAY -->
   <div id="loginOverlay" style="position:fixed; inset:0; background:var(--pl-bg); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column;">
     <div style="background:var(--pl-bg-panel); padding:30px; border-radius:12px; border:1px solid var(--pl-border); width:320px; text-align:center;">
       <h2 style="margin-bottom:20px; color:var(--pl-text);">Đăng Nhập</h2>
-      <input type="text" id="loginBranch" placeholder="Mã chi nhánh (CN01)" style="width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid var(--pl-border); background:var(--pl-bg-section); color:var(--pl-text);">
+      <input type="text" id="loginBranch" placeholder="Mã chi nhánh (VD: CN01)" style="width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid var(--pl-border); background:var(--pl-bg-section); color:var(--pl-text);">
       <input type="password" id="loginPassword" placeholder="Mật khẩu" style="width:100%; padding:10px; margin-bottom:20px; border-radius:6px; border:1px solid var(--pl-border); background:var(--pl-bg-section); color:var(--pl-text);">
       
       <button id="btnLoginSubmit" class="pl-btn pl-btn-primary" style="width:100%; justify-content:center; font-size:16px;">Vào Phòng</button>

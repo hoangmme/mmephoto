@@ -13,7 +13,7 @@ _initLogin() {
       this._initSSE(branchId);
     }
     
-    document.getElementById('btnLoginSubmit')?.addEventListener('click', async () => {
+    const handleLoginSubmit = async () => {
       const branch = document.getElementById('loginBranch').value.trim();
       const pass = document.getElementById('loginPassword').value.trim();
       
@@ -30,15 +30,19 @@ _initLogin() {
           window.location.href = '/admin.html?auth=' + encodeURIComponent(data.auth);
           return;
         }
-        localStorage.setItem('branchId', branch);
+        localStorage.setItem('branchId', data.branchId || branch);
         localStorage.setItem('branchPass', pass);
         if(loginOverlay) loginOverlay.style.display = 'none';
-        this._initSSE(branch);
+        this._initSSE(data.branchId || branch);
       } else {
         const err = document.getElementById('loginError');
         if (err) err.style.display = 'block';
       }
-    });
+    };
+
+    document.getElementById('btnLoginSubmit')?.addEventListener('click', handleLoginSubmit);
+    document.getElementById('loginBranch')?.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
+    document.getElementById('loginPassword')?.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
     
     document.getElementById('btnUnlock')?.addEventListener('click', () => {
       if (this.activeRoom && this.rooms[this.activeRoom]) {
@@ -207,6 +211,9 @@ _initMainSwiper() {
 
       if (this.isProgrammaticScroll) return;
 
+      const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+      if (step > 1) return;
+
       scrollTimeout = setTimeout(() => {
         let closest = null;
         let minDiff = Infinity;
@@ -219,11 +226,19 @@ _initMainSwiper() {
            }
         });
         
-        // Only trigger template switch when it fully snapped
-        if (closest && closest.dataset.id !== this.currentTemplate && minDiff < 50) {
+        if (closest && closest.dataset.id !== this.currentTemplate) {
            this._selectSlide(closest.dataset.id);
         }
       }, 150);
+    });
+
+    // Add click listener to all slides for direct tap selection
+    Array.from(this.mainSwiper.children).forEach(slide => {
+       slide.addEventListener('click', () => {
+          if (slide.dataset.id !== this.currentTemplate) {
+             this._selectSlide(slide.dataset.id);
+          }
+       });
     });
     
     // Set initial
@@ -244,7 +259,7 @@ _renderTabs() {
     const rooms = Object.keys(this.rooms);
     if (rooms.length === 0) return;
     
-    if (!this.activeRoom && rooms.length > 0) {
+    if ((!this.activeRoom || !this.rooms[this.activeRoom]) && rooms.length > 0) {
       this.activeRoom = rooms[0];
       this._updateUIForRoom();
     }
@@ -292,7 +307,7 @@ _renderTabs() {
 ,
 
 _updateUIForRoom() {
-    this._updateActiveSession(this.activeRoom, true);
+    this._updateActiveSession(this.activeRoom, false);
     
     // SAFEGUARD: Removed dangerous step 1 revert that caused user data wipe on sync.
     if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].step === 4) {
@@ -315,6 +330,15 @@ _updateUIForRoom() {
     const stepFooterInfo = document.getElementById('stepFooterInfo');
     const stepFooter = document.getElementById('stepFooter');
 
+    if (this.activeRoom && this.rooms[this.activeRoom]) {
+      const roomD = this.rooms[this.activeRoom];
+      if (!roomD.session && roomD.queue && roomD.queue.length > 0) {
+        roomD.session = roomD.activeSessionId || roomD.queue[0].id;
+        roomD.activeSessionId = roomD.session;
+        this._updateActiveSession(this.activeRoom, false);
+      }
+    }
+
     if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) {
       this.images = [];
       this._renderImageList();
@@ -331,6 +355,11 @@ _updateUIForRoom() {
     
     if (stepFooter) stepFooter.style.display = 'flex';
     
+    const btnQueue = document.getElementById('btnQueueManager');
+    if (btnQueue) btnQueue.style.display = isStaffMode ? 'inline-flex' : 'none';
+    const btnBuilder = document.getElementById('btnBuilder');
+    if (btnBuilder) btnBuilder.style.display = isStaffMode ? 'inline-flex' : 'none';
+
     const roomData = this.rooms[this.activeRoom];
     const step = roomData.step || 1;
     this.images = roomData.images;
@@ -350,11 +379,26 @@ _updateUIForRoom() {
     }
 
     // Sync swiper to current template without triggering slideChange
-    if (this.swiper && this.currentTemplate) {
-      const slides = Array.from(this.swiper.slides);
-      const index = slides.findIndex(s => s.dataset.id === this.currentTemplate);
-      if (index !== -1 && index !== this.swiper.activeIndex) {
-        this.swiper.slideTo(index, 0, false);
+    if (this.mainSwiper && this.currentTemplate) {
+      const activeSlide = Array.from(this.mainSwiper.children).find(s => s.dataset.id === this.currentTemplate);
+      if (activeSlide) {
+        Array.from(this.mainSwiper.children).forEach(s => {
+          s.classList.toggle('active', s === activeSlide);
+          if (s !== activeSlide && s.contains(this.canvas)) {
+            s.removeChild(this.canvas);
+          }
+        });
+        if (!activeSlide.contains(this.canvas)) {
+          activeSlide.appendChild(this.canvas);
+        }
+        
+        const parentArea = this.mainSwiper.parentElement;
+        if (parentArea && parentArea.offsetWidth > 0) {
+          const pad = Math.max(0, (parentArea.offsetWidth - activeSlide.offsetWidth) / 2);
+          this.isProgrammaticScroll = true;
+          this.mainSwiper.scrollLeft = activeSlide.offsetLeft - pad;
+          setTimeout(() => { this.isProgrammaticScroll = false; }, 500);
+        }
       }
     }
 
@@ -385,7 +429,8 @@ _updateUIForRoom() {
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
         const totalSlots = this.slots ? this.slots.length : 0;
         instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${totalSlots} ô)`;
-        btnStepPrev.style.display = 'inline-flex';
+        const step1TimedOut = roomData.timedOutSteps && roomData.timedOutSteps.has(1);
+        btnStepPrev.style.display = (isStaffMode || !step1TimedOut) ? 'inline-flex' : 'none';
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B1';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp (B3) <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
@@ -393,7 +438,8 @@ _updateUIForRoom() {
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 3) {
         instructionText.textContent = '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
-        btnStepPrev.style.display = 'inline-flex';
+        const step2TimedOut = roomData.timedOutSteps && (roomData.timedOutSteps.has(2) || roomData.timedOutSteps.has(1));
+        btnStepPrev.style.display = (isStaffMode || !step2TimedOut) ? 'inline-flex' : 'none';
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B2';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = isStaffMode ? '✅ Hoàn Tất (Gửi cho User)' : '✅ Hoàn Tất (Gửi cho Nhân Viên)';
@@ -412,6 +458,7 @@ _updateUIForRoom() {
         }
 
         btnStepPrev.style.display = isStaffMode ? 'inline-flex' : 'none';
+        btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B3';
         btnStepNext.style.display = 'none';
         
         const btnStaffDownload = document.getElementById('btnStaffDownload');
@@ -422,32 +469,33 @@ _updateUIForRoom() {
       }
     }
     
-    // Timer update
-    if (timerEl) {
-      if (step === 4 || !roomData.timerStarted) {
-        if (step === 4) {
-          timerEl.style.display = 'none';
-        } else {
-          timerEl.style.display = 'block';
-          timerEl.innerText = step === 1 ? '01:00' : (step === 2 ? '03:00' : '01:00');
-          timerEl.style.color = 'var(--pl-accent)';
-        }
-        if (lockOverlay) lockOverlay.style.display = 'none';
+    // Timer update (update step banner timers for Step 1, 2, 3)
+    const t1 = document.getElementById('stepTimer1');
+    const t2 = document.getElementById('stepTimer2');
+    const t3 = document.getElementById('stepTimer3');
+
+    const m = Math.floor(Math.max(0, roomData.timeLeft || 0) / 60).toString().padStart(2, '0');
+    const s = (Math.max(0, roomData.timeLeft || 0) % 60).toString().padStart(2, '0');
+    const activeTimeStr = `(${m}:${s})`;
+
+    if (t1) {
+      t1.textContent = (!isStaffMode && step === 1 && roomData.timerStarted) ? activeTimeStr : '(01:00)';
+      t1.style.color = (!isStaffMode && step === 1 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
+    }
+    if (t2) {
+      t2.textContent = (!isStaffMode && step === 2 && roomData.timerStarted) ? activeTimeStr : '(03:00)';
+      t2.style.color = (!isStaffMode && step === 2 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
+    }
+    if (t3) {
+      t3.textContent = (!isStaffMode && step === 3 && roomData.timerStarted) ? activeTimeStr : '(03:00)';
+      t3.style.color = (!isStaffMode && step === 3 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
+    }
+
+    if (lockOverlay) {
+      if (roomData.locked && roomData.timerStarted) {
+        lockOverlay.style.display = 'flex';
       } else {
-        timerEl.style.display = 'block';
-        const m = Math.floor(roomData.timeLeft / 60).toString().padStart(2, '0');
-        const s = (roomData.timeLeft % 60).toString().padStart(2, '0');
-        timerEl.innerText = `${m}:${s}`;
-        if (roomData.timeLeft <= 15) {
-          timerEl.style.color = '#ef4444';
-        } else {
-          timerEl.style.color = 'var(--pl-accent)';
-        }
-        if (roomData.locked) {
-          if (lockOverlay) lockOverlay.style.display = 'flex';
-        } else {
-          if (lockOverlay) lockOverlay.style.display = 'none';
-        }
+        lockOverlay.style.display = 'none';
       }
     }
     
@@ -466,7 +514,6 @@ _updateUIForRoom() {
 _setStep(room, step) {
     const roomData = this.rooms[room];
     if (!roomData) return;
-    if (roomData.step === step && roomData.timerInterval) return;
     roomData.step = step;
     this._startStepTimer(room, step);
     if (this.activeRoom === room) {
@@ -534,11 +581,12 @@ _bindEvents() {
         btnRoleSwap.style.borderColor = isStaffMode ? 'var(--pl-accent)' : 'var(--pl-border)';
         btnRoleSwap.style.color = isStaffMode ? 'var(--pl-accent)' : 'inherit';
         
-        // Toggle Queue button
         const btnQueue = document.getElementById('btnQueueManager');
         if (btnQueue) btnQueue.style.display = isStaffMode ? 'inline-flex' : 'none';
         
-        // Refresh UI
+        const btnBuilder = document.getElementById('btnBuilder');
+        if (btnBuilder) btnBuilder.style.display = isStaffMode ? 'inline-flex' : 'none';
+        
         if (this.activeRoom) {
           this._updateUIForRoom();
         }
@@ -577,9 +625,7 @@ _bindEvents() {
       btnStepPrev.addEventListener('click', () => {
         if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
         const cur = this.rooms[this.activeRoom].step || 1;
-        if (cur === 4) {
-          this._setStep(this.activeRoom, 1);
-        } else if (cur > 1) {
+        if (cur > 1) {
           this._setStep(this.activeRoom, cur - 1);
         }
       });
@@ -593,23 +639,16 @@ _bindEvents() {
         if (cur === 1) {
           this._setStep(this.activeRoom, 2);
         } else if (cur === 2) {
-          if (this.selectedPhotos.size !== this.slots.length) {
-            alert(`Vui lòng chọn đúng ${this.slots.length} ảnh trước khi tiếp tục!`);
-            return;
-          }
-          if (this.selectedPhotos.size > 0) {
-            // Clear existing slots first
+          if (this.selectedPhotos.size === 0) {
+            if (this._autoFill) this._autoFill(true);
+          } else {
             this.slots.forEach(s => s.imageId = null);
             let imgIndex = 0;
             const selectedArr = Array.from(this.selectedPhotos);
             for (let i = 0; i < this.slots.length; i++) {
-              if (imgIndex < selectedArr.length) {
-                this._assignToSlot(i, selectedArr[imgIndex], true); // true = skipSync
-                imgIndex++;
-              }
+              this._assignToSlot(i, selectedArr[imgIndex % selectedArr.length], true);
+              imgIndex++;
             }
-          } else {
-            if (this._autoFill) this._autoFill(true);
           }
           this._setStep(this.activeRoom, 3);
         } else if (cur === 3) {
@@ -650,11 +689,23 @@ _bindEvents() {
         item.addEventListener('click', () => {
           if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) return;
           const roomData = this.rooms[this.activeRoom];
-          // Block navigating back if already completed (unless staff)
-          if (roomData.step === 4 && !isStaffMode) return;
-
+          const cur = roomData.step || 1;
           const targetStep = parseInt(item.dataset.step);
-          if (targetStep && targetStep >= 1 && targetStep <= 4) {
+
+          if (!targetStep) return;
+
+          if (!isStaffMode) {
+            if (cur === 4) return;
+            if (targetStep < cur) {
+              const hasTimedOut = roomData.timedOutSteps && (roomData.timedOutSteps.has(targetStep) || roomData.timedOutSteps.has(cur - 1) || roomData.timedOutSteps.has(cur));
+              if (hasTimedOut) {
+                alert('Bước trước đã hết thời gian, không thể quay lại!');
+                return;
+              }
+            }
+          }
+
+          if (targetStep >= 1 && targetStep <= 4) {
             this._setStep(this.activeRoom, targetStep);
           }
         });
@@ -957,8 +1008,13 @@ _renderImageList() {
             }
             this.selectedPhotos.add(img.id);
           }
+          if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].queue) {
+            const activeSess = this.rooms[this.activeRoom].queue.find(s => s.id === this.rooms[this.activeRoom].session);
+            if (activeSess) {
+              activeSess.selectedImages = Array.from(this.selectedPhotos);
+            }
+          }
           this._updateImageListUI();
-          this._updateUIForRoom();
           this._syncState(this.activeRoom);
         } else {
           this.selectedImageId = img.id;

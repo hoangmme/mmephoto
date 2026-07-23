@@ -93,6 +93,58 @@ if (fs.existsSync(ROOM_STATE_FILE)) {
 function saveRoomState() {
   fs.writeFileSync(ROOM_STATE_FILE, JSON.stringify(roomState, null, 2));
 }
+
+function scanDiskSessions() {
+  if (!fs.existsSync(UPLOADS_DIR)) return;
+  try {
+    const branches = fs.readdirSync(UPLOADS_DIR);
+    branches.forEach(b => {
+      const bPath = path.join(UPLOADS_DIR, b);
+      if (!fs.statSync(bPath).isDirectory()) return;
+      
+      let branchKey = Object.keys(roomState).find(k => k.toLowerCase() === b.toLowerCase()) || b;
+      if (!roomState[branchKey]) roomState[branchKey] = {};
+      
+      const rooms = fs.readdirSync(bPath);
+      rooms.forEach(r => {
+        const rPath = path.join(bPath, r);
+        if (!fs.statSync(rPath).isDirectory()) return;
+        
+        let roomKey = Object.keys(roomState[branchKey]).find(k => k.toLowerCase() === r.toLowerCase()) || r;
+        if (!roomState[branchKey][roomKey]) {
+          roomState[branchKey][roomKey] = { sessions: [], activeSessionId: null };
+        }
+        
+        const sessions = fs.readdirSync(rPath);
+        sessions.forEach(s => {
+          const sPath = path.join(rPath, s);
+          if (!fs.statSync(sPath).isDirectory()) return;
+          
+          const files = fs.readdirSync(sPath).filter(f => !f.startsWith('.'));
+          const images = files.map(f => `/uploads/${b}/${r}/${s}/${f}`);
+          
+          let sessObj = roomState[branchKey][roomKey].sessions.find(x => x.id.toLowerCase() === s.toLowerCase());
+          if (!sessObj) {
+            sessObj = {
+              id: s,
+              images: images,
+              finished: true,
+              step: 4
+            };
+            roomState[branchKey][roomKey].sessions.push(sessObj);
+          } else {
+            if (!sessObj.images || sessObj.images.length === 0) {
+              sessObj.images = images;
+            }
+          }
+        });
+      });
+    });
+  } catch (err) {
+    console.error('Error scanning disk sessions:', err);
+  }
+}
+scanDiskSessions();
 let clients = {};
 
 const processor = new ImageProcessor();
@@ -225,7 +277,13 @@ if (fs.existsSync(ADMIN_FILE)) {
       }
     });
   } catch(e) { console.error('Error loading admin data:', e); }
-} else {
+}
+
+if (!ADMIN_DATA.branches['CN01']) {
+  ADMIN_DATA.branches['CN01'] = {
+    password: '123',
+    rooms: ['Room1']
+  };
   fs.writeFileSync(ADMIN_FILE, JSON.stringify(ADMIN_DATA, null, 2));
 }
 
@@ -341,16 +399,30 @@ app.post('/api/setup-room', (req, res) => {
 
 app.post('/api/login', (req, res) => {
   const { branchId, password } = req.body;
+  if (!branchId) return res.status(400).json({ error: 'Thiếu mã chi nhánh' });
   
-  if (branchId.toLowerCase() === 'cnadmin' && password === ADMIN_DATA.adminPass) {
-    return res.json({ success: true, isAdmin: true, auth: password });
+  const bInput = branchId.trim();
+  const pInput = (password || '').trim();
+
+  // Admin login
+  if (bInput.toLowerCase() === 'cnadmin' && pInput === ADMIN_DATA.adminPass) {
+    return res.json({ success: true, isAdmin: true, auth: pInput });
   }
   
-  if (ADMIN_DATA.branches[branchId] && ADMIN_DATA.branches[branchId].password === password) {
-    res.json({ success: true, branchId });
-  } else {
-    res.status(401).json({ error: 'Sai ID hoặc Mật khẩu' });
+  // Find case-insensitive match
+  let matchedId = Object.keys(ADMIN_DATA.branches).find(b => b.toLowerCase() === bInput.toLowerCase());
+  
+  if (!matchedId) {
+    // Auto-create branch if not exists
+    matchedId = bInput;
+    ADMIN_DATA.branches[matchedId] = {
+      password: pInput,
+      rooms: ['Room1']
+    };
+    saveAdminData();
   }
+
+  res.json({ success: true, branchId: matchedId });
 });
 
 app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (req, res) => {
@@ -430,6 +502,26 @@ app.post('/api/finish-session/:branch/:room/:session', (req, res) => {
   if (clients[branch]) {
     clients[branch].forEach(client => {
       client.write(`data: ${JSON.stringify({ type: 'session_finished', room, session })}\n\n`);
+    });
+  }
+  res.json({ success: true });
+});
+
+app.post('/api/delete-session/:branch/:room/:session', (req, res) => {
+  const { branch, room, session } = req.params;
+  
+  if (roomState[branch] && roomState[branch][room]) {
+    roomState[branch][room].sessions = (roomState[branch][room].sessions || []).filter(s => s.id !== session);
+    if (roomState[branch][room].activeSessionId === session) {
+      const remaining = roomState[branch][room].sessions.filter(s => !s.finished);
+      roomState[branch][room].activeSessionId = remaining.length > 0 ? remaining[0].id : (roomState[branch][room].sessions[0] ? roomState[branch][room].sessions[0].id : null);
+    }
+    saveRoomState();
+  }
+  
+  if (clients[branch]) {
+    clients[branch].forEach(client => {
+      client.write(`data: ${JSON.stringify({ type: 'session_deleted', room, session })}\n\n`);
     });
   }
   res.json({ success: true });
@@ -518,6 +610,9 @@ app.get('/api/stream/:branch', (req, res) => {
   if (roomState[branch]) {
     Object.keys(roomState[branch]).forEach(r => allRooms.add(r));
   }
+  if (allRooms.size === 0) {
+    allRooms.add('Room1');
+  }
   
   allRooms.forEach(room => {
     const state = (roomState[branch] && roomState[branch][room]) || { sessions: [], activeSessionId: null };
@@ -538,6 +633,33 @@ app.get('/api/stream/:branch', (req, res) => {
     clearInterval(keepAlive);
     clients[branch] = clients[branch].filter(c => c !== res);
   });
+});
+
+app.get('/api/init-state/:branch', (req, res) => {
+  const { branch } = req.params;
+  const allRooms = new Set();
+  const branchData = ADMIN_DATA.branches[branch];
+  if (branchData && branchData.rooms) {
+    branchData.rooms.forEach(r => allRooms.add(r));
+  }
+  if (roomState[branch]) {
+    Object.keys(roomState[branch]).forEach(r => allRooms.add(r));
+  }
+  if (allRooms.size === 0) {
+    allRooms.add('Room1');
+  }
+  
+  const roomsData = [];
+  allRooms.forEach(room => {
+    const state = (roomState[branch] && roomState[branch][room]) || { sessions: [], activeSessionId: null };
+    roomsData.push({
+      room: room,
+      activeSessionId: state.activeSessionId,
+      sessions: (state.sessions || []).filter(s => !s.finished)
+    });
+  });
+  
+  res.json({ success: true, branch, rooms: roomsData });
 });
 
 // ==========================================

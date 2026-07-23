@@ -69,10 +69,5 @@ Object.assign(PrintLayoutApp.prototype, StateMixin, UIMixin, CanvasMixin, QueueM
 
 window.addEventListener('DOMContentLoaded', () => {
   const b = localStorage.getItem('branchId');
-  if (b) {
-    window.printApp = new PrintLayoutApp(b);
-  } else {
-    const loginOverlay = document.getElementById('loginOverlay');
-    if (loginOverlay) loginOverlay.style.display = 'flex';
-  }
+  window.printApp = new PrintLayoutApp(b);
 });
