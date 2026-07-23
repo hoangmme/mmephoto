@@ -546,9 +546,11 @@ body {
   display: none !important;
 }
 
+.pl-step-mode-3 .pl-slide:not(.active),
 .pl-step-mode-4 .pl-slide:not(.active) {
   display: none !important;
 }
+.pl-step-mode-3 .pl-swiper-container,
 .pl-step-mode-4 .pl-swiper-container {
   overflow: hidden;
   justify-content: center;
@@ -690,13 +692,18 @@ body {
   .pl-main { flex-direction: column; overflow: hidden; }
   .pl-panel-left {
     order: 2;
-    width: 100%;
+    width: 100% !important;
+    max-width: none !important;
     height: 160px;
     max-height: none;
     border-right: none;
     border-top: 1px solid var(--pl-border);
     border-bottom: none;
     overflow-y: hidden;
+  }
+  .pl-step-mode-2 .pl-panel-left {
+    height: auto;
+    flex: 1;
   }
   .pl-main-swiper-area {
     order: 1;

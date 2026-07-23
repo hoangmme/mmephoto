@@ -436,7 +436,6 @@ class PrintLayoutApp {
     roomData.step = step;
     this._startStepTimer(room, step);
     if (this.activeRoom === room) {
-      if (step === 3) this._initMainSwiper();
       this._updateUIForRoom();
       this._renderCanvas();
     }
