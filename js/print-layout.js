@@ -547,6 +547,7 @@ class PrintLayoutApp {
           return;
         }
         localStorage.setItem('branchId', branch);
+        localStorage.setItem('branchPass', pass);
         if(loginOverlay) loginOverlay.style.display = 'none';
         this._initSSE(branch);
       } else {

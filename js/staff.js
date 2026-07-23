@@ -7,9 +7,8 @@ const A5_HEIGHT = 2480;
 
 class StaffView {
   constructor() {
-    this.branch = localStorage.getItem('pl_branch') || '';
-    this.password = localStorage.getItem('pl_password') || '';
-    this.serverUrl = localStorage.getItem('pl_serverUrl') || 'http://localhost:3000';
+    this.branch = localStorage.getItem('branchId') || localStorage.getItem('pl_branch') || '';
+    this.password = localStorage.getItem('branchPass') || localStorage.getItem('pl_password') || '';
     
     this.rooms = {};
     this.eventSource = null;
