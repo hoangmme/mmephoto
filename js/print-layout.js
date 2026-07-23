@@ -416,7 +416,7 @@ class PrintLayoutApp {
         if (btnNext) btnNext.style.display = 'none';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 2) {
-        const filledSlots = this.slots ? this.slots.filter(s => s.imageId).length : 0;
+        const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
         const totalSlots = this.slots ? this.slots.length : 0;
         instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${totalSlots} ô)`;
         btnStepPrev.style.display = 'inline-flex';
@@ -1017,6 +1017,9 @@ class PrintLayoutApp {
       this._panSlot(dragSlot, dx, dy);
     });
     this.canvas.addEventListener('mouseup', () => {
+      if (isDragging) {
+        this._syncState(this.activeRoom);
+      }
       isDragging = false;
       this.canvas.style.cursor = '';
     });
@@ -1084,6 +1087,12 @@ class PrintLayoutApp {
       }
     }, { passive: false });
 
+    this.canvas.addEventListener('touchend', () => {
+      if (this.selectedSlotIndex >= 0) {
+        this._syncState(this.activeRoom);
+      }
+    });
+
     // Mouse wheel zoom support for desktop testing/usage
     this.canvas.addEventListener('wheel', (e) => {
       const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
@@ -1093,6 +1102,11 @@ class PrintLayoutApp {
       if (!slot || !slot.imageId) return;
       const delta = e.deltaY > 0 ? -0.05 : 0.05;
       this._zoomSlot(this.selectedSlotIndex, Math.max(0.3, Math.min(4.0, (slot.zoom || 1.0) + delta)));
+      
+      // Debounce wheel sync
+      clearTimeout(this._wheelSyncTimer);
+      this._wheelSyncTimer = setTimeout(() => this._syncState(this.activeRoom), 200);
+      
       e.preventDefault();
     }, { passive: false });
   }
@@ -1332,6 +1346,8 @@ class PrintLayoutApp {
             this.selectedPhotos.add(img.id);
           }
           this._updateImageListUI();
+          this._updateUIForRoom();
+          this._syncState(this.activeRoom);
         } else {
           this.selectedImageId = img.id;
           this._updateImageListUI();
@@ -1584,6 +1600,7 @@ class PrintLayoutApp {
     slot.panY = 0;
     this._renderCanvas();
     this._renderSlotProps();
+    this._syncState(this.activeRoom);
   }
 
   _removeFromSlot(slotIndex) {
@@ -1591,6 +1608,7 @@ class PrintLayoutApp {
     this._renderCanvas();
     this._renderSlotProps();
     this._renderImageList();
+    this._syncState(this.activeRoom);
   }
 
   _clampPan(slotIndex) {
