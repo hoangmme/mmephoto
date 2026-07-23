@@ -122,8 +122,8 @@ class PrintLayoutApp {
         const room = data.room;
         if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false };
         this.rooms[room].queue = data.sessions || [];
-        this._updateActiveSession(room);
         this._renderTabs();
+        this._updateActiveSession(room);
         this._updateUIForRoom();
       } else if (data.type === 'new_image') {
         const room = data.room;
@@ -230,12 +230,14 @@ class PrintLayoutApp {
         roomData.timerStarted = false;
         roomData.lastImageTime = Date.now();
         
-        if (active.currentTemplate) this.currentTemplate = active.currentTemplate;
-        if (active.slots) this.slots = active.slots;
-        if (active.selectedImages) {
-          this.selectedPhotos = new Set(active.selectedImages);
-        } else {
-          this.selectedPhotos.clear();
+        if (this.activeRoom === room) {
+          if (active.currentTemplate) this.currentTemplate = active.currentTemplate;
+          if (active.slots) this.slots = active.slots;
+          if (active.selectedImages) {
+            this.selectedPhotos = new Set(active.selectedImages);
+          } else {
+            this.selectedPhotos.clear();
+          }
         }
         
         roomData.images = active.images
@@ -248,20 +250,22 @@ class PrintLayoutApp {
           return { id, url, name: url.split('/').pop() };
         });
         
-        // Ensure template images are loaded when session is restored
-        if (this.currentTemplate) {
-          this._loadTemplateImages();
-        }
-        
-        // Clean up invalid IDs from previous algorithm
-        const validIds = new Set(roomData.images.map(img => img.id));
-        this.selectedPhotos = new Set(Array.from(this.selectedPhotos).filter(id => validIds.has(id)));
-        if (this.slots) {
-          this.slots.forEach(slot => {
-            if (slot.imageId && !validIds.has(slot.imageId)) {
-              slot.imageId = null;
-            }
-          });
+        if (this.activeRoom === room) {
+          // Ensure template images are loaded when session is restored
+          if (this.currentTemplate) {
+            this._loadTemplateImages();
+          }
+          
+          // Clean up invalid IDs from previous algorithm
+          const validIds = new Set(roomData.images.map(img => img.id));
+          this.selectedPhotos = new Set(Array.from(this.selectedPhotos).filter(id => validIds.has(id)));
+          if (this.slots) {
+            this.slots.forEach(slot => {
+              if (slot && slot.imageId && !validIds.has(slot.imageId)) {
+                slot.imageId = null;
+              }
+            });
+          }
         }
 
         
