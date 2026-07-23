@@ -174,10 +174,13 @@ _updateActiveSession(room, onlyBadge = false) {
       
       if (!onlyBadge) {
         if (this.activeRoom === room) {
-          if (active.currentTemplate) {
+          if (this.currentTemplate) {
+            active.currentTemplate = this.currentTemplate;
+          } else if (active.currentTemplate) {
             this.currentTemplate = active.currentTemplate;
           } else {
             this.currentTemplate = Object.keys(ALL_TEMPLATES)[0];
+            active.currentTemplate = this.currentTemplate;
           }
 
           if (active.slots && active.slots.length > 0) {

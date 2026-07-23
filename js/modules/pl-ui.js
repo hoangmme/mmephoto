@@ -529,7 +529,18 @@ _setStep(room, step) {
 ,
 
 _selectSlide(id, instant = false) {
+     const templateChanged = (this.currentTemplate !== id);
      this.currentTemplate = id;
+     if (this.activeRoom && this.rooms[this.activeRoom]) {
+       const roomD = this.rooms[this.activeRoom];
+       if (roomD.queue) {
+         const activeSess = roomD.queue.find(s => s.id === roomD.session);
+         if (activeSess) {
+           activeSess.currentTemplate = id;
+         }
+       }
+     }
+
      const targetSlide = Array.from(this.mainSwiper.children).find(s => s.dataset.id === id);
      if (!targetSlide) return;
      
@@ -560,6 +571,10 @@ _selectSlide(id, instant = false) {
      this.scrollUnlockTimeout = setTimeout(() => {
         this.isProgrammaticScroll = false;
      }, instant ? 100 : 500);
+
+     if (templateChanged) {
+       this._syncState(this.activeRoom);
+     }
   }
 
   // ── Event Bindings ──
