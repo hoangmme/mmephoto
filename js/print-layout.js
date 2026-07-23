@@ -272,8 +272,8 @@ class PrintLayoutApp {
         }
 
         
-        // Only set step to 1 if we don't have a saved step from server
-        if (roomData.images.length > 0 && !active.step) {
+        // Only set step to 1 if we don't have a saved step from server AND smart recovery didn't bump the step
+        if (roomData.images.length > 0 && !active.step && roomData.step === 1) {
           this._setStep(room, 1);
         }
       }
