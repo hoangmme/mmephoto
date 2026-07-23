@@ -497,7 +497,6 @@ _updateUIForRoom() {
 _setStep(room, step) {
     const roomData = this.rooms[room];
     if (!roomData) return;
-    if (roomData.step === step && roomData.timerInterval) return;
     roomData.step = step;
     this._startStepTimer(room, step);
     if (this.activeRoom === room) {
@@ -624,23 +623,16 @@ _bindEvents() {
         if (cur === 1) {
           this._setStep(this.activeRoom, 2);
         } else if (cur === 2) {
-          if (this.selectedPhotos.size !== this.slots.length) {
-            alert(`Vui lòng chọn đúng ${this.slots.length} ảnh trước khi tiếp tục!`);
-            return;
-          }
-          if (this.selectedPhotos.size > 0) {
-            // Clear existing slots first
+          if (this.selectedPhotos.size === 0) {
+            if (this._autoFill) this._autoFill(true);
+          } else {
             this.slots.forEach(s => s.imageId = null);
             let imgIndex = 0;
             const selectedArr = Array.from(this.selectedPhotos);
             for (let i = 0; i < this.slots.length; i++) {
-              if (imgIndex < selectedArr.length) {
-                this._assignToSlot(i, selectedArr[imgIndex], true); // true = skipSync
-                imgIndex++;
-              }
+              this._assignToSlot(i, selectedArr[imgIndex % selectedArr.length], true);
+              imgIndex++;
             }
-          } else {
-            if (this._autoFill) this._autoFill(true);
           }
           this._setStep(this.activeRoom, 3);
         } else if (cur === 3) {
