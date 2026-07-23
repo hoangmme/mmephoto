@@ -479,7 +479,7 @@ app.get('/api/stream/:branch', (req, res) => {
     res.write(`data: ${JSON.stringify({ 
       type: 'init', 
       room: room,
-      sessions: state.sessions || []
+      sessions: (state.sessions || []).filter(s => !s.finished)
     })}\n\n`);
   });
   
