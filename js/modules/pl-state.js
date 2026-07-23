@@ -3,6 +3,8 @@ import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5
 export const StateMixin = {
 _initSSE(branch) {
     this.branch = branch;
+    this.rooms = {};
+    this.activeRoom = null;
     const branchNameEl = document.getElementById('headerBranchName');
     if (branchNameEl) {
       branchNameEl.textContent = `Chi nhánh: ${branch}`;

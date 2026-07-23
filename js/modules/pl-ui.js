@@ -251,7 +251,7 @@ _renderTabs() {
     const rooms = Object.keys(this.rooms);
     if (rooms.length === 0) return;
     
-    if (!this.activeRoom && rooms.length > 0) {
+    if ((!this.activeRoom || !this.rooms[this.activeRoom]) && rooms.length > 0) {
       this.activeRoom = rooms[0];
       this._updateUIForRoom();
     }
