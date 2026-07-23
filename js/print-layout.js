@@ -164,11 +164,16 @@ class PrintLayoutApp {
         const room = data.room;
         if (this.rooms[room] && this.rooms[room].session === data.session) {
           if (data.step !== undefined) this.rooms[room].step = data.step;
-          if (data.currentTemplate !== undefined) this.currentTemplate = data.currentTemplate;
+          let templateChanged = false;
+          if (data.currentTemplate !== undefined && this.currentTemplate !== data.currentTemplate) {
+            this.currentTemplate = data.currentTemplate;
+            templateChanged = true;
+          }
           if (data.slots && data.slots.length > 0) this.slots = data.slots;
           if (data.selectedImages) this.selectedPhotos = new Set(data.selectedImages);
           
           if (this.activeRoom === room) {
+             if (templateChanged) this._loadTemplateImages();
              this._updateUIForRoom();
              this._renderCanvas();
              this._renderTabs();
@@ -228,6 +233,11 @@ class PrintLayoutApp {
           });
           return { id, url, name: url.split('/').pop() };
         });
+        
+        // Ensure template images are loaded when session is restored
+        if (this.currentTemplate) {
+          this._loadTemplateImages();
+        }
         
         // Clean up invalid IDs from previous algorithm
         const validIds = new Set(roomData.images.map(img => img.id));
@@ -1248,10 +1258,10 @@ class PrintLayoutApp {
   }
 
   // ── Template ──
-  _initTemplate() {
+  _loadTemplateImages() {
     const tmpl = ALL_TEMPLATES[this.currentTemplate];
+    if (!tmpl) return;
     
-    // Check if we need to load frame/bg image
     this.frameImageObj = null;
     this.bgImageObj = null;
 
@@ -1285,6 +1295,13 @@ class PrintLayoutApp {
     if (imagesToLoad === 0) {
        this._renderCanvas();
     }
+  }
+
+  _initTemplate() {
+    const tmpl = ALL_TEMPLATES[this.currentTemplate];
+    if (!tmpl) return;
+    
+    this._loadTemplateImages();
 
     const oldSlots = [...(this.slots || [])];
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
