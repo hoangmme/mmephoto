@@ -209,23 +209,14 @@ _updateActiveSession(room, onlyBadge = false) {
     if (this.activeRoom === room) {
        const lbl = document.getElementById('headerSessionName');
        if (lbl) {
-         if (roomData.session) {
-           const qLen = roomData.queue ? roomData.queue.length - 1 : 0;
-           let html = '';
-           if (qLen > 0) {
-             html += `<span style="color:#eab308; margin-right:6px; display:inline-flex; align-items:center;">
-               <svg class="pl-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px; animation: pl-spin 2s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="4.93" x2="19.07" y2="7.76"></line></svg>
-               ${qLen}
-             </span>`;
-           }
-           const imgCount = roomData.images ? roomData.images.length : 0;
-           html += `Phiên: ${roomData.session} (${imgCount} ảnh)`;
-           lbl.innerHTML = html;
-           lbl.style.display = 'inline-flex';
-           lbl.style.alignItems = 'center';
-         } else {
-           lbl.style.display = 'none';
-         }
+          if (roomData.session) {
+            const imgCount = roomData.images ? roomData.images.length : 0;
+            lbl.textContent = `Phiên: ${roomData.session} (${imgCount} ảnh)`;
+            lbl.style.display = 'inline-flex';
+            lbl.style.alignItems = 'center';
+          } else {
+            lbl.style.display = 'none';
+          }
        }
     }
   }
