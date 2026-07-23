@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from "./pl-globals.js";
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from "./pl-globals.js";
 
 export const UIMixin = {
 _initLogin() {
@@ -525,6 +525,26 @@ _bindEvents() {
       });
     }
 
+    const btnRoleSwap = document.getElementById('btnRoleSwap');
+    const roleSwapText = document.getElementById('roleSwapText');
+    if (btnRoleSwap && roleSwapText) {
+      btnRoleSwap.addEventListener('click', () => {
+        setStaffMode(!isStaffMode);
+        roleSwapText.textContent = isStaffMode ? 'Nhân viên' : 'Khách hàng';
+        btnRoleSwap.style.borderColor = isStaffMode ? 'var(--pl-accent)' : 'var(--pl-border)';
+        btnRoleSwap.style.color = isStaffMode ? 'var(--pl-accent)' : 'inherit';
+        
+        // Toggle Queue button
+        const btnQueue = document.getElementById('btnQueueManager');
+        if (btnQueue) btnQueue.style.display = isStaffMode ? 'inline-flex' : 'none';
+        
+        // Refresh UI
+        if (this.activeRoom) {
+          this._updateUIForRoom();
+        }
+      });
+    }
+    
     document.getElementById('btnSelectAll').addEventListener('click', () => this._selectAll());
     document.getElementById('btnDeselectAll').addEventListener('click', () => this._deselectAll());
     document.getElementById('btnAutoFill').addEventListener('click', () => this._autoFill());

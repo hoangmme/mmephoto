@@ -1,7 +1,8 @@
 export const A5_WIDTH = 1748;
 export const A5_HEIGHT = 2480;
 export const PADDING = 40;
-export const isStaffMode = window.location.pathname.includes('staff.html');
+export let isStaffMode = false;
+export function setStaffMode(val) { isStaffMode = val; }
 
 const TEMPLATES = {
   '1photo': {
