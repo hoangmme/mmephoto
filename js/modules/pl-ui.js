@@ -226,11 +226,19 @@ _initMainSwiper() {
            }
         });
         
-        // Only trigger template switch when it fully snapped
-        if (closest && closest.dataset.id !== this.currentTemplate && minDiff < 50) {
+        if (closest && closest.dataset.id !== this.currentTemplate) {
            this._selectSlide(closest.dataset.id);
         }
       }, 150);
+    });
+
+    // Add click listener to all slides for direct tap selection
+    Array.from(this.mainSwiper.children).forEach(slide => {
+       slide.addEventListener('click', () => {
+          if (slide.dataset.id !== this.currentTemplate) {
+             this._selectSlide(slide.dataset.id);
+          }
+       });
     });
     
     // Set initial
@@ -1000,8 +1008,13 @@ _renderImageList() {
             }
             this.selectedPhotos.add(img.id);
           }
+          if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].queue) {
+            const activeSess = this.rooms[this.activeRoom].queue.find(s => s.id === this.rooms[this.activeRoom].session);
+            if (activeSess) {
+              activeSess.selectedImages = Array.from(this.selectedPhotos);
+            }
+          }
           this._updateImageListUI();
-          this._updateUIForRoom();
           this._syncState(this.activeRoom);
         } else {
           this.selectedImageId = img.id;
