@@ -551,11 +551,7 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
   // because that means a client accidentally wiped them out.
   const targetStep = sessionObj.step || 1;
   if (selectedImages !== undefined) {
-      if (targetStep >= 2 && selectedImages.length === 0 && sessionObj.selectedImages && sessionObj.selectedImages.length > 0) {
-          console.log(`[SAFEGUARD] Ignored empty selectedImages sync for session ${session} at step ${targetStep}`);
-      } else {
-          sessionObj.selectedImages = selectedImages;
-      }
+    sessionObj.selectedImages = selectedImages;
   }
   
   if (slots !== undefined) {

@@ -427,8 +427,9 @@ _updateUIForRoom() {
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 2) {
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
-        const totalSlots = this.slots ? this.slots.length : 0;
-        instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${totalSlots} ô)`;
+        const tmpl = ALL_TEMPLATES[this.currentTemplate];
+        const maxSlots = tmpl ? tmpl.slots.length : (this.slots ? this.slots.length : 0);
+        instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
         const step1TimedOut = roomData.timedOutSteps && roomData.timedOutSteps.has(1);
         btnStepPrev.style.display = (isStaffMode || !step1TimedOut) ? 'inline-flex' : 'none';
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B1';
@@ -1037,6 +1038,16 @@ _updateImageListUI() {
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
     const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
     
+    if (step === 2) {
+      const instructionText = document.getElementById('stepInstructionText');
+      if (instructionText) {
+        const tmpl = ALL_TEMPLATES[this.currentTemplate];
+        const maxSlots = tmpl ? tmpl.slots.length : (this.slots ? this.slots.length : 0);
+        const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
+        instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
+      }
+    }
+
     Array.from(this.imageList.children).forEach(thumb => {
       const imgId = thumb.dataset.id;
       if (!imgId) return;
