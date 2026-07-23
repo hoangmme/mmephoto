@@ -409,7 +409,7 @@ class PrintLayoutApp {
         btnStepPrev.style.display = 'inline-flex';
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B2';
         btnStepNext.style.display = 'inline-flex';
-        btnStepNext.innerHTML = '✅ Hoàn Tất (Gửi cho Nhân Viên)';
+        btnStepNext.innerHTML = isStaffMode ? '✅ Hoàn Tất (Gửi cho User)' : '✅ Hoàn Tất (Gửi cho Nhân Viên)';
         if (btnNext) btnNext.style.display = 'none';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 4) {
@@ -893,6 +893,10 @@ class PrintLayoutApp {
         if (cur === 1) {
           this._setStep(this.activeRoom, 2);
         } else if (cur === 2) {
+          if (this.selectedPhotos.size !== this.slots.length) {
+            alert(`Vui lòng chọn đúng ${this.slots.length} ảnh trước khi tiếp tục!`);
+            return;
+          }
           if (this.selectedPhotos.size > 0) {
             // Clear existing slots first
             this.slots.forEach(s => s.imageId = null);
@@ -900,12 +904,12 @@ class PrintLayoutApp {
             const selectedArr = Array.from(this.selectedPhotos);
             for (let i = 0; i < this.slots.length; i++) {
               if (imgIndex < selectedArr.length) {
-                this._assignToSlot(i, selectedArr[imgIndex]);
+                this._assignToSlot(i, selectedArr[imgIndex], true); // true = skipSync
                 imgIndex++;
               }
             }
           } else {
-            if (this._autoFill) this._autoFill();
+            if (this._autoFill) this._autoFill(true);
           }
           this._setStep(this.activeRoom, 3);
         } else if (cur === 3) {
@@ -1396,7 +1400,7 @@ class PrintLayoutApp {
     }
   }
 
-  _assignToSlot(slotIndex, imageId) {
+  _assignToSlot(slotIndex, imageId, skipSync = false) {
     this.slots[slotIndex].imageId = imageId;
     this.slots[slotIndex].zoom = 1.0;
     this.slots[slotIndex].panX = 0;
@@ -1408,11 +1412,13 @@ class PrintLayoutApp {
     this._renderCanvas();
     this._renderSlotProps();
     this._renderImageList();
-    this._syncState(this.activeRoom);
+    if (!skipSync) {
+      this._syncState(this.activeRoom);
+    }
   }
 
   // ── Auto Fill ──
-  _autoFill() {
+  _autoFill(skipSync = false) {
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
     const sourceImages = (step >= 2 && this.selectedPhotos && this.selectedPhotos.size > 0)
       ? this.images.filter(img => this.selectedPhotos.has(img.id))
@@ -1421,7 +1427,7 @@ class PrintLayoutApp {
     let imgIndex = 0;
     for (let i = 0; i < this.slots.length; i++) {
       if (!this.slots[i].imageId && imgIndex < sourceImages.length) {
-        this._assignToSlot(i, sourceImages[imgIndex].id);
+        this._assignToSlot(i, sourceImages[imgIndex].id, skipSync);
         imgIndex++;
       }
     }
