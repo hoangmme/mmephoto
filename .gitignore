@@ -5,3 +5,4 @@ test_photo.png
 deploy.sh
 .env
 data/
+.idea
