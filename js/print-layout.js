@@ -911,6 +911,10 @@ class PrintLayoutApp {
         item.style.cursor = 'pointer';
         item.addEventListener('click', () => {
           if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) return;
+          const roomData = this.rooms[this.activeRoom];
+          // Block navigating back if already completed
+          if (roomData.step === 4) return;
+
           const targetStep = parseInt(item.dataset.step);
           if (targetStep && targetStep >= 1 && targetStep <= 4) {
             this._setStep(this.activeRoom, targetStep);
