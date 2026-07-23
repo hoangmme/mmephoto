@@ -144,7 +144,7 @@ class PrintLayoutApp {
             if (this.rooms[room].images.length === 0) {
               this._setStep(room, 1);
             }
-            const newImg = { id: 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000), url: data.imageUrl, name: data.imageUrl.split('/').pop() };
+            const newImg = { id: 'img_' + data.imageUrl.replace(/[^a-zA-Z0-9]/g, '_'), url: data.imageUrl, name: data.imageUrl.split('/').pop() };
             this.rooms[room].images.push(newImg);
             this._preloadImage(newImg.id, newImg.url).then(() => {
                 if (this.activeRoom === room) this._renderCanvas();
@@ -222,7 +222,7 @@ class PrintLayoutApp {
         roomData.images = active.images
           .filter(url => !url.includes('00_frame.jpg'))
           .map(url => {
-          const id = 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+          const id = 'img_' + url.replace(/[^a-zA-Z0-9]/g, '_');
           this._preloadImage(id, url).then(() => {
             if (this.activeRoom === room) this._renderCanvas();
           });
