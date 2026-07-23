@@ -227,6 +227,16 @@ class PrintLayoutApp {
       if (roomData.session !== active.id && !onlyBadge) {
         roomData.session = active.id;
         roomData.step = active.step || 1;
+        
+        // Smart step recovery based on data integrity:
+        // If we have selected images, we must be at least at step 2 or 3
+        if (active.selectedImages && active.selectedImages.length > 0) {
+           if (roomData.step < 2) roomData.step = 3; 
+        }
+        // If we have slots filled, we must be at least at step 3 or 4
+        if (active.slots && active.slots.some(s => s.imageId)) {
+           if (roomData.step < 3) roomData.step = 4;
+        }
         roomData.timerStarted = false;
         roomData.lastImageTime = Date.now();
         
@@ -256,16 +266,9 @@ class PrintLayoutApp {
             this._loadTemplateImages();
           }
           
-          // Clean up invalid IDs from previous algorithm
-          const validIds = new Set(roomData.images.map(img => img.id));
-          this.selectedPhotos = new Set(Array.from(this.selectedPhotos).filter(id => validIds.has(id)));
-          if (this.slots) {
-            this.slots.forEach(slot => {
-              if (slot && slot.imageId && !validIds.has(slot.imageId)) {
-                slot.imageId = null;
-              }
-            });
-          }
+          // We will NOT wipe slot data based on validIds because it causes F5 data loss
+          // if the server state and client state are momentarily out of sync.
+          // Keep selectedPhotos and slots as they came from the server.
         }
 
         
@@ -463,6 +466,16 @@ class PrintLayoutApp {
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 4) {
         instructionText.textContent = isStaffMode ? '✨ Vui lòng kiểm tra lại bố cục, tải ảnh layout và nhận khách tiếp theo.' : '✨ Xin chúc mừng bạn đã hoàn thành, xin vui lòng đợi nhân viên kiểm tra và in ảnh nhé';
+        
+        // Force display block for swiper area and canvas
+        const swiperArea = document.getElementById('mainSwiperArea');
+        if (swiperArea) swiperArea.style.display = 'block';
+        if (this.canvas) {
+            this.canvas.style.display = 'block';
+            this.canvas.style.opacity = '1';
+            setTimeout(() => this._renderCanvas(), 500); // force draw after 500ms
+        }
+
         btnStepPrev.style.display = isStaffMode ? 'inline-flex' : 'none';
         btnStepNext.style.display = 'none';
         
@@ -1325,7 +1338,7 @@ class PrintLayoutApp {
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
     
     this.slots = tmpl.slots.map((s, i) => ({
-      imageId: (oldSlots[i] && (oldSlots.length === tmpl.slots.length || step > 1)) ? oldSlots[i].imageId : null,
+      imageId: (oldSlots[i] && oldSlots[i].imageId) ? oldSlots[i].imageId : null,
       zoom: (oldSlots[i] && step > 1) ? (oldSlots[i].zoom || 1.0) : 1.0,
       panX: (oldSlots[i] && step > 1) ? (oldSlots[i].panX || 0) : 0,
       panY: (oldSlots[i] && step > 1) ? (oldSlots[i].panY || 0) : 0,
