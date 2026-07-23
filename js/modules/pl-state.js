@@ -269,6 +269,8 @@ _startStepTimer(room, step) {
     
     roomData.step = step;
     roomData.locked = false;
+    roomData.timerStarted = true;
+    if (!roomData.timedOutSteps) roomData.timedOutSteps = new Set();
     
     if (step === 1) roomData.timeLeft = 60;
     else if (step === 2) roomData.timeLeft = 180;
@@ -280,25 +282,25 @@ _startStepTimer(room, step) {
     }
 
     roomData.timerInterval = setInterval(() => {
-      // Smart timer check: wait until 30s of no new images arriving
-      if (!roomData.timerStarted && (step === 1 || step === 2)) {
-        if (!roomData.lastImageTime || (Date.now() - roomData.lastImageTime >= 30000)) {
-          roomData.timerStarted = true;
-        } else {
-          if (this.activeRoom === room) this._updateUIForRoom();
-          return; // hold countdown while photos are uploading
-        }
+      // In Staff Mode, timer does NOT count down and does not auto-advance steps!
+      if (isStaffMode) {
+        if (this.activeRoom === room) this._updateUIForRoom();
+        return;
       }
 
       roomData.timeLeft--;
       if (roomData.timeLeft <= 0) {
+        roomData.timeLeft = 0;
+        roomData.timedOutSteps.add(step);
         clearInterval(roomData.timerInterval);
+
         if (step === 1) {
           this._setStep(room, 2);
         } else if (step === 2) {
           if (this._autoFill) this._autoFill();
           this._setStep(room, 3);
         } else if (step === 3) {
+          this._uploadFinalFrame();
           this._setStep(room, 4);
         }
       }

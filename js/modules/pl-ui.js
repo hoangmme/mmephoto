@@ -421,7 +421,8 @@ _updateUIForRoom() {
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
         const totalSlots = this.slots ? this.slots.length : 0;
         instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${totalSlots} ô)`;
-        btnStepPrev.style.display = 'inline-flex';
+        const step1TimedOut = roomData.timedOutSteps && roomData.timedOutSteps.has(1);
+        btnStepPrev.style.display = (isStaffMode || !step1TimedOut) ? 'inline-flex' : 'none';
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B1';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp (B3) <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
@@ -429,7 +430,8 @@ _updateUIForRoom() {
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 3) {
         instructionText.textContent = '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
-        btnStepPrev.style.display = 'inline-flex';
+        const step2TimedOut = roomData.timedOutSteps && (roomData.timedOutSteps.has(2) || roomData.timedOutSteps.has(1));
+        btnStepPrev.style.display = (isStaffMode || !step2TimedOut) ? 'inline-flex' : 'none';
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B2';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = isStaffMode ? '✅ Hoàn Tất (Gửi cho User)' : '✅ Hoàn Tất (Gửi cho Nhân Viên)';
@@ -464,21 +466,21 @@ _updateUIForRoom() {
     const t2 = document.getElementById('stepTimer2');
     const t3 = document.getElementById('stepTimer3');
 
-    const m = Math.floor((roomData.timeLeft || 0) / 60).toString().padStart(2, '0');
-    const s = ((roomData.timeLeft || 0) % 60).toString().padStart(2, '0');
+    const m = Math.floor(Math.max(0, roomData.timeLeft || 0) / 60).toString().padStart(2, '0');
+    const s = (Math.max(0, roomData.timeLeft || 0) % 60).toString().padStart(2, '0');
     const activeTimeStr = `(${m}:${s})`;
 
     if (t1) {
-      t1.textContent = (step === 1 && roomData.timerStarted) ? activeTimeStr : '(01:00)';
-      t1.style.color = (step === 1 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
+      t1.textContent = (!isStaffMode && step === 1 && roomData.timerStarted) ? activeTimeStr : '(01:00)';
+      t1.style.color = (!isStaffMode && step === 1 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
     }
     if (t2) {
-      t2.textContent = (step === 2 && roomData.timerStarted) ? activeTimeStr : '(03:00)';
-      t2.style.color = (step === 2 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
+      t2.textContent = (!isStaffMode && step === 2 && roomData.timerStarted) ? activeTimeStr : '(03:00)';
+      t2.style.color = (!isStaffMode && step === 2 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
     }
     if (t3) {
-      t3.textContent = (step === 3 && roomData.timerStarted) ? activeTimeStr : '(03:00)';
-      t3.style.color = (step === 3 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
+      t3.textContent = (!isStaffMode && step === 3 && roomData.timerStarted) ? activeTimeStr : '(03:00)';
+      t3.style.color = (!isStaffMode && step === 3 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
     }
 
     if (lockOverlay) {
@@ -679,11 +681,23 @@ _bindEvents() {
         item.addEventListener('click', () => {
           if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) return;
           const roomData = this.rooms[this.activeRoom];
-          // Block navigating back if already completed (unless staff)
-          if (roomData.step === 4 && !isStaffMode) return;
-
+          const cur = roomData.step || 1;
           const targetStep = parseInt(item.dataset.step);
-          if (targetStep && targetStep >= 1 && targetStep <= 4) {
+
+          if (!targetStep) return;
+
+          if (!isStaffMode) {
+            if (cur === 4) return;
+            if (targetStep < cur) {
+              const hasTimedOut = roomData.timedOutSteps && (roomData.timedOutSteps.has(targetStep) || roomData.timedOutSteps.has(cur - 1) || roomData.timedOutSteps.has(cur));
+              if (hasTimedOut) {
+                alert('Bước trước đã hết thời gian, không thể quay lại!');
+                return;
+              }
+            }
+          }
+
+          if (targetStep >= 1 && targetStep <= 4) {
             this._setStep(this.activeRoom, targetStep);
           }
         });
