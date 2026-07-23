@@ -532,7 +532,8 @@ body {
 }
 
 /* ── Step Modes Layout ── */
-.pl-step-mode-1 #panelLeft {
+.pl-step-mode-1 #panelLeft,
+.pl-step-mode-4 #panelLeft {
   display: none !important;
 }
 

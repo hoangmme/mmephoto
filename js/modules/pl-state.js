@@ -18,8 +18,8 @@ _initSSE(branch) {
         if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false };
         this.rooms[room].queue = data.sessions || [];
         if (data.activeSessionId) this.rooms[room].activeSessionId = data.activeSessionId;
-        this._renderTabs();
         this._updateActiveSession(room);
+        this._renderTabs();
         this._updateUIForRoom();
       } else if (data.type === 'active_session_changed') {
           if (this.rooms[data.room]) {
@@ -44,7 +44,7 @@ _initSSE(branch) {
         // If this is the active session
         if (this.rooms[room].session === data.session) {
             this.rooms[room].lastImageTime = Date.now();
-            if (this.rooms[room].images.length === 0) {
+            if (this.rooms[room].images.length === 0 && this.rooms[room].step === 1) {
               this._setStep(room, 1);
             }
             const newImg = { id: 'img_' + data.imageUrl.replace(/[^a-zA-Z0-9]/g, '_'), url: data.imageUrl, name: data.imageUrl.split('/').pop() };
