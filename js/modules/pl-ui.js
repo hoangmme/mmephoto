@@ -299,7 +299,7 @@ _renderTabs() {
 ,
 
 _updateUIForRoom() {
-    this._updateActiveSession(this.activeRoom, true);
+    this._updateActiveSession(this.activeRoom, false);
     
     // SAFEGUARD: Removed dangerous step 1 revert that caused user data wipe on sync.
     if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].step === 4) {
