@@ -1195,19 +1195,7 @@ class PrintLayoutApp {
     imagesToRender.forEach(img => {
       const thumb = document.createElement('div');
       thumb.className = 'pl-thumb';
-      
-      if (step === 2) {
-        if (this.selectedPhotos.has(img.id)) {
-          thumb.classList.add('selected');
-          const badge = document.createElement('div');
-          badge.className = 'pl-thumb-badge';
-          badge.textContent = Array.from(this.selectedPhotos).indexOf(img.id) + 1;
-          thumb.appendChild(badge);
-        }
-      } else {
-        if (img.id === this.selectedImageId) thumb.classList.add('selected');
-        if (usedIds.has(img.id)) thumb.classList.add('used');
-      }
+      thumb.dataset.id = img.id;
 
       const srcUrl = img.objectUrl || img.url;
       const imgName = img.name || img.id;
@@ -1223,12 +1211,18 @@ class PrintLayoutApp {
           if (this.selectedPhotos.has(img.id)) {
             this.selectedPhotos.delete(img.id);
           } else {
+            const template = ALL_TEMPLATES[this.currentTemplate];
+            const maxSlots = template ? template.slots.length : 0;
+            if (maxSlots > 0 && this.selectedPhotos.size >= maxSlots) {
+              alert(`Bạn chỉ được chọn tối đa ${maxSlots} ảnh cho khung này.`);
+              return;
+            }
             this.selectedPhotos.add(img.id);
           }
-          this._renderImageList();
+          this._updateImageListUI();
         } else {
           this.selectedImageId = img.id;
-          this._renderImageList();
+          this._updateImageListUI();
           // If a slot is selected, assign image to it
           if (this.selectedSlotIndex >= 0) {
             this._assignToSlot(this.selectedSlotIndex, img.id);
@@ -1237,6 +1231,36 @@ class PrintLayoutApp {
       });
 
       this.imageList.appendChild(thumb);
+    });
+
+    this._updateImageListUI();
+  }
+
+  _updateImageListUI() {
+    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
+    
+    Array.from(this.imageList.children).forEach(thumb => {
+      const imgId = thumb.dataset.id;
+      if (!imgId) return;
+      
+      // Reset classes & badges
+      thumb.className = 'pl-thumb';
+      const existingBadge = thumb.querySelector('.pl-thumb-badge');
+      if (existingBadge) existingBadge.remove();
+
+      if (step === 2) {
+        if (this.selectedPhotos.has(imgId)) {
+          thumb.classList.add('selected');
+          const badge = document.createElement('div');
+          badge.className = 'pl-thumb-badge';
+          badge.textContent = Array.from(this.selectedPhotos).indexOf(imgId) + 1;
+          thumb.appendChild(badge);
+        }
+      } else {
+        if (imgId === this.selectedImageId) thumb.classList.add('selected');
+        if (usedIds.has(imgId)) thumb.classList.add('used');
+      }
     });
   }
 

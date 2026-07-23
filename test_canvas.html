@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="c" width="400" height="400"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+// Image is 200x100
+const img = new Image();
+img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="100"%3E%3Crect width="200" height="100" fill="red"/%3E%3Ctext x="100" y="50" fill="white" font-size="20" text-anchor="middle"%3ETOP%3C/text%3E%3C/svg%3E';
+
+img.onload = () => {
+    // We want to test slotData.rotation = 90
+    // panX = 10 (moved right by 10)
+    // panY = 0
+    let panX = 100; // Large to see
+    let panY = 0;
+    
+    // slot is 200x200
+    let drawW = 100; // img height rotated
+    let drawH = 200; // img width rotated
+    
+    let drawX = -drawW / 2 + panX;
+    let drawY = -drawH / 2 + panY;
+    
+    ctx.translate(200, 200); // slot cx, cy
+    
+    ctx.rotate(90 * Math.PI / 180);
+    
+    // drawImage(img, X, Y, W, H)
+    ctx.drawImage(img, drawY, -drawX - drawW, drawH, drawW);
+};
+</script>
+</body>
+</html>

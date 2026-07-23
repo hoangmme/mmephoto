@@ -712,7 +712,7 @@ body {
     padding: 10px 0;
   }
   .pl-slide {
-    height: min(calc(100vh - 350px), calc(100vw * 1.418));
+    height: min(calc(100vh - 350px), calc(100vw * 1.418)) !important;
   }
   .pl-image-list {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
