@@ -347,6 +347,11 @@ _updateUIForRoom() {
     
     if (stepFooter) stepFooter.style.display = 'flex';
     
+    const btnQueue = document.getElementById('btnQueueManager');
+    if (btnQueue) btnQueue.style.display = isStaffMode ? 'inline-flex' : 'none';
+    const btnBuilder = document.getElementById('btnBuilder');
+    if (btnBuilder) btnBuilder.style.display = isStaffMode ? 'inline-flex' : 'none';
+
     const roomData = this.rooms[this.activeRoom];
     const step = roomData.step || 1;
     this.images = roomData.images;
@@ -566,11 +571,12 @@ _bindEvents() {
         btnRoleSwap.style.borderColor = isStaffMode ? 'var(--pl-accent)' : 'var(--pl-border)';
         btnRoleSwap.style.color = isStaffMode ? 'var(--pl-accent)' : 'inherit';
         
-        // Toggle Queue button
         const btnQueue = document.getElementById('btnQueueManager');
         if (btnQueue) btnQueue.style.display = isStaffMode ? 'inline-flex' : 'none';
         
-        // Refresh UI
+        const btnBuilder = document.getElementById('btnBuilder');
+        if (btnBuilder) btnBuilder.style.display = isStaffMode ? 'inline-flex' : 'none';
+        
         if (this.activeRoom) {
           this._updateUIForRoom();
         }

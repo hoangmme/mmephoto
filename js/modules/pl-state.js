@@ -109,10 +109,11 @@ _initSSE(branch) {
               if (data.slots && data.slots.length > 0) this.slots = data.slots;
               if (data.selectedImages) this.selectedPhotos = new Set(data.selectedImages);
               
-              if (templateChanged) this._loadTemplateImages();
-              this._updateUIForRoom();
-              this._renderCanvas();
-              this._renderTabs();
+              if (templateChanged) {
+                this._loadTemplateImages();
+                this._updateUIForRoom();
+                this._renderCanvas();
+              }
             }
           }
         }
