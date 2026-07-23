@@ -467,9 +467,13 @@ class PrintLayoutApp {
       } else if (step === 4) {
         instructionText.textContent = isStaffMode ? '✨ Vui lòng kiểm tra lại bố cục, tải ảnh layout và nhận khách tiếp theo.' : '✨ Xin chúc mừng bạn đã hoàn thành, xin vui lòng đợi nhân viên kiểm tra và in ảnh nhé';
         
-        // Force display block for swiper area and canvas
+        // Force display block for canvas area and hide swiper
         const swiperArea = document.getElementById('mainSwiperArea');
-        if (swiperArea) swiperArea.style.display = 'block';
+        if (swiperArea) swiperArea.style.display = 'none';
+        
+        const canvasContainer = document.getElementById('canvasContainer');
+        if (canvasContainer) canvasContainer.style.display = 'flex';
+        
         if (this.canvas) {
             this.canvas.style.display = 'block';
             this.canvas.style.opacity = '1';
