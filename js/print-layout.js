@@ -763,7 +763,26 @@ class PrintLayoutApp {
         if (this.currentTemplate !== k) {
            this._selectSlide(k);
         } else {
-           const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+           
+    
+    let step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    // SAFEGUARD: If step is 4, but we have NO images in slots, we must be missing data. Revert to step 2 or 1.
+    if (step === 4 && (!this.slots || !this.slots.some(s => s.imageId))) {
+        console.warn("Safeguard triggered: step 4 but no slots filled! Reverting to step 1.");
+        step = 1;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 1;
+    }
+    
+    // SAFEGUARD 2: If step is 1, but we have images and we are supposed to be at step 4
+    if (step === 1 && this.slots && this.slots.some(s => s.imageId)) {
+        console.warn("Safeguard triggered: step 1 but slots are filled! Bumping to 4.");
+        step = 4;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 4;
+    }
+    
+    console.log("Updating UI for step:", step, "Room:", this.activeRoom);
+
            const hasSession = this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].session;
            if (step === 1 && hasSession) {
              this._setStep(this.activeRoom, 2);
@@ -1037,7 +1056,26 @@ class PrintLayoutApp {
     // Canvas drag for pan
     let isDragging = false, dragStartX, dragStartY, dragSlot;
     this.canvas.addEventListener('mousedown', (e) => {
-      const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+      
+    
+    let step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    // SAFEGUARD: If step is 4, but we have NO images in slots, we must be missing data. Revert to step 2 or 1.
+    if (step === 4 && (!this.slots || !this.slots.some(s => s.imageId))) {
+        console.warn("Safeguard triggered: step 4 but no slots filled! Reverting to step 1.");
+        step = 1;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 1;
+    }
+    
+    // SAFEGUARD 2: If step is 1, but we have images and we are supposed to be at step 4
+    if (step === 1 && this.slots && this.slots.some(s => s.imageId)) {
+        console.warn("Safeguard triggered: step 1 but slots are filled! Bumping to 4.");
+        step = 4;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 4;
+    }
+    
+    console.log("Updating UI for step:", step, "Room:", this.activeRoom);
+
       if (step === 1 || step === 4) return;
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];
@@ -1077,7 +1115,26 @@ class PrintLayoutApp {
     let initialSlotZoom = 1.0, initialSlotRot = 0;
 
     this.canvas.addEventListener('touchstart', (e) => {
-      const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+      
+    
+    let step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    // SAFEGUARD: If step is 4, but we have NO images in slots, we must be missing data. Revert to step 2 or 1.
+    if (step === 4 && (!this.slots || !this.slots.some(s => s.imageId))) {
+        console.warn("Safeguard triggered: step 4 but no slots filled! Reverting to step 1.");
+        step = 1;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 1;
+    }
+    
+    // SAFEGUARD 2: If step is 1, but we have images and we are supposed to be at step 4
+    if (step === 1 && this.slots && this.slots.some(s => s.imageId)) {
+        console.warn("Safeguard triggered: step 1 but slots are filled! Bumping to 4.");
+        step = 4;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 4;
+    }
+    
+    console.log("Updating UI for step:", step, "Room:", this.activeRoom);
+
       if (step === 1 || step === 4) return;
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];
@@ -1136,7 +1193,26 @@ class PrintLayoutApp {
 
     // Mouse wheel zoom support for desktop testing/usage
     this.canvas.addEventListener('wheel', (e) => {
-      const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+      
+    
+    let step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    // SAFEGUARD: If step is 4, but we have NO images in slots, we must be missing data. Revert to step 2 or 1.
+    if (step === 4 && (!this.slots || !this.slots.some(s => s.imageId))) {
+        console.warn("Safeguard triggered: step 4 but no slots filled! Reverting to step 1.");
+        step = 1;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 1;
+    }
+    
+    // SAFEGUARD 2: If step is 1, but we have images and we are supposed to be at step 4
+    if (step === 1 && this.slots && this.slots.some(s => s.imageId)) {
+        console.warn("Safeguard triggered: step 1 but slots are filled! Bumping to 4.");
+        step = 4;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 4;
+    }
+    
+    console.log("Updating UI for step:", step, "Room:", this.activeRoom);
+
       if (step === 1 || step === 4) return;
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];
@@ -1335,7 +1411,26 @@ class PrintLayoutApp {
     this._loadTemplateImages();
 
     const oldSlots = [...(this.slots || [])];
-    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    
+    let step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    // SAFEGUARD: If step is 4, but we have NO images in slots, we must be missing data. Revert to step 2 or 1.
+    if (step === 4 && (!this.slots || !this.slots.some(s => s.imageId))) {
+        console.warn("Safeguard triggered: step 4 but no slots filled! Reverting to step 1.");
+        step = 1;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 1;
+    }
+    
+    // SAFEGUARD 2: If step is 1, but we have images and we are supposed to be at step 4
+    if (step === 1 && this.slots && this.slots.some(s => s.imageId)) {
+        console.warn("Safeguard triggered: step 1 but slots are filled! Bumping to 4.");
+        step = 4;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 4;
+    }
+    
+    console.log("Updating UI for step:", step, "Room:", this.activeRoom);
+
     
     this.slots = tmpl.slots.map((s, i) => ({
       imageId: (oldSlots[i] && oldSlots[i].imageId) ? oldSlots[i].imageId : null,
@@ -1359,7 +1454,26 @@ class PrintLayoutApp {
   _renderImageList() {
     this.imageList.innerHTML = '';
     const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
-    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    
+    let step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    // SAFEGUARD: If step is 4, but we have NO images in slots, we must be missing data. Revert to step 2 or 1.
+    if (step === 4 && (!this.slots || !this.slots.some(s => s.imageId))) {
+        console.warn("Safeguard triggered: step 4 but no slots filled! Reverting to step 1.");
+        step = 1;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 1;
+    }
+    
+    // SAFEGUARD 2: If step is 1, but we have images and we are supposed to be at step 4
+    if (step === 1 && this.slots && this.slots.some(s => s.imageId)) {
+        console.warn("Safeguard triggered: step 1 but slots are filled! Bumping to 4.");
+        step = 4;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 4;
+    }
+    
+    console.log("Updating UI for step:", step, "Room:", this.activeRoom);
+
 
     let imagesToRender = this.images;
     if (step === 3 && this.selectedPhotos.size > 0) {
@@ -1413,7 +1527,26 @@ class PrintLayoutApp {
   }
 
   _updateImageListUI() {
-    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    
+    let step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    // SAFEGUARD: If step is 4, but we have NO images in slots, we must be missing data. Revert to step 2 or 1.
+    if (step === 4 && (!this.slots || !this.slots.some(s => s.imageId))) {
+        console.warn("Safeguard triggered: step 4 but no slots filled! Reverting to step 1.");
+        step = 1;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 1;
+    }
+    
+    // SAFEGUARD 2: If step is 1, but we have images and we are supposed to be at step 4
+    if (step === 1 && this.slots && this.slots.some(s => s.imageId)) {
+        console.warn("Safeguard triggered: step 1 but slots are filled! Bumping to 4.");
+        step = 4;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 4;
+    }
+    
+    console.log("Updating UI for step:", step, "Room:", this.activeRoom);
+
     const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
     
     Array.from(this.imageList.children).forEach(thumb => {
@@ -1442,7 +1575,26 @@ class PrintLayoutApp {
 
   // ── Canvas Click → Select Slot ──
   _onCanvasClick(e) {
-    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    
+    let step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    // SAFEGUARD: If step is 4, but we have NO images in slots, we must be missing data. Revert to step 2 or 1.
+    if (step === 4 && (!this.slots || !this.slots.some(s => s.imageId))) {
+        console.warn("Safeguard triggered: step 4 but no slots filled! Reverting to step 1.");
+        step = 1;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 1;
+    }
+    
+    // SAFEGUARD 2: If step is 1, but we have images and we are supposed to be at step 4
+    if (step === 1 && this.slots && this.slots.some(s => s.imageId)) {
+        console.warn("Safeguard triggered: step 1 but slots are filled! Bumping to 4.");
+        step = 4;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 4;
+    }
+    
+    console.log("Updating UI for step:", step, "Room:", this.activeRoom);
+
     if (step === 1 || step === 4) return;
 
     const rect = this.canvas.getBoundingClientRect();
@@ -1504,7 +1656,26 @@ class PrintLayoutApp {
 
   // ── Auto Fill ──
   _autoFill(skipSync = false) {
-    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    
+    let step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    // SAFEGUARD: If step is 4, but we have NO images in slots, we must be missing data. Revert to step 2 or 1.
+    if (step === 4 && (!this.slots || !this.slots.some(s => s.imageId))) {
+        console.warn("Safeguard triggered: step 4 but no slots filled! Reverting to step 1.");
+        step = 1;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 1;
+    }
+    
+    // SAFEGUARD 2: If step is 1, but we have images and we are supposed to be at step 4
+    if (step === 1 && this.slots && this.slots.some(s => s.imageId)) {
+        console.warn("Safeguard triggered: step 1 but slots are filled! Bumping to 4.");
+        step = 4;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 4;
+    }
+    
+    console.log("Updating UI for step:", step, "Room:", this.activeRoom);
+
     const sourceImages = (step >= 2 && this.selectedPhotos && this.selectedPhotos.size > 0)
       ? this.images.filter(img => this.selectedPhotos.has(img.id))
       : this.images;
@@ -1782,7 +1953,26 @@ class PrintLayoutApp {
     canvas.height = h;
     const ctx = canvas.getContext('2d');
 
-    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    
+    let step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    
+    // SAFEGUARD: If step is 4, but we have NO images in slots, we must be missing data. Revert to step 2 or 1.
+    if (step === 4 && (!this.slots || !this.slots.some(s => s.imageId))) {
+        console.warn("Safeguard triggered: step 4 but no slots filled! Reverting to step 1.");
+        step = 1;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 1;
+    }
+    
+    // SAFEGUARD 2: If step is 1, but we have images and we are supposed to be at step 4
+    if (step === 1 && this.slots && this.slots.some(s => s.imageId)) {
+        console.warn("Safeguard triggered: step 1 but slots are filled! Bumping to 4.");
+        step = 4;
+        if (this.activeRoom && this.rooms[this.activeRoom]) this.rooms[this.activeRoom].step = 4;
+    }
+    
+    console.log("Updating UI for step:", step, "Room:", this.activeRoom);
+
 
     // Layer 1 (Background)
     ctx.fillStyle = tmpl.background_color || '#ffffff';
