@@ -160,6 +160,20 @@ class PrintLayoutApp {
             if (this.activeRoom === room) Object.assign(this.rooms[room], {hasNew: false}); // ensure no weirdness
             if (this.activeRoom === room) this._updateActiveSession(room, true); // update badge only
         }
+      } else if (data.type === 'sync') {
+        const room = data.room;
+        if (this.rooms[room] && this.rooms[room].session === data.session) {
+          if (data.step !== undefined) this.rooms[room].step = data.step;
+          if (data.currentTemplate !== undefined) this.currentTemplate = data.currentTemplate;
+          if (data.slots && data.slots.length > 0) this.slots = data.slots;
+          if (data.selectedImages) this.selectedPhotos = new Set(data.selectedImages);
+          
+          if (this.activeRoom === room) {
+             this._updateUIForRoom();
+             this._renderCanvas();
+             this._renderTabs();
+          }
+        }
       } else if (data.type === 'session_finished') {
         const room = data.room;
         if (this.rooms[room]) {
@@ -193,18 +207,30 @@ class PrintLayoutApp {
       const active = roomData.queue[0];
       if (roomData.session !== active.id && !onlyBadge) {
         roomData.session = active.id;
-        roomData.step = 1;
+        roomData.step = active.step || 1;
         roomData.timerStarted = false;
         roomData.lastImageTime = Date.now();
-        this.selectedPhotos.clear();
+        
+        if (active.currentTemplate) this.currentTemplate = active.currentTemplate;
+        if (active.slots) this.slots = active.slots;
+        if (active.selectedImages) {
+          this.selectedPhotos = new Set(active.selectedImages);
+        } else {
+          this.selectedPhotos.clear();
+        }
+        
         roomData.images = active.images
           .filter(url => !url.includes('00_frame.jpg'))
           .map(url => {
           const id = 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-          this._preloadImage(id, url).then(() => this._renderCanvas());
+          this._preloadImage(id, url).then(() => {
+            if (this.activeRoom === room) this._renderCanvas();
+          });
           return { id, url, name: url.split('/').pop() };
         });
-        if (roomData.images.length > 0) {
+        
+        // Only set step to 1 if we don't have a saved step from server
+        if (roomData.images.length > 0 && !active.step) {
           this._setStep(room, 1);
         }
       }
