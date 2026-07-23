@@ -396,7 +396,13 @@ app.post('/api/finish-session/:branch/:room/:session', (req, res) => {
   const { branch, room, session } = req.params;
   
   if (roomState[branch] && roomState[branch][room]) {
-    roomState[branch][room].sessions = roomState[branch][room].sessions.filter(s => s.id !== session);
+    // Keep session so staff can still see it. Just limit array size to 30.
+    const sess = roomState[branch][room].sessions.find(s => s.id === session);
+    if (sess) sess.finished = true;
+    
+    if (roomState[branch][room].sessions.length > 30) {
+      roomState[branch][room].sessions = roomState[branch][room].sessions.slice(-30);
+    }
     saveRoomState();
   }
   

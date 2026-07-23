@@ -114,26 +114,24 @@ class StaffView {
       try {
         const data = JSON.parse(e.data);
         if (data.type === 'init') {
-           const room = data.room;
-           if (!this.rooms[room]) this.rooms[room] = {};
-           
+           const roomName = data.room;
            if (data.sessions && data.sessions.length > 0) {
-             const latestSession = data.sessions[data.sessions.length - 1];
-             this.rooms[room] = {
-               session: latestSession.id,
-               step: latestSession.step || 1,
-               currentTemplate: latestSession.currentTemplate || null,
-               selectedImages: latestSession.selectedImages || [],
-               slots: latestSession.slots || [],
-               images: latestSession.images || []
-             };
+             data.sessions.forEach(sess => {
+               this.sessions[sess.id] = {
+                 room: roomName,
+                 session: sess.id,
+                 step: sess.step || 1,
+                 currentTemplate: sess.currentTemplate || null,
+                 selectedImages: sess.selectedImages || [],
+                 slots: sess.slots || [],
+                 images: sess.images || []
+               };
+             });
            }
            this._renderGrid();
         } else if (data.type === 'sync') {
-           const room = data.room;
-           if (!this.rooms[room]) this.rooms[room] = {};
-           
-           this.rooms[room] = {
+           this.sessions[data.session] = {
+             room: data.room,
              session: data.session,
              step: data.step || 1,
              currentTemplate: data.currentTemplate || null,
@@ -143,10 +141,8 @@ class StaffView {
            };
            this._renderGrid();
         } else if (data.type === 'session_finished') {
-           if (this.rooms[data.room] && this.rooms[data.room].session === data.session) {
-             this.rooms[data.room].step = 1;
-             this._renderGrid();
-           }
+           // We no longer hide the session when it finishes.
+           // It stays on screen so staff can download.
         }
       } catch (err) {
         console.error('SSE Error:', err);
@@ -160,13 +156,14 @@ class StaffView {
     
     let hasCompletedRooms = false;
 
-    // Filter only rooms that are at step 4 or have enough data
-    Object.keys(this.rooms).forEach(roomName => {
-      const room = this.rooms[roomName];
+    // Filter only sessions that are at step 4
+    Object.keys(this.sessions).forEach(sessionId => {
+      const room = this.sessions[sessionId];
       if (!room.session) return;
       if (room.step < 4) return; // Only show completed sessions (Step 4)
       if (!room.currentTemplate) return;
 
+      const roomName = room.room;
       hasCompletedRooms = true;
       const tId = room.currentTemplate;
       const t = ALL_TEMPLATES[tId];
