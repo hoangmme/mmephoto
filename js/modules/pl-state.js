@@ -1,3 +1,5 @@
+import { ALL_TEMPLATES, customTemplates, isStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from "./pl-globals.js";
+
 export const StateMixin = {
 _initSSE(branch) {
     const branchNameEl = document.getElementById('headerBranchName');

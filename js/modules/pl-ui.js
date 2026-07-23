@@ -1,3 +1,5 @@
+import { ALL_TEMPLATES, customTemplates, isStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from "./pl-globals.js";
+
 export const UIMixin = {
 _initLogin() {
     const branchId = localStorage.getItem('branchId');
