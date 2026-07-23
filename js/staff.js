@@ -11,6 +11,7 @@ class StaffView {
     this.password = localStorage.getItem('branchPass') || localStorage.getItem('pl_password') || '';
     
     this.rooms = {};
+    this.sessions = {};
     this.eventSource = null;
     this.imageObjects = {}; // Cache images
 
@@ -207,8 +208,10 @@ class StaffView {
     const ctx = canvas.getContext('2d');
     
     // Fill background
-    ctx.fillStyle = templateData.background_color || '#FFFFFF';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (templateData.background_color) {
+      ctx.fillStyle = templateData.background_color;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
     if (templateData.background_image) {
       const bgImg = await this._loadImage(templateData.background_image);
