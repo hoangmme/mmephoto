@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="print-layout.css?v=64">
+  <link rel="stylesheet" href="print-layout.css?v=65">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
 </head>
@@ -21,16 +21,12 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
         </button>
         <!-- Nút quay về đã bị xóa theo yêu cầu -->
-        <div class="pl-logo" style="margin-left: 10px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="url(#plGrad)" stroke-width="2"/>
-            <defs><linearGradient id="plGrad" x1="0" y1="0" x2="24" y2="24">
-              <stop stop-color="#38bdf8"/><stop offset="1" stop-color="#818cf8"/>
-            </linearGradient></defs>
-          </svg>
-          <span>Print <em>Layout</em></span>
-          <span id="headerBranchName" style="margin-left:15px; padding-left:15px; border-left:1px solid var(--pl-border); color:#a1a1aa; font-weight:500; font-size:14px; display:none;"></span>
-          <span id="headerSessionName" style="margin-left:15px; padding-left:15px; border-left:1px solid var(--pl-border); color:var(--pl-accent); font-weight:600; font-size:14px; display:none;"></span>
+        <div class="pl-logo" style="margin-left: 10px; display: flex; align-items: center; gap: 12px;">
+          <div class="pl-logo-badge" style="background: var(--pl-accent, #4f3219); padding: 6px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(79, 50, 25, 0.25);">
+            <img src="https://llphotobooth.vn/uploads/images/logo.webp" alt="LL Photobooth" style="height: 26px; width: auto; object-fit: contain; display: block;" />
+          </div>
+          <span id="headerBranchName" style="margin-left:10px; padding-left:12px; border-left:1px solid var(--pl-border); color:#7a6858; font-weight:500; font-size:14px; display:none;"></span>
+          <span id="headerSessionName" style="margin-left:10px; padding-left:12px; border-left:1px solid var(--pl-border); color:var(--pl-accent); font-weight:600; font-size:14px; display:none;"></span>
         </div>
       </div>
       <div class="pl-header-center">
@@ -160,7 +156,7 @@
 
   <!-- Core Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=64"></script>
+  <script type="module" src="js/print-layout.js?v=65"></script>
 
   <!-- LOGIN OVERLAY -->
   <div id="loginOverlay" style="position:fixed; inset:0; background:var(--pl-bg); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column;">
