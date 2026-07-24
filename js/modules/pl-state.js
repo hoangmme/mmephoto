@@ -45,6 +45,7 @@ _initSSE(branch) {
           if (this.rooms[data.room]) {
             this.rooms[data.room].activeSessionId = data.session;
             this._updateActiveSession(data.room);
+            this._startStepTimer(data.room, this.rooms[data.room].step || 1);
             if (this.activeRoom === data.room) this._updateUIForRoom();
             if (this._renderQueueModal) this._renderQueueModal();
           }

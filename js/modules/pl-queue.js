@@ -117,7 +117,13 @@ export const QueueMixin = {
     try {
       const res = await fetch(`/api/set-active-session/${encodeURIComponent(this.branch)}/${encodeURIComponent(this.activeRoom)}/${encodeURIComponent(sessionId)}`, { method: 'POST' });
       if (res.ok) {
-        // Will receive active_session_changed via SSE
+        if (this.rooms[this.activeRoom]) {
+          const roomData = this.rooms[this.activeRoom];
+          roomData.activeSessionId = sessionId;
+          this._updateActiveSession(this.activeRoom);
+          this._startStepTimer(this.activeRoom, roomData.step || 1);
+          if (this._renderQueueModal) this._renderQueueModal();
+        }
       }
     } catch (err) {
       console.error('Failed to set active session:', err);
