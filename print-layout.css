@@ -52,6 +52,11 @@ body {
 }
 
 .pl-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* Dedicated User Header */
 .pl-user-header {
   background: var(--pl-accent, #4f3219);
