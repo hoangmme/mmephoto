@@ -576,6 +576,12 @@ export const UIMixin = {
   _setStep(room, step, skipSync = false) {
     const roomData = this.rooms[room];
     if (!roomData) return;
+    
+    // Automatically fill frame when transitioning from step 2 to step 3 by the user
+    if (roomData.step === 2 && step === 3 && !isStaffMode) {
+      if (this._applySelectionToSlots) this._applySelectionToSlots();
+    }
+
     roomData.step = step;
     this._startStepTimer(room, step);
     if (this.activeRoom === room) {
@@ -719,19 +725,6 @@ export const UIMixin = {
         if (cur === 1) {
           this._setStep(this.activeRoom, 2);
         } else if (cur === 2) {
-          if (this.selectedPhotos.size === 0) {
-            if (this._autoFill) this._autoFill(true);
-          } else {
-            const selectedArr = Array.from(this.selectedPhotos);
-
-            // Clear all slots first
-            this.slots.forEach(s => s.imageId = null);
-
-            // Only assign user-SELECTED photos — never add unselected gallery photos
-            for (let i = 0; i < selectedArr.length && i < this.slots.length; i++) {
-              this._assignToSlot(i, selectedArr[i], true);
-            }
-          }
           this._setStep(this.activeRoom, 3);
         } else if (cur === 3) {
           await this._uploadFinalFrame();
