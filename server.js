@@ -664,7 +664,7 @@ app.get('/api/stream/:branch', (req, res) => {
       type: 'init', 
       room: room,
       activeSessionId: state.activeSessionId,
-      sessions: (state.sessions || []).filter(s => !s.finished)
+      sessions: state.sessions || []
     })}\n\n`);
   });
   
@@ -699,7 +699,7 @@ app.get('/api/init-state/:branch', (req, res) => {
     roomsData.push({
       room: room,
       activeSessionId: state.activeSessionId,
-      sessions: (state.sessions || []).filter(s => !s.finished)
+      sessions: state.sessions || []
     });
   });
   
