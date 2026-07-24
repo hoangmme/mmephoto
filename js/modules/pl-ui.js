@@ -400,6 +400,7 @@ _updateUIForRoom() {
         const sNum = parseInt(item.dataset.step);
         item.classList.toggle('active', sNum === step);
         item.classList.toggle('completed', sNum < step);
+        item.style.cursor = isStaffMode ? 'pointer' : 'default';
       });
     }
 
@@ -700,21 +701,11 @@ _bindEvents() {
     const stepBanner = document.getElementById('stepBanner');
     if (stepBanner) {
       stepBanner.querySelectorAll('.pl-step-item').forEach(item => {
-        item.style.cursor = 'pointer';
         item.addEventListener('click', () => {
+          if (!isStaffMode) return; // Disallow clicking step items for normal users
           if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) return;
-          const roomData = this.rooms[this.activeRoom];
-          const cur = roomData.step || 1;
           const targetStep = parseInt(item.dataset.step);
-
           if (!targetStep) return;
-
-          if (!isStaffMode) {
-            if (targetStep < cur) {
-              alert('Khách hàng không thể quay lại bước trước!');
-              return;
-            }
-          }
 
           if (targetStep >= 1 && targetStep <= 4) {
             this._setStep(this.activeRoom, targetStep);
