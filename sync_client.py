@@ -104,79 +104,134 @@ print(f"==================================================\n")
 
 current_session = {}
 
+def wait_for_file_stable(file_path, stable_seconds=2.0, poll_interval=0.5, max_wait=30):
+    """Wait until file size stops changing for stable_seconds.
+    Returns True if file is stable, False if timed out or file disappeared."""
+    filename = os.path.basename(file_path)
+    start = time.time()
+    last_size = -1
+    stable_since = None
+
+    while time.time() - start < max_wait:
+        try:
+            if not os.path.exists(file_path):
+                return False
+            current_size = os.path.getsize(file_path)
+        except OSError:
+            time.sleep(poll_interval)
+            continue
+
+        if current_size == last_size and current_size > 0:
+            if stable_since is None:
+                stable_since = time.time()
+            elif time.time() - stable_since >= stable_seconds:
+                return True
+        else:
+            stable_since = None
+            last_size = current_size
+
+        time.sleep(poll_interval)
+
+    print(f"    [CẢNH BÁO] File {filename} chờ quá {max_wait}s mà chưa ổn định.")
+    return False
+
+
 def process_and_upload(file_path, room_id, session_id):
     filename = os.path.basename(file_path)
-    print(f"[>] Đang xử lý: {filename} (Phòng: {room_id}, Session: {session_id})")
-    
+    print(f"[>] Phát hiện file mới: {filename} — đang chờ ghi xong...")
+
+    # ── BƯỚC 1: Chờ file ghi xong (File Stability Check) ──
+    if not wait_for_file_stable(file_path):
+        print(f"    [LỖI] File {filename} không ổn định hoặc đã biến mất. Bỏ qua.")
+        return
+
+    file_size_kb = os.path.getsize(file_path) / 1024
+    print(f"    [OK] File ổn định ({file_size_kb:.0f} KB). Bắt đầu xử lý...")
+
+    # ── BƯỚC 2: Đọc & nén ảnh thành WebP (retry nếu lỗi) ──
+    max_retries = 5
+    img = None
+    for attempt in range(max_retries):
+        try:
+            img = Image.open(file_path)
+            img.load()  # Force đọc toàn bộ pixel data để phát hiện file bị cắt
+            break
+        except (PermissionError, OSError, Exception) as e:
+            if attempt < max_retries - 1:
+                print(f"    [Retry {attempt+1}/{max_retries}] Chưa đọc được: {e}")
+                time.sleep(1)
+            else:
+                print(f"    [LỖI] Không thể đọc file {filename} sau {max_retries} lần: {e}")
+                return
+
+    if img is None:
+        return
+
     try:
-        # Chờ file được ghi xong (tránh lỗi Permission denied do phần mềm camera đang giữ file)
-        max_retries = 20
-        img = None
-        for attempt in range(max_retries):
-            try:
-                # 1. Đọc và Nén ảnh thành WebP trên RAM (không ghi ra ổ cứng để tăng tốc)
-                img = Image.open(file_path)
-                break
-            except PermissionError:
-                if attempt < max_retries - 1:
-                    time.sleep(0.2)
-                else:
-                    print(f"    [LỖI] Không thể đọc file {filename} do đang bị khóa.")
-                    return
-        
-        if img is None:
-            return
-        
         # Resize nếu ảnh quá to
         if img.width > MAX_WIDTH:
             ratio = MAX_WIDTH / img.width
             new_height = int(img.height * ratio)
             img = img.resize((MAX_WIDTH, new_height), Image.Resampling.LANCZOS)
-        
+
         # Convert to RGB nếu cần
         if img.mode in ("RGBA", "P"):
             img = img.convert("RGB")
-            
+
         byte_arr = io.BytesIO()
         img.save(byte_arr, format='WEBP', quality=QUALITY)
         byte_arr.seek(0)
-        
-        # 2. Upload ngay lập tức lên VPS
+
+        webp_size_kb = byte_arr.getbuffer().nbytes / 1024
+        print(f"    [OK] Nén WebP thành công: {file_size_kb:.0f} KB → {webp_size_kb:.0f} KB")
+
+        # ── BƯỚC 3: Upload lên VPS (retry nếu lỗi mạng) ──
         upload_url = f"{SERVER_URL}/api/stream-upload/{BRANCH_ID}/{room_id}/{session_id}"
-        
+
         files = {
             'image': (f"{os.path.splitext(filename)[0]}.webp", byte_arr, 'image/webp')
         }
         headers = {}
         if PASSWORD:
             headers['Authorization'] = f"Bearer {PASSWORD}"
-        
-        print(f"    -> Đang upload WebP lên VPS...")
-        start_time = time.time()
-        response = requests.post(upload_url, files=files, headers=headers)
-        
-        if response.status_code == 200:
-            print(f"    [OK] Upload thành công ({time.time() - start_time:.2f}s)")
-            
-            # 3. Lưu bản nén WebP sang thư mục Archive
+
+        upload_success = False
+        for attempt in range(3):
+            try:
+                byte_arr.seek(0)
+                print(f"    -> Đang upload WebP lên VPS... (lần {attempt+1})")
+                start_time = time.time()
+                response = requests.post(upload_url, files=files, headers=headers, timeout=30)
+
+                if response.status_code == 200:
+                    print(f"    [OK] Upload thành công ({time.time() - start_time:.2f}s)")
+                    upload_success = True
+                    break
+                else:
+                    print(f"    [LỖI] Upload thất bại (HTTP {response.status_code}): {response.text}")
+            except requests.exceptions.RequestException as e:
+                print(f"    [LỖI] Lỗi mạng (lần {attempt+1}/3): {e}")
+                if attempt < 2:
+                    time.sleep(2)
+
+        # ── BƯỚC 4: Lưu bản nén WebP sang Archive ──
+        if upload_success:
             try:
                 session_archive_dir = os.path.join(ARCHIVE_FOLDER, session_id)
                 if not os.path.exists(session_archive_dir):
                     os.makedirs(session_archive_dir)
-                
+
                 webp_filename = f"{os.path.splitext(filename)[0]}.webp"
                 dest_path = os.path.join(session_archive_dir, webp_filename)
-                
+
+                byte_arr.seek(0)
                 with open(dest_path, "wb") as f:
-                    f.write(byte_arr.getvalue())
-                    
+                    f.write(byte_arr.read())
+
                 print(f"    [OK] Đã lưu bản nén WebP vào: {dest_path}")
             except Exception as e:
                 print(f"    [CẢNH BÁO] Không thể lưu bản WebP {filename}: {str(e)}")
-                
-        else:
-            print(f"    [LỖI] Upload thất bại: {response.text}")
-            
+
     except Exception as e:
         print(f"    [LỖI] Xử lý file {filename} thất bại: {str(e)}")
 
