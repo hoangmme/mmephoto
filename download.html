@@ -101,6 +101,48 @@
       color: var(--text-muted);
       font-weight: 500;
     }
+    
+    /* Lightbox CSS */
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 20px;
+    }
+    .lightbox.active {
+      display: flex;
+    }
+    .lightbox img {
+      max-width: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+    .lightbox-controls {
+      display: flex;
+      gap: 15px;
+    }
+    .lightbox-btn {
+      padding: 12px 24px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .lightbox-btn.close {
+      background: #444;
+    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
@@ -123,7 +165,39 @@
     <div id="photoGrid" class="photo-grid"></div>
   </div>
 
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox">
+    <img id="lightboxImg" src="" alt="Zoomed Photo">
+    <div class="lightbox-controls">
+      <a id="lightboxDownload" href="" download class="lightbox-btn">Tải Xuống</a>
+      <button id="lightboxClose" class="lightbox-btn close">Đóng</button>
+    </div>
+  </div>
+
   <script>
+    // Lightbox Logic
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxDownload = document.getElementById('lightboxDownload');
+    const lightboxClose = document.getElementById('lightboxClose');
+
+    lightboxClose.addEventListener('click', () => {
+      lightbox.classList.remove('active');
+    });
+
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) {
+        lightbox.classList.remove('active');
+      }
+    });
+
+    function openLightbox(src, filename) {
+      lightboxImg.src = src;
+      lightboxDownload.href = src;
+      lightboxDownload.download = filename;
+      lightbox.classList.add('active');
+    }
+
     async function loadPhotos() {
       const params = new URLSearchParams(window.location.search);
       const branch = params.get('branch');
@@ -149,19 +223,19 @@
             data.images.forEach((imgUrl, i) => {
               const item = document.createElement('div');
               item.className = 'photo-item';
+              item.style.cursor = 'pointer'; // Make it look clickable
               
               const cacheBustUrl = imgUrl + '?v=' + Date.now();
               const img = document.createElement('img');
               img.src = cacheBustUrl;
               
-              const a = document.createElement('a');
-              a.className = 'download-btn single-download';
-              a.href = cacheBustUrl;
-              a.download = `LL_Photobooth_${session}_${i+1}`;
-              a.innerText = 'Tải Xuống';
+              const filename = `LL_Photobooth_${session}_${i+1}`;
+              
+              item.addEventListener('click', () => {
+                openLightbox(cacheBustUrl, filename);
+              });
               
               item.appendChild(img);
-              item.appendChild(a);
               grid.appendChild(item);
             });
 
