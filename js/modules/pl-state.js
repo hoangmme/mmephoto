@@ -195,7 +195,14 @@ _updateActiveSession(room, onlyBadge = false) {
         }
       }
       
-      roomData.timerStarted = false;
+      if (active) {
+        roomData.timerStarted = true;
+        if (!roomData.timerInterval && (roomData.step || 1) < 4) {
+          this._startStepTimer(room, roomData.step || 1);
+        }
+      } else {
+        roomData.timerStarted = false;
+      }
       roomData.lastImageTime = Date.now();
       
       if (!onlyBadge && active) {
@@ -311,26 +318,22 @@ _startStepTimer(room, step) {
     }
 
     roomData.timerInterval = setInterval(() => {
-      // In Staff Mode, timer does NOT count down and does not auto-advance steps!
-      if (isStaffMode) {
-        if (this.activeRoom === room) this._updateUIForRoom();
-        return;
-      }
-
       roomData.timeLeft--;
       if (roomData.timeLeft <= 0) {
         roomData.timeLeft = 0;
         roomData.timedOutSteps.add(step);
         clearInterval(roomData.timerInterval);
 
-        if (step === 1) {
-          this._setStep(room, 2);
-        } else if (step === 2) {
-          if (this._autoFill) this._autoFill();
-          this._setStep(room, 3);
-        } else if (step === 3) {
-          this._uploadFinalFrame();
-          this._setStep(room, 4);
+        if (!isStaffMode) {
+          if (step === 1) {
+            this._setStep(room, 2);
+          } else if (step === 2) {
+            if (this._autoFill) this._autoFill();
+            this._setStep(room, 3);
+          } else if (step === 3) {
+            this._uploadFinalFrame();
+            this._setStep(room, 4);
+          }
         }
       }
 

@@ -158,12 +158,6 @@ _initMainSwiper() {
       slide.addEventListener('click', () => {
         if (this.currentTemplate !== k) {
            this._selectSlide(k);
-        } else {
-           const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
-           const hasSession = this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].session;
-           if (step === 1 && hasSession) {
-             this._setStep(this.activeRoom, 2);
-           }
         }
       });
       
@@ -504,16 +498,16 @@ _updateUIForRoom() {
     const activeTimeStr = `(${m}:${s})`;
 
     if (t1) {
-      t1.textContent = (!isStaffMode && step === 1 && roomData.timerStarted) ? activeTimeStr : '(01:00)';
-      t1.style.color = (!isStaffMode && step === 1 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
+      t1.textContent = (step === 1 && roomData.timerStarted) ? activeTimeStr : '(01:00)';
+      t1.style.color = (step === 1 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
     }
     if (t2) {
-      t2.textContent = (!isStaffMode && step === 2 && roomData.timerStarted) ? activeTimeStr : '(03:00)';
-      t2.style.color = (!isStaffMode && step === 2 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
+      t2.textContent = (step === 2 && roomData.timerStarted) ? activeTimeStr : '(03:00)';
+      t2.style.color = (step === 2 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
     }
     if (t3) {
-      t3.textContent = (!isStaffMode && step === 3 && roomData.timerStarted) ? activeTimeStr : '(03:00)';
-      t3.style.color = (!isStaffMode && step === 3 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
+      t3.textContent = (step === 3 && roomData.timerStarted) ? activeTimeStr : '(03:00)';
+      t3.style.color = (step === 3 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
     }
 
     if (lockOverlay) {
