@@ -504,8 +504,7 @@ export const UIMixin = {
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 3) {
         instructionText.textContent = '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
-        btnStepPrev.style.display = isStaffMode ? 'inline-flex' : 'none';
-        btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B2';
+        btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = isStaffMode ? '✅ Hoàn Tất (Gửi cho User)' : '✅ Hoàn Tất (Gửi cho Nhân Viên)';
         if (qrOverlay) qrOverlay.style.display = 'none';
@@ -523,8 +522,7 @@ export const UIMixin = {
           setTimeout(() => this._renderCanvas(), 500); // force draw after 500ms
         }
 
-        btnStepPrev.style.display = isStaffMode ? 'inline-flex' : 'none';
-        btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B3';
+        btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'none';
         if (qrOverlay) qrOverlay.style.display = isStaffMode ? 'none' : 'block';
       }
