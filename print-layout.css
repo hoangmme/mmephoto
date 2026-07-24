@@ -3,22 +3,22 @@
    ============================================ */
 
 :root {
-  --pl-bg: #ffffff;
-  --pl-bg-panel: #fafafa;
-  --pl-bg-section: #f4f4f5;
-  --pl-bg-hover: #e4e4e7;
-  --pl-border: #e4e4e7;
-  --pl-border-light: #d4d4d8;
-  --pl-text: #18181b;
-  --pl-text-secondary: #3f3f46;
-  --pl-text-muted: #71717a;
+  --pl-bg: #f8f5ee;
+  --pl-bg-panel: #eee8dc;
+  --pl-bg-section: #e3d9c8;
+  --pl-bg-hover: #d9ccb9;
+  --pl-border: #dcd2c0;
+  --pl-border-light: #e8dfcf;
+  --pl-text: #2b1b10;
+  --pl-text-secondary: #4a3424;
+  --pl-text-muted: #7c6452;
   --pl-accent: #4f3219;
   --pl-accent2: #8b5e34;
   --pl-font: 'Inter', system-ui, -apple-system, sans-serif;
   --pl-radius: 8px;
   --pl-radius-sm: 6px;
   --pl-transition: 0.15s ease;
-  --pl-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --pl-shadow: 0 4px 24px rgba(79, 50, 25, 0.15);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
