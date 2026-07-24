@@ -450,8 +450,7 @@ _updateUIForRoom() {
         const tmpl = ALL_TEMPLATES[this.currentTemplate];
         const maxSlots = tmpl ? tmpl.slots.length : (this.slots ? this.slots.length : 0);
         instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
-        btnStepPrev.style.display = isStaffMode ? 'inline-flex' : 'none';
-        btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B1';
+        btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp (B3) <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
         if (btnNext) btnNext.style.display = 'none';
@@ -704,10 +703,9 @@ _bindEvents() {
           if (!targetStep) return;
 
           if (targetStep >= 1 && targetStep <= 4) {
-            // Staff clicking Step 1 forces customer back to Step 1 (skipSync = false)
-            // Staff clicking Step 2, 3, 4 only previews locally for Staff (skipSync = true)
-            const skipSync = (targetStep !== 1);
-            this._setStep(this.activeRoom, targetStep, skipSync);
+            // Staff clicking step banner items only previews locally for Staff (skipSync = true)
+            // It will NEVER affect or jump the user's screen!
+            this._setStep(this.activeRoom, targetStep, true);
           }
         });
       });
