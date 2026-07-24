@@ -248,10 +248,6 @@ _updateActiveSession(room, onlyBadge = false) {
           if (active.selectedImages) {
             this.selectedPhotos = new Set(active.selectedImages);
           } else {
-            this.selectedImageId = null; // currently selected photo ID in step 2/3
-    this.selectedSlotIndex = -1; // currently selected slot index in step 3
-    this.clientId = Math.random().toString(36).substring(2, 15);
-  } else {
             this.selectedPhotos.clear();
           }
         }
