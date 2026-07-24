@@ -577,9 +577,12 @@ export const UIMixin = {
     const roomData = this.rooms[room];
     if (!roomData) return;
     
-    // Automatically fill frame when transitioning from step 2 to step 3 by the user
-    if (roomData.step === 2 && step === 3 && !isStaffMode) {
-      if (this._applySelectionToSlots) this._applySelectionToSlots();
+    // Automatically fill frame when entering step 3 by the user (if slots are empty)
+    if (step === 3 && !isStaffMode) {
+      const hasEmptySlots = this.slots && this.slots.some(s => !s.imageId);
+      if (hasEmptySlots && this._applySelectionToSlots) {
+        this._applySelectionToSlots();
+      }
     }
 
     roomData.step = step;
