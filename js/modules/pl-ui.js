@@ -530,7 +530,7 @@ _updateUIForRoom() {
   }
 ,
 
-_setStep(room, step) {
+  _setStep(room, step, skipSync = false) {
     const roomData = this.rooms[room];
     if (!roomData) return;
     roomData.step = step;
@@ -539,7 +539,9 @@ _setStep(room, step) {
       this._updateUIForRoom();
       this._renderCanvas();
     }
-    this._syncState(room);
+    if (!skipSync) {
+      this._syncState(room);
+    }
   }
 ,
 
@@ -702,7 +704,10 @@ _bindEvents() {
           if (!targetStep) return;
 
           if (targetStep >= 1 && targetStep <= 4) {
-            this._setStep(this.activeRoom, targetStep);
+            // Staff clicking Step 1 forces customer back to Step 1 (skipSync = false)
+            // Staff clicking Step 2, 3, 4 only previews locally for Staff (skipSync = true)
+            const skipSync = (targetStep !== 1);
+            this._setStep(this.activeRoom, targetStep, skipSync);
           }
         });
       });
