@@ -123,27 +123,39 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
 
   _autoFill(skipSync = false) {
     const roomData = this.activeRoom && this.rooms[this.activeRoom];
-    const step = roomData ? (roomData.step || 1) : 1;
     const currentImages = roomData && roomData.images ? roomData.images : [];
-    
-    let sourceImages = (step >= 2 && this.selectedPhotos && this.selectedPhotos.size > 0)
-      ? currentImages.filter(img => this.selectedPhotos.has(img.id))
-      : currentImages;
+    if (currentImages.length === 0) return;
 
-    if (sourceImages.length === 0) {
-      sourceImages = currentImages;
+    const selectedArr = (this.selectedPhotos && this.selectedPhotos.size > 0)
+      ? Array.from(this.selectedPhotos)
+      : [];
+
+    const usedImageIds = new Set();
+    for (let i = 0; i < this.slots.length; i++) {
+      if (this.slots[i].imageId) {
+        usedImageIds.add(this.slots[i].imageId);
+      }
     }
 
-    if (sourceImages.length === 0) return;
-
-    let imgIndex = 0;
-    for (let i = 0; i < this.slots.length; i++) {
+    // 1. Assign selected photos to empty slots first
+    let selectedIdx = 0;
+    for (let i = 0; i < this.slots.length && selectedIdx < selectedArr.length; i++) {
       if (!this.slots[i].imageId) {
-        const targetImg = sourceImages[imgIndex % sourceImages.length];
-        if (targetImg) {
-          this._assignToSlot(i, targetImg.id, skipSync);
-          imgIndex++;
-        }
+        const imgId = selectedArr[selectedIdx];
+        this._assignToSlot(i, imgId, skipSync);
+        usedImageIds.add(imgId);
+        selectedIdx++;
+      }
+    }
+
+    // 2. Fill remaining empty slots with UNUSED gallery photos (no duplicates!)
+    const unusedImages = currentImages.filter(img => !usedImageIds.has(img.id));
+    let unusedIdx = 0;
+    for (let i = 0; i < this.slots.length && unusedIdx < unusedImages.length; i++) {
+      if (!this.slots[i].imageId) {
+        this._assignToSlot(i, unusedImages[unusedIdx].id, skipSync);
+        usedImageIds.add(unusedImages[unusedIdx].id);
+        unusedIdx++;
       }
     }
   }

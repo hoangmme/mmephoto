@@ -717,12 +717,33 @@ export const UIMixin = {
           if (this.selectedPhotos.size === 0) {
             if (this._autoFill) this._autoFill(true);
           } else {
-            this.slots.forEach(s => s.imageId = null);
-            let imgIndex = 0;
+            const roomData = this.rooms[this.activeRoom];
+            const currentImages = roomData && roomData.images ? roomData.images : [];
             const selectedArr = Array.from(this.selectedPhotos);
-            for (let i = 0; i < this.slots.length; i++) {
-              this._assignToSlot(i, selectedArr[imgIndex % selectedArr.length], true);
-              imgIndex++;
+            const usedImageIds = new Set();
+
+            this.slots.forEach(s => s.imageId = null);
+
+            let slotIdx = 0;
+            // 1. Assign selected photos first
+            for (let i = 0; i < selectedArr.length && slotIdx < this.slots.length; i++) {
+              const imgId = selectedArr[i];
+              this._assignToSlot(slotIdx, imgId, true);
+              usedImageIds.add(imgId);
+              slotIdx++;
+            }
+
+            // 2. Fill remaining empty slots with UNUSED gallery photos (no duplicates!)
+            if (slotIdx < this.slots.length) {
+              const unusedImages = currentImages.filter(img => !usedImageIds.has(img.id));
+              let unusedIdx = 0;
+              while (slotIdx < this.slots.length && unusedIdx < unusedImages.length) {
+                const targetImg = unusedImages[unusedIdx];
+                this._assignToSlot(slotIdx, targetImg.id, true);
+                usedImageIds.add(targetImg.id);
+                slotIdx++;
+                unusedIdx++;
+              }
             }
           }
           this._setStep(this.activeRoom, 3);
