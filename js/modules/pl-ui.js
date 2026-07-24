@@ -337,6 +337,23 @@ _initMainSwiper() {
 ,
 
 _updateUIForRoom() {
+    const mainHeader = document.getElementById('mainHeader');
+    const userHeader = document.getElementById('userHeader');
+    const roomTabs = document.getElementById('roomTabs');
+
+    if (isStaffMode) {
+      document.body.classList.add('pl-mode-staff');
+      document.body.classList.remove('pl-mode-user');
+    } else {
+      document.body.classList.add('pl-mode-user');
+      document.body.classList.remove('pl-mode-staff');
+    }
+
+    const btnQueue = document.getElementById('btnQueueManager');
+    if (btnQueue) btnQueue.style.display = isStaffMode ? 'inline-flex' : 'none';
+    const btnBuilder = document.getElementById('btnBuilder');
+    if (btnBuilder) btnBuilder.style.display = isStaffMode ? 'inline-flex' : 'none';
+
     this._updateActiveSession(this.activeRoom, false);
     
     // SAFEGUARD: Removed dangerous step 1 revert that caused user data wipe on sync.
@@ -377,28 +394,13 @@ _updateUIForRoom() {
       if (lockOverlay) lockOverlay.style.display = 'none';
       if (btnNext) btnNext.style.display = 'none';
       if (mainContainer) mainContainer.className = 'pl-main pl-step-mode-1';
-      if (instructionText) instructionText.textContent = 'Chưa có phiên chụp nào. Vui lòng chụp ảnh hoặc chạm để chọn sẵn Khung in (Frame) yêu thích trong khi chờ.';
+      if (instructionText) instructionText.textContent = isStaffMode 
+        ? '👉 Chào Staff! Chưa có phiên chụp nào trong phòng này. Vui lòng bấm "Hàng Chờ" hoặc mở phòng mới.'
+        : 'Chưa có phiên chụp nào. Vui lòng chụp ảnh hoặc chạm để chọn sẵn Khung in (Frame) yêu thích trong khi chờ.';
       if (uploadBadge) uploadBadge.style.display = 'none';
       if (stepFooter) stepFooter.style.display = 'none';
       return;
     }
-    
-    const mainHeader = document.getElementById('mainHeader');
-    const userHeader = document.getElementById('userHeader');
-    const roomTabs = document.getElementById('roomTabs');
-
-    if (isStaffMode) {
-      document.body.classList.add('pl-mode-staff');
-      document.body.classList.remove('pl-mode-user');
-    } else {
-      document.body.classList.add('pl-mode-user');
-      document.body.classList.remove('pl-mode-staff');
-    }
-
-    const btnQueue = document.getElementById('btnQueueManager');
-    if (btnQueue) btnQueue.style.display = isStaffMode ? 'inline-flex' : 'none';
-    const btnBuilder = document.getElementById('btnBuilder');
-    if (btnBuilder) btnBuilder.style.display = isStaffMode ? 'inline-flex' : 'none';
 
     const roomData = this.rooms[this.activeRoom];
     const step = roomData.step || 1;
