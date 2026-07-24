@@ -428,11 +428,16 @@ export const UIMixin = {
     // Update main mode class
     if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
 
-    // Failsafe: if we loaded into step 3 and slots are empty, force apply selection
+    // Failsafe: if we loaded into step 3 and slots are empty, force apply selection ONCE
     if (step === 3 && !isStaffMode && this.slots && this.slots.some(s => !s.imageId)) {
-      if (this._applySelectionToSlots) {
-        setTimeout(() => this._applySelectionToSlots(), 100);
+      if (!this._failsafeFired) {
+        this._failsafeFired = true;
+        if (this._applySelectionToSlots) {
+          setTimeout(() => this._applySelectionToSlots(), 100);
+        }
       }
+    } else if (step !== 3) {
+      this._failsafeFired = false;
     }
 
     // Update step banner active/completed items
