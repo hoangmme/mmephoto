@@ -1015,9 +1015,9 @@ export const UIMixin = {
     // Don't auto-select first slot to avoid accidental overwrites
     this.selectedSlotIndex = -1;
 
-    // Auto-fill slots automatically for better UX only at Step 1 or 2 if no slots are filled yet
-    const hasFilledSlots = this.slots.some(s => s.imageId);
-    if (step <= 2 && !hasFilledSlots) {
+    // Auto-fill new slots only if we are in Step 3 or 4 (user expects photos to stay)
+    const hasEmptySlots = this.slots.some(s => !s.imageId);
+    if (step >= 3 && hasEmptySlots) {
       setTimeout(() => {
         this._autoFill();
         this._renderCanvas();
