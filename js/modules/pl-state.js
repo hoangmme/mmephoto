@@ -200,10 +200,10 @@ _updateActiveSession(room, onlyBadge = false) {
       
       if (!onlyBadge && active) {
         if (this.activeRoom === room) {
-          if (this.currentTemplate) {
-            active.currentTemplate = this.currentTemplate;
-          } else if (active.currentTemplate) {
+          if (active.currentTemplate && ALL_TEMPLATES[active.currentTemplate]) {
             this.currentTemplate = active.currentTemplate;
+          } else if (this.currentTemplate && ALL_TEMPLATES[this.currentTemplate]) {
+            active.currentTemplate = this.currentTemplate;
           } else {
             this.currentTemplate = Object.keys(ALL_TEMPLATES)[0];
             active.currentTemplate = this.currentTemplate;
