@@ -91,6 +91,7 @@ _initSSE(branch) {
           let sessionObj = this.rooms[room].queue ? this.rooms[room].queue.find(s => s.id === data.session) : null;
           if (sessionObj) {
             if (data.step !== undefined) sessionObj.step = data.step;
+            if (data.stepStartedAt !== undefined) sessionObj.stepStartedAt = data.stepStartedAt;
             if (data.currentTemplate !== undefined) sessionObj.currentTemplate = data.currentTemplate;
             if (data.slots && data.slots.length > 0) sessionObj.slots = data.slots;
             if (data.selectedImages) sessionObj.selectedImages = data.selectedImages;
@@ -98,7 +99,12 @@ _initSSE(branch) {
 
           // If this is the active session for this room
           if (this.rooms[room].session === data.session) {
-            if (data.step !== undefined) this.rooms[room].step = data.step;
+            if (data.step !== undefined) {
+              this.rooms[room].step = data.step;
+              if (!isStaffMode && data.step < 4) {
+                this._startStepTimer(room, data.step);
+              }
+            }
             
             // Only update globals if this room is the currently viewed tab
             if (this.activeRoom === room) {
@@ -196,8 +202,12 @@ _updateActiveSession(room, onlyBadge = false) {
       }
       
       if (active) {
+        if (active.stepStartedAt) {
+          const sessObj = roomData.queue ? roomData.queue.find(s => s.id === active.id) : null;
+          if (sessObj) sessObj.stepStartedAt = active.stepStartedAt;
+        }
         roomData.timerStarted = true;
-        if (!roomData.timerInterval && (roomData.step || 1) < 4) {
+        if (!isStaffMode && !roomData.timerInterval && (roomData.step || 1) < 4) {
           this._startStepTimer(room, roomData.step || 1);
         }
       } else {
@@ -294,7 +304,20 @@ _syncState(room) {
         selectedImages: Array.from(this.selectedPhotos || []),
         slots: this.slots || []
       })
-    }).catch(err => console.error('Sync error:', err));
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.stepStartedAt) {
+        const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
+        if (activeSess) {
+          activeSess.stepStartedAt = data.stepStartedAt;
+          if (!isStaffMode && (roomData.step || 1) < 4) {
+            this._startStepTimer(room, roomData.step || 1);
+          }
+        }
+      }
+    })
+    .catch(err => console.error('Sync error:', err));
   }
 ,
 
@@ -308,17 +331,41 @@ _startStepTimer(room, step) {
     roomData.timerStarted = true;
     if (!roomData.timedOutSteps) roomData.timedOutSteps = new Set();
     
-    if (step === 1) roomData.timeLeft = 60;
-    else if (step === 2) roomData.timeLeft = 180;
-    else if (step === 3) roomData.timeLeft = 180;
+    // Disable timer countdown in Staff Mode completely
+    if (isStaffMode) {
+      if (this.activeRoom === room) this._updateUIForRoom();
+      return;
+    }
+
+    let duration = 60;
+    if (step === 1) duration = 60;
+    else if (step === 2) duration = 180;
+    else if (step === 3) duration = 180;
     else {
       roomData.timeLeft = 0;
       if (this.activeRoom === room) this._updateUIForRoom();
       return;
     }
 
+    const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
+    const updateTimeLeft = () => {
+      if (activeSess && activeSess.stepStartedAt) {
+        const elapsed = Math.floor((Date.now() - activeSess.stepStartedAt) / 1000);
+        roomData.timeLeft = Math.max(0, duration - elapsed);
+      } else {
+        if (roomData.timeLeft === undefined || roomData.timeLeft > duration) {
+          roomData.timeLeft = duration;
+        } else {
+          roomData.timeLeft--;
+        }
+      }
+    };
+
+    updateTimeLeft();
+
     roomData.timerInterval = setInterval(() => {
-      roomData.timeLeft--;
+      updateTimeLeft();
+
       if (roomData.timeLeft <= 0) {
         roomData.timeLeft = 0;
         roomData.timedOutSteps.add(step);

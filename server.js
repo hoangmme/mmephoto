@@ -495,6 +495,10 @@ app.post('/api/set-active-session/:branch/:room/:session', (req, res) => {
   
   if (roomState[branch] && roomState[branch][room]) {
     roomState[branch][room].activeSessionId = session;
+    const sessObj = roomState[branch][room].sessions.find(s => s.id === session);
+    if (sessObj) {
+      sessObj.stepStartedAt = Date.now();
+    }
     saveRoomState();
   }
   
@@ -592,7 +596,12 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
   }
   
 
-  if (step !== undefined) sessionObj.step = step;
+  if (step !== undefined) {
+    if (sessionObj.step !== step || !sessionObj.stepStartedAt) {
+      sessionObj.stepStartedAt = Date.now();
+    }
+    sessionObj.step = step;
+  }
   if (currentTemplate && currentTemplate !== 'undefined') {
     sessionObj.currentTemplate = currentTemplate;
   }
@@ -618,6 +627,7 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
         room, 
         session,
         step: sessionObj.step,
+        stepStartedAt: sessionObj.stepStartedAt,
         currentTemplate: sessionObj.currentTemplate,
         selectedImages: sessionObj.selectedImages,
         slots: sessionObj.slots,
@@ -626,7 +636,7 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
     });
   }
   
-  res.json({ success: true });
+  res.json({ success: true, stepStartedAt: sessionObj.stepStartedAt });
 });
 
 app.get('/api/stream/:branch', (req, res) => {
