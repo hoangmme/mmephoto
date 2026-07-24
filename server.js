@@ -583,7 +583,7 @@ app.post('/api/delete-session/:branch/:room/:session', (req, res) => {
 
 app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) => {
   const { branch, room, session } = req.params;
-  const { step, currentTemplate, selectedImages, slots } = req.body;
+  const { step, currentTemplate, selectedImages, slots, clientId } = req.body;
   
   if (!roomState[branch]) roomState[branch] = {};
   if (!roomState[branch][room]) roomState[branch][room] = { sessions: [], activeSessionId: null };
@@ -608,7 +608,7 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
     sessionObj.currentTemplate = currentTemplate;
   }
   
-  if (selectedImages && Array.isArray(selectedImages) && selectedImages.length > 0) {
+  if (selectedImages && Array.isArray(selectedImages)) {
     sessionObj.selectedImages = selectedImages;
   }
   
@@ -628,6 +628,7 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
         type: 'sync', 
         room, 
         session,
+        clientId,
         step: sessionObj.step,
         sessionStartedAt: sessionObj.sessionStartedAt,
         currentTemplate: sessionObj.currentTemplate,

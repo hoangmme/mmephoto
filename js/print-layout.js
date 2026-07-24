@@ -21,6 +21,7 @@ class PrintLayoutApp {
     this.selectedSlotIndex = -1;
     this.currentTemplate = '2photos';
     this.selectedPhotos = new Set();
+    this.clientId = Math.random().toString(36).substring(2, 15);
 
     // Default preview images for Step 1
     this.defaultPreviewImages = [];

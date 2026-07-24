@@ -130,7 +130,23 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
 
     if (hasSelection) {
       // User made a selection — ONLY use selected photos, never add unselected ones
-      const selectedArr = Array.from(this.selectedPhotos);
+      
+      // 1. Remove images from slots that are NO LONGER in selectedPhotos
+      for (let i = 0; i < this.slots.length; i++) {
+        if (this.slots[i].imageId && !this.selectedPhotos.has(this.slots[i].imageId)) {
+           this._removeSlotImage(i, true); // skipSync = true
+        }
+      }
+
+      // 2. Find which selected photos are not yet in any slot
+      const usedImageIds = new Set();
+      for (let i = 0; i < this.slots.length; i++) {
+        if (this.slots[i].imageId) usedImageIds.add(this.slots[i].imageId);
+      }
+
+      const selectedArr = Array.from(this.selectedPhotos).filter(id => !usedImageIds.has(id));
+      
+      // 3. Fill empty slots with the remaining selected photos
       let selectedIdx = 0;
       for (let i = 0; i < this.slots.length && selectedIdx < selectedArr.length; i++) {
         if (!this.slots[i].imageId) {

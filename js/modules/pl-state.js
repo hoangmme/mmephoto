@@ -85,6 +85,8 @@ _initSSE(branch) {
             if (this.activeRoom === room) this._updateActiveSession(room, true); // update badge only
         }
       } else if (data.type === 'sync') {
+        if (data.clientId === this.clientId) return; // Ignore our own sync echoes to prevent network races
+
         const room = data.room;
         if (this.rooms[room]) {
           // Find the session in the queue and update it
@@ -246,6 +248,10 @@ _updateActiveSession(room, onlyBadge = false) {
           if (active.selectedImages) {
             this.selectedPhotos = new Set(active.selectedImages);
           } else {
+            this.selectedImageId = null; // currently selected photo ID in step 2/3
+    this.selectedSlotIndex = -1; // currently selected slot index in step 3
+    this.clientId = Math.random().toString(36).substring(2, 15);
+  } else {
             this.selectedPhotos.clear();
           }
         }
@@ -309,6 +315,7 @@ _syncState(room) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          clientId: this.clientId,
           step: roomData.step,
           currentTemplate: this.currentTemplate,
           selectedImages: Array.from(this.selectedPhotos || []),
