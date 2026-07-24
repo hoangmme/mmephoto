@@ -534,20 +534,23 @@ export const UIMixin = {
 
     const m = Math.floor(Math.max(0, roomData.timeLeft || 0) / 60).toString().padStart(2, '0');
     const s = (Math.max(0, roomData.timeLeft || 0) % 60).toString().padStart(2, '0');
-    const activeTimeStr = `(${m}:${s})`;
+    
+    // Update global timer
+    const globalTimerEl = document.getElementById('globalTimer');
+    if (globalTimerEl) {
+      if (isStaffMode || !roomData.timerStarted || step === 4) {
+        globalTimerEl.style.display = 'none';
+      } else {
+        globalTimerEl.style.display = 'block';
+        globalTimerEl.textContent = `⏱ ${m}:${s}`;
+        globalTimerEl.style.color = (roomData.timeLeft <= 60) ? '#ef4444' : '#fff';
+      }
+    }
 
-    if (t1) {
-      t1.textContent = (!isStaffMode && step === 1 && roomData.timerStarted) ? activeTimeStr : '(B1)';
-      t1.style.color = (!isStaffMode && step === 1 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
-    }
-    if (t2) {
-      t2.textContent = (!isStaffMode && step === 2 && roomData.timerStarted) ? activeTimeStr : '(B2)';
-      t2.style.color = (!isStaffMode && step === 2 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
-    }
-    if (t3) {
-      t3.textContent = (!isStaffMode && step === 3 && roomData.timerStarted) ? activeTimeStr : '(B3)';
-      t3.style.color = (!isStaffMode && step === 3 && roomData.timeLeft <= 15 && roomData.timerStarted) ? '#ef4444' : 'inherit';
-    }
+    if (t1) t1.textContent = '(B1)';
+    if (t2) t2.textContent = '(B2)';
+    if (t3) t3.textContent = '(B3)';
+
 
     if (lockOverlay) {
       if (roomData.locked && roomData.timerStarted) {
