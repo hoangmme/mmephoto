@@ -1,28 +1,28 @@
 import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from "./pl-globals.js";
 
 export const UIMixin = {
-_initLogin() {
+  _initLogin() {
     const branchId = localStorage.getItem('branchId');
     const loginOverlay = document.getElementById('loginOverlay');
     const lockOverlay = document.getElementById('lockOverlay');
-    
+
     if (!branchId) {
-      if(loginOverlay) loginOverlay.style.display = 'flex';
+      if (loginOverlay) loginOverlay.style.display = 'flex';
     } else {
-      if(loginOverlay) loginOverlay.style.display = 'none';
+      if (loginOverlay) loginOverlay.style.display = 'none';
       this._initSSE(branchId);
     }
-    
+
     const handleLoginSubmit = async () => {
       const branch = document.getElementById('loginBranch').value.trim();
       const pass = document.getElementById('loginPassword').value.trim();
-      
+
       const res = await fetch('/api/login', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({branchId: branch, password: pass})
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ branchId: branch, password: pass })
       });
-      
+
       if (res.ok) {
         const data = await res.json();
         if (data.isAdmin) {
@@ -32,7 +32,7 @@ _initLogin() {
         }
         localStorage.setItem('branchId', data.branchId || branch);
         localStorage.setItem('branchPass', pass);
-        if(loginOverlay) loginOverlay.style.display = 'none';
+        if (loginOverlay) loginOverlay.style.display = 'none';
         this._initSSE(data.branchId || branch);
       } else {
         const err = document.getElementById('loginError');
@@ -43,7 +43,7 @@ _initLogin() {
     document.getElementById('btnLoginSubmit')?.addEventListener('click', handleLoginSubmit);
     document.getElementById('loginBranch')?.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
     document.getElementById('loginPassword')?.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
-    
+
     document.getElementById('btnUnlock')?.addEventListener('click', () => {
       if (this.activeRoom && this.rooms[this.activeRoom]) {
         this.rooms[this.activeRoom].locked = false;
@@ -53,7 +53,7 @@ _initLogin() {
         if (btnNext) btnNext.style.display = 'inline-flex';
       }
     });
-    
+
     const handleNextCustomer = async () => {
       if (!confirm('Chuyển qua lượt khách hàng tiếp theo? (Phiên hiện tại sẽ được đánh dấu hoàn thành)')) return;
       const b = localStorage.getItem('branchId') || 'CN01';
@@ -71,7 +71,8 @@ _initLogin() {
               this.rooms[r].activeSessionId = remaining.length > 0 ? remaining[0].id : null;
             }
           }
-        } catch (err) {}
+        } catch (err) { }
+      }
       const lockOverlay = document.getElementById('lockOverlay');
       if (lockOverlay) lockOverlay.style.display = 'none';
       if (r) {
@@ -82,13 +83,13 @@ _initLogin() {
         this._renderTabs();
       }
     };
-    
+
     document.getElementById('btnNextCustomer')?.addEventListener('click', handleNextCustomer);
     document.getElementById('btnLockNextCustomer')?.addEventListener('click', handleNextCustomer);
   }
-,
+  ,
 
-async _initApp() {
+  async _initApp() {
     try {
       const res = await fetch('/api/templates');
       if (res.ok) {
@@ -97,8 +98,8 @@ async _initApp() {
           customTemplates[t.id] = {
             name: t.name || 'Custom Template',
             slots: t.slots.map(s => ({
-              cx: s.cx !== undefined ? s.cx : (s.x + s.width/2),
-              cy: s.cy !== undefined ? s.cy : (s.y + s.height/2),
+              cx: s.cx !== undefined ? s.cx : (s.x + s.width / 2),
+              cy: s.cy !== undefined ? s.cy : (s.y + s.height / 2),
               w: s.width || s.w,
               h: s.height || s.h,
               rotation: s.rotation || 0
@@ -110,13 +111,13 @@ async _initApp() {
         });
         Object.assign(ALL_TEMPLATES, customTemplates);
       }
-    } catch(e) {
+    } catch (e) {
       console.error("Error fetching templates from server", e);
     }
 
     this.mainSwiper = document.getElementById('mainSwiper');
     this.canvas = document.getElementById('printCanvas') || this.canvas;
-    
+
     this._initMainSwiper();
     this._bindEvents();
     this._initTemplate();
@@ -124,100 +125,100 @@ async _initApp() {
     this._initLogin();
     if (this._initQueueManager) this._initQueueManager();
   }
-,
+  ,
 
-_initMainSwiper() {
+  _initMainSwiper() {
     if (!this.mainSwiper) return;
     this.mainSwiper.innerHTML = '';
-    
+
     Object.keys(ALL_TEMPLATES).forEach(k => {
       const t = ALL_TEMPLATES[k];
       const slide = document.createElement('div');
       slide.className = 'pl-slide';
       slide.dataset.id = k;
-      
+
       if (k === this.currentTemplate) {
         slide.classList.add('active');
       }
-      
+
       const preview = document.createElement('div');
       preview.className = 'pl-slide-preview';
-      
+
       const cvs = document.createElement('canvas');
       cvs.width = t.canvas_width || A5_WIDTH;
       cvs.height = t.canvas_height || A5_HEIGHT;
       // Draw template with default photos
       this._drawToCanvas(cvs, false, t, true);
       preview.appendChild(cvs);
-      
+
       slide.appendChild(preview);
-      
+
       slide.addEventListener('click', () => {
         if (this.currentTemplate !== k) {
-           this._selectSlide(k);
+          this._selectSlide(k);
         }
       });
-      
+
       this.mainSwiper.appendChild(slide);
     });
 
     // Padding to center first/last
     this._updatePadding = () => {
-       const parentArea = this.mainSwiper.parentElement;
-       if (this.mainSwiper.children.length > 0 && parentArea.offsetWidth > 0) {
-         const firstSlide = this.mainSwiper.children[0];
-         const slideWidth = firstSlide.offsetWidth;
-         if (slideWidth > 0) {
-           const pad = Math.max(0, (parentArea.offsetWidth - slideWidth) / 2);
-           this.mainSwiper.style.paddingLeft = `${pad}px`;
-           this.mainSwiper.style.paddingRight = `${pad}px`;
-           this.mainSwiper.classList.add('loaded');
-           
-           // Ensure active slide is centered after padding change
-           if (this.currentTemplate) {
-              requestAnimationFrame(() => {
-                const activeSlide = this.mainSwiper.querySelector(`[data-id="${this.currentTemplate}"]`);
-                if (activeSlide) {
-                  this.isProgrammaticScroll = true;
-                  this.mainSwiper.scrollLeft = activeSlide.offsetLeft - pad;
-                  setTimeout(() => { this.isProgrammaticScroll = false; }, 500);
-                }
-              });
-           }
-         }
-       }
+      const parentArea = this.mainSwiper.parentElement;
+      if (this.mainSwiper.children.length > 0 && parentArea.offsetWidth > 0) {
+        const firstSlide = this.mainSwiper.children[0];
+        const slideWidth = firstSlide.offsetWidth;
+        if (slideWidth > 0) {
+          const pad = Math.max(0, (parentArea.offsetWidth - slideWidth) / 2);
+          this.mainSwiper.style.paddingLeft = `${pad}px`;
+          this.mainSwiper.style.paddingRight = `${pad}px`;
+          this.mainSwiper.classList.add('loaded');
+
+          // Ensure active slide is centered after padding change
+          if (this.currentTemplate) {
+            requestAnimationFrame(() => {
+              const activeSlide = this.mainSwiper.querySelector(`[data-id="${this.currentTemplate}"]`);
+              if (activeSlide) {
+                this.isProgrammaticScroll = true;
+                this.mainSwiper.scrollLeft = activeSlide.offsetLeft - pad;
+                setTimeout(() => { this.isProgrammaticScroll = false; }, 500);
+              }
+            });
+          }
+        }
+      }
     };
 
     const ro = new ResizeObserver(() => this._updatePadding());
     ro.observe(this.mainSwiper.parentElement);
-    
+
     // Also run when images inside load
     this.mainSwiper.querySelectorAll('img').forEach(img => {
-       img.addEventListener('load', () => this._updatePadding());
+      img.addEventListener('load', () => this._updatePadding());
     });
 
     // Auto select on scroll
     let scrollTimeout;
     this.mainSwiper.addEventListener('scroll', () => {
       clearTimeout(scrollTimeout);
-      
+
       // Update visual scaling
       const center = this.mainSwiper.scrollLeft + this.mainSwiper.offsetWidth / 2;
       Array.from(this.mainSwiper.children).forEach(slide => {
-         const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
-         const diff = Math.abs(center - slideCenter);
-         
-         // Progress from 0 (at center) to 1 (at edges)
-         const progress = Math.min(1, diff / (slide.offsetWidth * 1.2));
-         
-         // Scale goes from 1.0 (center) down to 0.85 (edges)
-         const scale = 1.0 - (progress * 0.15); 
-         
-         // Opacity goes from 1.0 (center) down to 0.5 (edges)
-         const opacity = 1.0 - (progress * 0.5);
-         
-         slide.style.transform = `scale(${scale})`;
-         slide.style.opacity = opacity;
+        const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+        const diff = Math.abs(center - slideCenter);
+
+        // Progress from 0 (at center) to 1 (at edges)
+        const progress = Math.min(1, diff / (slide.offsetWidth * 1.2));
+
+        // Scale goes from 1.0 (center) down to 0.85 (edges)
+        const scale = 1.0 - (progress * 0.15);
+
+        // Opacity goes from 1.0 (center) down to 0.5 (edges)
+        const opacity = 1.0 - (progress * 0.5);
+
+        slide.style.transform = `scale(${scale})`;
+        slide.style.opacity = opacity;
       });
 
       if (this.isProgrammaticScroll) return;
@@ -234,38 +235,38 @@ _initMainSwiper() {
         let closest = null;
         let minDiff = Infinity;
         Array.from(this.mainSwiper.children).forEach(slide => {
-           const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
-           const diff = Math.abs(currentCenter - slideCenter);
-           if (diff < minDiff) {
-              minDiff = diff;
-              closest = slide;
-           }
+          const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+          const diff = Math.abs(currentCenter - slideCenter);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closest = slide;
+          }
         });
-        
+
         if (closest && closest.dataset.id !== this.currentTemplate && minDiff < (closest.offsetWidth || 300) * 0.4) {
-           this._selectSlide(closest.dataset.id);
+          this._selectSlide(closest.dataset.id);
         }
       }, 200);
     });
 
     // Add click listener to all slides for direct tap selection
     Array.from(this.mainSwiper.children).forEach(slide => {
-       slide.addEventListener('click', () => {
-          if (slide.dataset.id !== this.currentTemplate) {
-             this._selectSlide(slide.dataset.id);
-          }
-       });
+      slide.addEventListener('click', () => {
+        if (slide.dataset.id !== this.currentTemplate) {
+          this._selectSlide(slide.dataset.id);
+        }
+      });
     });
-    
+
     // Set initial
     if (!ALL_TEMPLATES[this.currentTemplate]) {
       this.currentTemplate = Object.keys(ALL_TEMPLATES)[0];
     }
-    
+
     // Force select first without scrolling animation
     this._selectSlide(this.currentTemplate, true);
   }
-,
+  ,
 
   _renderTabs() {
     const rooms = Object.keys(this.rooms);
@@ -290,9 +291,9 @@ _initMainSwiper() {
       tabsContainer.style.display = 'flex';
     }
     tabsContainer.innerHTML = '';
-    
+
     if (rooms.length === 0) return;
-    
+
     rooms.forEach(room => {
       const btn = document.createElement('button');
       btn.innerText = room;
@@ -302,7 +303,7 @@ _initMainSwiper() {
       btn.style.cursor = 'pointer';
       btn.style.position = 'relative';
       btn.style.fontWeight = '600';
-      
+
       if (room === this.activeRoom) {
         btn.style.background = 'var(--pl-accent)';
         btn.style.color = '#fff';
@@ -310,7 +311,7 @@ _initMainSwiper() {
         btn.style.background = 'var(--pl-bg-section)';
         btn.style.color = 'var(--pl-text)';
       }
-      
+
       const roomD = this.rooms[room];
       const isReadyStep4 = roomD && roomD.step === 4 && !roomD.finished;
       if ((roomD.hasNew || isReadyStep4) && room !== this.activeRoom) {
@@ -327,20 +328,20 @@ _initMainSwiper() {
         dot.style.animation = 'pl-pulse 1.5s infinite';
         btn.appendChild(dot);
       }
-      
+
       btn.onclick = () => {
         this.activeRoom = room;
         this.rooms[room].hasNew = false;
         this._renderTabs();
         this._updateUIForRoom();
       };
-      
+
       tabsContainer.appendChild(btn);
     });
   }
-,
+  ,
 
-_updateUIForRoom() {
+  _updateUIForRoom() {
     const mainHeader = document.getElementById('mainHeader');
     const userHeader = document.getElementById('userHeader');
     const roomTabs = document.getElementById('roomTabs');
@@ -373,7 +374,7 @@ _updateUIForRoom() {
     }
 
     this._updateActiveSession(this.activeRoom, false);
-    
+
     // SAFEGUARD: Removed dangerous step 1 revert that caused user data wipe on sync.
     if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].step === 4) {
       if (!this.slots || !this.slots.some(s => s.imageId)) {
@@ -410,7 +411,7 @@ _updateUIForRoom() {
       if (qrOverlay) qrOverlay.style.display = 'none';
       if (lockOverlay) lockOverlay.style.display = 'none';
       if (mainContainer) mainContainer.className = 'pl-main pl-step-mode-1';
-      if (instructionText) instructionText.textContent = isStaffMode 
+      if (instructionText) instructionText.textContent = isStaffMode
         ? '👉 Chào Staff! Chưa có phiên chụp nào trong phòng này. Vui lòng bấm "Hàng Chờ" hoặc mở phòng mới.'
         : 'Chưa có phiên chụp nào. Vui lòng chụp ảnh hoặc chạm để chọn sẵn Khung in (Frame) yêu thích trong khi chờ.';
       if (uploadBadge) uploadBadge.style.display = 'none';
@@ -456,7 +457,7 @@ _updateUIForRoom() {
         if (!activeSlide.contains(this.canvas)) {
           activeSlide.appendChild(this.canvas);
         }
-        
+
         const parentArea = this.mainSwiper.parentElement;
         if (parentArea && parentArea.offsetWidth > 0) {
           const pad = Math.max(0, (parentArea.offsetWidth - activeSlide.offsetWidth) / 2);
@@ -480,7 +481,7 @@ _updateUIForRoom() {
 
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
-      
+
       if (step === 1) {
         instructionText.textContent = isWaitingForPhotos
           ? '👉 Bước 1: Chọn mẫu Khung In trong khi đợi tải full ảnh từ máy ảnh...'
@@ -506,17 +507,17 @@ _updateUIForRoom() {
         btnStepNext.innerHTML = isStaffMode ? '✅ Hoàn Tất (Gửi cho User)' : '✅ Hoàn Tất (Gửi cho Nhân Viên)';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 4) {
-        instructionText.textContent = isStaffMode 
-          ? '🔔 Khách đã chỉnh xong! Nhân viên vui lòng kiểm tra lại bố cục, bấm "Tải Ảnh Layout" để in cho khách và bấm "Next Customer" để đón lượt tiếp theo.' 
+        instructionText.textContent = isStaffMode
+          ? '🔔 Khách đã chỉnh xong! Nhân viên vui lòng kiểm tra lại bố cục, bấm "Tải Ảnh Layout" để in cho khách và bấm "Next Customer" để đón lượt tiếp theo.'
           : '✨ Xin chúc mừng bạn đã hoàn thành! Vui lòng đợi nhân viên kiểm tra và in ảnh cho bạn nhé.';
-        
+
         // Force display block for swiper area and canvas
         const swiperArea = document.getElementById('mainSwiperArea');
         if (swiperArea) swiperArea.style.display = 'block';
         if (this.canvas) {
-            this.canvas.style.display = 'block';
-            this.canvas.style.opacity = '1';
-            setTimeout(() => this._renderCanvas(), 500); // force draw after 500ms
+          this.canvas.style.display = 'block';
+          this.canvas.style.opacity = '1';
+          setTimeout(() => this._renderCanvas(), 500); // force draw after 500ms
         }
 
         btnStepPrev.style.display = isStaffMode ? 'inline-flex' : 'none';
@@ -525,7 +526,7 @@ _updateUIForRoom() {
         if (qrOverlay) qrOverlay.style.display = isStaffMode ? 'none' : 'block';
       }
     }
-    
+
     // Timer update (update step banner timers for Step 1, 2, 3)
     const t1 = document.getElementById('stepTimer1');
     const t2 = document.getElementById('stepTimer2');
@@ -555,7 +556,7 @@ _updateUIForRoom() {
         lockOverlay.style.display = 'none';
       }
     }
-    
+
     // QR Code (chỉ render & hiện ở step 4)
     if (roomData.session && step === 4) {
       this._updateQRCode(this.activeRoom, roomData.session);
@@ -566,7 +567,7 @@ _updateUIForRoom() {
       if (this._updatePadding) this._updatePadding();
     });
   }
-,
+  ,
 
   _setStep(room, step, skipSync = false) {
     const roomData = this.rooms[room];
@@ -581,61 +582,61 @@ _updateUIForRoom() {
       this._syncState(room);
     }
   }
-,
+  ,
 
-_selectSlide(id, instant = false) {
-     const templateChanged = (this.currentTemplate !== id);
-     this.currentTemplate = id;
-     if (this.activeRoom && this.rooms[this.activeRoom]) {
-       const roomD = this.rooms[this.activeRoom];
-       if (roomD.queue) {
-         const activeSess = roomD.queue.find(s => s.id === roomD.session);
-         if (activeSess) {
-           activeSess.currentTemplate = id;
-         }
-       }
-     }
-
-     const targetSlide = Array.from(this.mainSwiper.children).find(s => s.dataset.id === id);
-     if (!targetSlide) return;
-     
-     Array.from(this.mainSwiper.children).forEach(s => {
-        s.classList.remove('active');
-        if (s.contains(this.canvas)) {
-           s.removeChild(this.canvas);
+  _selectSlide(id, instant = false) {
+    const templateChanged = (this.currentTemplate !== id);
+    this.currentTemplate = id;
+    if (this.activeRoom && this.rooms[this.activeRoom]) {
+      const roomD = this.rooms[this.activeRoom];
+      if (roomD.queue) {
+        const activeSess = roomD.queue.find(s => s.id === roomD.session);
+        if (activeSess) {
+          activeSess.currentTemplate = id;
         }
-     });
-     
-     targetSlide.classList.add('active');
-     targetSlide.appendChild(this.canvas);
-     
-     this._initTemplate();
-     this._renderCanvas();
-     this._renderImageList();
-     this._renderSlotProps();
-     
-     const pad = (this.mainSwiper.offsetWidth - targetSlide.offsetWidth) / 2;
-     
-     this.isProgrammaticScroll = true;
-     this.mainSwiper.scrollTo({ 
-       left: targetSlide.offsetLeft - pad, 
-       behavior: instant ? 'auto' : 'smooth' 
-     });
+      }
+    }
 
-     clearTimeout(this.scrollUnlockTimeout);
-     this.scrollUnlockTimeout = setTimeout(() => {
-        this.isProgrammaticScroll = false;
-     }, instant ? 100 : 500);
+    const targetSlide = Array.from(this.mainSwiper.children).find(s => s.dataset.id === id);
+    if (!targetSlide) return;
 
-     if (templateChanged) {
-       this._syncState(this.activeRoom);
-     }
+    Array.from(this.mainSwiper.children).forEach(s => {
+      s.classList.remove('active');
+      if (s.contains(this.canvas)) {
+        s.removeChild(this.canvas);
+      }
+    });
+
+    targetSlide.classList.add('active');
+    targetSlide.appendChild(this.canvas);
+
+    this._initTemplate();
+    this._renderCanvas();
+    this._renderImageList();
+    this._renderSlotProps();
+
+    const pad = (this.mainSwiper.offsetWidth - targetSlide.offsetWidth) / 2;
+
+    this.isProgrammaticScroll = true;
+    this.mainSwiper.scrollTo({
+      left: targetSlide.offsetLeft - pad,
+      behavior: instant ? 'auto' : 'smooth'
+    });
+
+    clearTimeout(this.scrollUnlockTimeout);
+    this.scrollUnlockTimeout = setTimeout(() => {
+      this.isProgrammaticScroll = false;
+    }, instant ? 100 : 500);
+
+    if (templateChanged) {
+      this._syncState(this.activeRoom);
+    }
   }
 
   // ── Event Bindings ──
-,
+  ,
 
-_bindEvents() {
+  _bindEvents() {
     const btnLogout = document.getElementById('btnLogout');
     if (btnLogout) {
       btnLogout.addEventListener('click', () => {
@@ -654,23 +655,23 @@ _bindEvents() {
         roleSwapText.textContent = isStaffMode ? 'Nhân viên' : 'Khách hàng';
         btnRoleSwap.style.borderColor = isStaffMode ? 'var(--pl-accent)' : 'var(--pl-border)';
         btnRoleSwap.style.color = isStaffMode ? 'var(--pl-accent)' : 'inherit';
-        
+
         const btnQueue = document.getElementById('btnQueueManager');
         if (btnQueue) btnQueue.style.display = isStaffMode ? 'inline-flex' : 'none';
-        
+
         const btnBuilder = document.getElementById('btnBuilder');
         if (btnBuilder) btnBuilder.style.display = isStaffMode ? 'inline-flex' : 'none';
-        
+
         if (this.activeRoom) {
           this._updateUIForRoom();
         }
       });
     }
-    
+
     document.getElementById('btnSelectAll').addEventListener('click', () => this._selectAll());
     document.getElementById('btnDeselectAll').addEventListener('click', () => this._deselectAll());
     document.getElementById('btnAutoFill').addEventListener('click', () => this._autoFill());
-    
+
     const btnUploadTest = document.getElementById('btnUploadTest');
     const fileUploadTest = document.getElementById('fileUploadTest');
     if (btnUploadTest && fileUploadTest) {
@@ -680,16 +681,16 @@ _bindEvents() {
 
     const btnPrint = document.getElementById('btnPrint');
     if (btnPrint) btnPrint.addEventListener('click', () => this._print());
-    
+
     const btnExportJPG = document.getElementById('btnExportJPG');
     if (btnExportJPG) btnExportJPG.addEventListener('click', () => this._exportJPG());
-    
+
     const btnStaffDownload = document.getElementById('btnStaffDownload');
     if (btnStaffDownload) btnStaffDownload.addEventListener('click', () => this._exportJPG());
-    
+
     const btnLockExportJPG = document.getElementById('btnLockExportJPG');
     if (btnLockExportJPG) btnLockExportJPG.addEventListener('click', () => this._exportJPG());
-    
+
     const btnExportPDF = document.getElementById('btnExportPDF');
     if (btnExportPDF) btnExportPDF.addEventListener('click', () => this._exportPDF());
 
@@ -795,7 +796,7 @@ _bindEvents() {
       isDragging = false;
       this.canvas.style.cursor = '';
     });
-    
+
 
 
     // Touch support for pan, zoom (pinch), and rotation (2-finger twist)
@@ -870,19 +871,19 @@ _bindEvents() {
       if (!slot || !slot.imageId) return;
       const delta = e.deltaY > 0 ? -0.05 : 0.05;
       this._zoomSlot(this.selectedSlotIndex, Math.max(0.3, Math.min(4.0, (slot.zoom || 1.0) + delta)));
-      
+
       // Debounce wheel sync
       clearTimeout(this._wheelSyncTimer);
       this._wheelSyncTimer = setTimeout(() => this._syncState(this.activeRoom), 200);
-      
+
       e.preventDefault();
     }, { passive: false });
   }
 
   // ── Load Batch from IndexedDB ──
-,
+  ,
 
-async _loadBatch() {
+  async _loadBatch() {
     if (!this.batchId) {
       this.imageList.innerHTML = '<div class="pl-loading">Không tìm thấy batch ID trong URL.</div>';
       return;
@@ -936,9 +937,9 @@ async _loadBatch() {
   }
 
   // ── Countdown Timer ──
-,
+  ,
 
-_handleTimeout() {
+  _handleTimeout() {
     // Block the UI completely
     const overlay = document.createElement('div');
     overlay.style.position = 'fixed';
@@ -950,7 +951,7 @@ _handleTimeout() {
     overlay.style.alignItems = 'center';
     overlay.style.justifyContent = 'center';
     overlay.style.backdropFilter = 'blur(10px)';
-    
+
     overlay.innerHTML = `
       <h1 style="color:#ef4444; font-size:32px; margin-bottom:16px;">Hết thời gian!</h1>
       <p style="color:#a1a1aa; font-size:16px; margin-bottom:24px;">Bạn đã hết 3 phút để ghép ảnh.</p>
@@ -958,9 +959,9 @@ _handleTimeout() {
     `;
     document.body.appendChild(overlay);
   }
-,
+  ,
 
-_openDB() {
+  _openDB() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('MMEPrintBatches', 1);
       request.onupgradeneeded = (e) => {
@@ -977,17 +978,17 @@ _openDB() {
       request.onerror = () => reject(new Error('Failed to open IndexedDB'));
     });
   }
-,
+  ,
 
-_initTemplate() {
+  _initTemplate() {
     const tmpl = ALL_TEMPLATES[this.currentTemplate];
     if (!tmpl) return;
-    
+
     this._loadTemplateImages();
 
     const oldSlots = [...(this.slots || [])];
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
-    
+
     this.slots = tmpl.slots.map((s, i) => ({
       imageId: (oldSlots[i] && oldSlots[i].imageId) ? oldSlots[i].imageId : null,
       zoom: (oldSlots[i] && step > 1) ? (oldSlots[i].zoom || 1.0) : 1.0,
@@ -995,7 +996,7 @@ _initTemplate() {
       panY: (oldSlots[i] && step > 1) ? (oldSlots[i].panY || 0) : 0,
       assignedAt: (oldSlots[i] && step > 1) ? oldSlots[i].assignedAt : null
     }));
-    
+
     // Don't auto-select first slot to avoid accidental overwrites
     this.selectedSlotIndex = -1;
 
@@ -1003,16 +1004,16 @@ _initTemplate() {
     const hasFilledSlots = this.slots.some(s => s.imageId);
     if (step <= 2 && !hasFilledSlots) {
       setTimeout(() => {
-         this._autoFill();
-         this._renderCanvas();
+        this._autoFill();
+        this._renderCanvas();
       }, 50);
     }
   }
 
   // ── Render Image List ──
-,
+  ,
 
-_renderImageList() {
+  _renderImageList() {
     this.imageList.innerHTML = '';
     const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
@@ -1072,12 +1073,12 @@ _renderImageList() {
 
     this._updateImageListUI();
   }
-,
+  ,
 
-_updateImageListUI() {
+  _updateImageListUI() {
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
     const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
-    
+
     if (step === 2) {
       const instructionText = document.getElementById('stepInstructionText');
       if (instructionText) {
@@ -1091,7 +1092,7 @@ _updateImageListUI() {
     Array.from(this.imageList.children).forEach(thumb => {
       const imgId = thumb.dataset.id;
       if (!imgId) return;
-      
+
       // Reset classes & badges
       thumb.className = 'pl-thumb';
       const existingBadge = thumb.querySelector('.pl-thumb-badge');
@@ -1113,9 +1114,9 @@ _updateImageListUI() {
   }
 
   // ── Canvas Click → Select Slot ──
-,
+  ,
 
-async _uploadTestImages(e) {
+  async _uploadTestImages(e) {
     const branch = localStorage.getItem('branchId') || 'CN01';
     let room = this.activeRoom;
     if (!room) {
@@ -1123,7 +1124,7 @@ async _uploadTestImages(e) {
     }
     const session = (this.rooms[room] && this.rooms[room].session) ? this.rooms[room].session : ('test_' + Date.now());
 
-    
+
     const files = Array.from(e.target.files);
     for (let file of files) {
       const formData = new FormData();
@@ -1139,22 +1140,22 @@ async _uploadTestImages(e) {
     }
     e.target.value = ''; // reset
   }
-,
+  ,
 
-_selectAll() {
+  _selectAll() {
     // Select all images (visual highlight)
     this.selectedImageId = null;
     this._renderImageList();
   }
-,
+  ,
 
-_deselectAll() {
+  _deselectAll() {
     this.selectedImageId = null;
     this._renderImageList();
   }
-,
+  ,
 
-_handleImageUpload(e) {
+  _handleImageUpload(e) {
     const files = e.target.files;
     if (!files.length) return;
 
@@ -1169,12 +1170,12 @@ _handleImageUpload(e) {
   }
 
   // ── Import JSON Template ──
-,
+  ,
 
-_importTemplateJson(e) {
+  _importTemplateJson(e) {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
@@ -1184,8 +1185,8 @@ _importTemplateJson(e) {
           customTemplates[t.id] = {
             name: t.name || 'Custom Template',
             slots: t.slots.map(s => ({
-              cx: s.cx !== undefined ? s.cx : (s.x + s.width/2),
-              cy: s.cy !== undefined ? s.cy : (s.y + s.height/2),
+              cx: s.cx !== undefined ? s.cx : (s.x + s.width / 2),
+              cy: s.cy !== undefined ? s.cy : (s.y + s.height / 2),
               w: s.width || s.w,
               h: s.height || s.h,
               rotation: s.rotation || 0
@@ -1215,6 +1216,6 @@ _importTemplateJson(e) {
   }
 
   // ── Canvas Interaction ──
-,
+  ,
 
 };
