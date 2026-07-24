@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MME Color Lab — A5 Print Layout</title>
-  <meta name="description" content="Tạo khung in A5 từ ảnh đã chỉnh màu. Hỗ trợ nhiều template, crop, zoom và export JPG/PDF.">
+  <meta name="description"
+    content="Tạo khung in A5 từ ảnh đã chỉnh màu. Hỗ trợ nhiều template, crop, zoom và export JPG/PDF.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -12,25 +14,26 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
   <script>
-    (function() {
+    (function () {
       var params = new URLSearchParams(window.location.search);
       var u = (params.get('user') || params.get('role') || params.get('mode') || '').toLowerCase();
       var isStaff = (u === 'staff' || u === 'admin' || params.has('staff'));
       if (!isStaff && u !== 'user' && u !== 'client' && u !== 'customer') {
-        try { isStaff = (localStorage.getItem('pl_staff_mode') === 'true'); } catch(e){}
+        try { isStaff = (localStorage.getItem('pl_staff_mode') === 'true'); } catch (e) { }
       }
       if (u === 'user' || u === 'client' || u === 'customer') {
         isStaff = false;
-        try { localStorage.removeItem('pl_staff_mode'); } catch(e){}
+        try { localStorage.removeItem('pl_staff_mode'); } catch (e) { }
       }
       var cls = isStaff ? 'pl-mode-staff' : 'pl-mode-user';
       document.documentElement.className = cls;
-      document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('DOMContentLoaded', function () {
         document.body.className = cls;
       });
     })();
   </script>
 </head>
+
 <body class="pl-mode-user">
   <div class="pl-app">
     <!-- Dedicated User Header -->
@@ -43,38 +46,68 @@
     <!-- Staff Header -->
     <header class="pl-header" id="mainHeader">
       <div class="pl-header-left">
-        <button id="btnLogout" class="pl-btn" style="background:var(--pl-bg-section); border:1px solid var(--pl-border); margin-left:10px;" title="Đăng xuất khỏi chi nhánh này">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <button id="btnLogout" class="pl-btn"
+          style="background:var(--pl-bg-section); border:1px solid var(--pl-border); margin-left:10px;"
+          title="Đăng xuất khỏi chi nhánh này">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
         </button>
         <!-- Nút quay về đã bị xóa theo yêu cầu -->
         <div class="pl-logo" style="margin-left: 10px; display: flex; align-items: center; gap: 12px;">
-          <div class="pl-logo-badge" style="background: var(--pl-accent, #4f3219); padding: 6px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(79, 50, 25, 0.25);">
-            <img src="https://llphotobooth.vn/uploads/images/logo.webp" alt="LL Photobooth" style="height: 26px; width: auto; object-fit: contain; display: block;" />
+          <div class="pl-logo-badge"
+            style="background: var(--pl-accent, #4f3219); padding: 6px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(79, 50, 25, 0.25);">
+            <img src="https://llphotobooth.vn/uploads/images/logo.webp" alt="LL Photobooth"
+              style="height: 26px; width: auto; object-fit: contain; display: block;" />
           </div>
-          <span id="headerBranchName" style="margin-left:10px; padding-left:12px; border-left:1px solid var(--pl-border); color:#7a6858; font-weight:500; font-size:14px; display:none;"></span>
-          <span id="headerSessionName" style="margin-left:10px; padding-left:12px; border-left:1px solid var(--pl-border); color:var(--pl-accent); font-weight:600; font-size:14px; display:none;"></span>
+          <span id="headerBranchName"
+            style="margin-left:10px; padding-left:12px; border-left:1px solid var(--pl-border); color:#7a6858; font-weight:500; font-size:14px; display:none;"></span>
+          <span id="headerSessionName"
+            style="margin-left:10px; padding-left:12px; border-left:1px solid var(--pl-border); color:var(--pl-accent); font-weight:600; font-size:14px; display:none;"></span>
         </div>
       </div>
       <div class="pl-header-center">
         <div style="display: flex; gap: 8px; align-items: center;">
-          <div id="countdownTimer" style="display:none; font-variant-numeric: tabular-nums; font-weight:700; color:var(--pl-accent); background:var(--pl-bg-section); border:1px solid var(--pl-border); padding:4px 10px; border-radius:var(--pl-radius-sm); font-size:14px;">03:00</div>
-          <a href="template-builder.html" target="_blank" class="pl-btn" id="btnBuilder" title="Tạo Template mới" style="display:none;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <div id="countdownTimer"
+            style="display:none; font-variant-numeric: tabular-nums; font-weight:700; color:var(--pl-accent); background:var(--pl-bg-section); border:1px solid var(--pl-border); padding:4px 10px; border-radius:var(--pl-radius-sm); font-size:14px;">
+            03:00</div>
+          <a href="template-builder.html" target="_blank" class="pl-btn" id="btnBuilder" title="Tạo Template mới"
+            style="display:none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18M9 21V9" />
+            </svg>
             Builder
           </a>
-          <button id="btnQueueManager" class="pl-btn pl-btn-secondary" title="Quản lý Hàng chờ" style="font-weight: 600; display:none;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          <button id="btnQueueManager" class="pl-btn pl-btn-secondary" title="Quản lý Hàng chờ"
+            style="font-weight: 600; display:none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
             Hàng Chờ
           </button>
         </div>
       </div>
       <div class="pl-header-right">
-        <button class="pl-btn" id="btnStaffDownload" title="Tải ảnh layout" style="background-color:var(--pl-accent); border-color:var(--pl-accent); color:#fff; margin-right: 10px; display: none;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        <button class="pl-btn" id="btnStaffDownload" title="Tải ảnh layout"
+          style="background-color:var(--pl-accent); border-color:var(--pl-accent); color:#fff; margin-right: 10px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+          </svg>
           Tải Ảnh Layout
         </button>
-        <button class="pl-btn pl-btn-primary" id="btnNextCustomer" title="Nhận Khách Tiếp Theo" style="display:none; background-color:#22c55e; border-color:#22c55e; color:#fff;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        <button class="pl-btn pl-btn-primary" id="btnNextCustomer" title="Nhận Khách Tiếp Theo"
+          style="background-color:#22c55e; border-color:#22c55e; color:#fff;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
           Next Customer
         </button>
       </div>
@@ -109,18 +142,30 @@
       </div>
 
       <!-- Instruction & Upload Status Banner -->
-      <div class="pl-instruction-banner" id="instructionBanner" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; gap: 8px;">
-        <div class="pl-instruction-left" style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;">
-          <div class="pl-instruction-text" id="stepInstructionText" style="font-size: 13px; line-height: 1.4; white-space: normal;">👉 Bước 1: Vuốt sang trái/phải để chọn Mẫu Khung In (Frame) yêu thích của bạn</div>
+      <div class="pl-instruction-banner" id="instructionBanner"
+        style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; gap: 8px;">
+        <div class="pl-instruction-left"
+          style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;">
+          <div class="pl-instruction-text" id="stepInstructionText"
+            style="font-size: 13px; line-height: 1.4; white-space: normal;">👉 Bước 1: Vuốt sang trái/phải để chọn Mẫu
+            Khung In (Frame) yêu thích của bạn</div>
         </div>
         <div class="pl-instruction-right" style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
-          <button class="pl-btn pl-btn-secondary" id="btnStepPrev" style="display:none; padding: 6px 10px; font-size: 13px; white-space: nowrap;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <button class="pl-btn pl-btn-secondary" id="btnStepPrev"
+            style="display:none; padding: 6px 10px; font-size: 13px; white-space: nowrap;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style="margin-right: 4px;">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
             Lùi
           </button>
-          <button class="pl-btn pl-btn-primary" id="btnStepNext" style="display:none; padding: 6px 10px; font-size: 13px; font-weight: bold; white-space: nowrap;">
+          <button class="pl-btn pl-btn-primary" id="btnStepNext"
+            style="display:none; padding: 6px 10px; font-size: 13px; font-weight: bold; white-space: nowrap;">
             Tiếp
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style="margin-left: 4px;">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
       </div>
@@ -138,13 +183,14 @@
           <button class="pl-action-btn" id="btnSelectAll">Chọn tất cả</button>
           <button class="pl-action-btn" id="btnDeselectAll">Bỏ chọn</button>
           <button class="pl-action-btn pl-action-primary" id="btnAutoFill">⚡ Auto Fill</button>
-          <button class="pl-action-btn" id="btnUploadTest" title="Tải ảnh test" style="padding:4px 8px; font-weight:bold;">+</button>
+          <button class="pl-action-btn" id="btnUploadTest" title="Tải ảnh test"
+            style="padding:4px 8px; font-weight:bold;">+</button>
           <input type="file" id="fileUploadTest" multiple accept="image/*" style="display:none;">
         </div>
         <div class="pl-image-list" id="imageList">
           <div class="pl-loading">Đang tải ảnh...</div>
         </div>
-        
+
         <!-- QR CODE OVERLAY -->
         <div id="qrOverlay" class="pl-qr-overlay" style="display:none;">
           <a id="qrLink" href="#" target="_blank" title="Nhấn để mở link">
@@ -181,53 +227,85 @@
   <script type="module" src="js/print-layout.js?v=71"></script>
 
   <!-- LOGIN OVERLAY -->
-  <div id="loginOverlay" style="position:fixed; inset:0; background:var(--pl-bg); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column;">
-    <div style="background:var(--pl-bg-panel); padding:30px; border-radius:12px; border:1px solid var(--pl-border); width:320px; text-align:center;">
+  <div id="loginOverlay"
+    style="position:fixed; inset:0; background:var(--pl-bg); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+    <div
+      style="background:var(--pl-bg-panel); padding:30px; border-radius:12px; border:1px solid var(--pl-border); width:320px; text-align:center;">
       <h2 style="margin-bottom:20px; color:var(--pl-text);">Đăng Nhập</h2>
-      <input type="text" id="loginBranch" placeholder="Mã chi nhánh (VD: CN01)" style="width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid var(--pl-border); background:var(--pl-bg-section); color:var(--pl-text);">
-      <input type="password" id="loginPassword" placeholder="Mật khẩu" style="width:100%; padding:10px; margin-bottom:20px; border-radius:6px; border:1px solid var(--pl-border); background:var(--pl-bg-section); color:var(--pl-text);">
-      
-      <button id="btnLoginSubmit" class="pl-btn pl-btn-primary" style="width:100%; justify-content:center; font-size:16px;">Vào Phòng</button>
+      <input type="text" id="loginBranch" placeholder="Mã chi nhánh (VD: CN01)"
+        style="width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid var(--pl-border); background:var(--pl-bg-section); color:var(--pl-text);">
+      <input type="password" id="loginPassword" placeholder="Mật khẩu"
+        style="width:100%; padding:10px; margin-bottom:20px; border-radius:6px; border:1px solid var(--pl-border); background:var(--pl-bg-section); color:var(--pl-text);">
+
+      <button id="btnLoginSubmit" class="pl-btn pl-btn-primary"
+        style="width:100%; justify-content:center; font-size:16px;">Vào Phòng</button>
       <div id="loginError" style="color:#ef4444; margin-top:10px; display:none; font-size:14px;">Sai thông tin</div>
     </div>
   </div>
 
   <!-- LOCK OVERLAY -->
-  <div id="lockOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9998; display:none; align-items:center; justify-content:center; flex-direction:column; text-align:center;">
+  <div id="lockOverlay"
+    style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9998; display:none; align-items:center; justify-content:center; flex-direction:column; text-align:center;">
     <h1 style="color:#ef4444; font-size:32px; margin-bottom:10px;">HẾT THỜI GIAN THAO TÁC</h1>
     <p style="color:#fff; font-size:18px;">Vui lòng đưa iPad cho nhân viên hỗ trợ in ảnh.</p>
-    
+
     <div style="display:flex; gap:15px; margin-top:30px;">
-        <button id="btnLockExportJPG" class="pl-btn" style="background:#fff; color:#000; padding:15px 30px; font-size:16px; font-weight:bold; border-radius:8px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            Lưu & In ảnh (JPG)
-        </button>
-        <button id="btnLockNextCustomer" class="pl-btn pl-btn-primary" style="padding:15px 30px; font-size:16px; font-weight:bold; border-radius:8px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            Nhận Khách Tiếp Theo
-        </button>
+      <button id="btnLockExportJPG" class="pl-btn"
+        style="background:#fff; color:#000; padding:15px 30px; font-size:16px; font-weight:bold; border-radius:8px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          style="margin-right:8px;">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+        </svg>
+        Lưu & In ảnh (JPG)
+      </button>
+      <button id="btnLockNextCustomer" class="pl-btn pl-btn-primary"
+        style="padding:15px 30px; font-size:16px; font-weight:bold; border-radius:8px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          style="margin-right:8px;">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+        Nhận Khách Tiếp Theo
+      </button>
     </div>
 
-    <button id="btnUnlock" style="margin-top:40px; padding:10px 20px; background:transparent; border:1px solid #444; color:#666; border-radius:6px; cursor:pointer;">Quay lại chỉnh sửa (Mở khóa)</button>
+    <button id="btnUnlock"
+      style="margin-top:40px; padding:10px 20px; background:transparent; border:1px solid #444; color:#666; border-radius:6px; cursor:pointer;">Quay
+      lại chỉnh sửa (Mở khóa)</button>
   </div>
-  
+
   <!-- QUEUE MODAL -->
-  <div id="queueModalOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; display:none; align-items:center; justify-content:center;">
-    <div style="background:var(--pl-bg-panel); width: 450px; max-width: 90%; border-radius: 12px; border: 1px solid var(--pl-border); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;">
-      <div style="padding: 16px 20px; border-bottom: 1px solid var(--pl-border); display: flex; justify-content: space-between; align-items: center; background: var(--pl-bg-section);">
+  <div id="queueModalOverlay"
+    style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; display:none; align-items:center; justify-content:center;">
+    <div
+      style="background:var(--pl-bg-panel); width: 450px; max-width: 90%; border-radius: 12px; border: 1px solid var(--pl-border); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;">
+      <div
+        style="padding: 16px 20px; border-bottom: 1px solid var(--pl-border); display: flex; justify-content: space-between; align-items: center; background: var(--pl-bg-section);">
         <h3 style="margin: 0; color: var(--pl-text); font-size: 16px; display: flex; align-items: center; gap: 8px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
           Quản lý Hàng chờ
         </h3>
-        <button id="btnCloseQueueModal" style="background: transparent; border: none; color: var(--pl-text); cursor: pointer; padding: 4px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <button id="btnCloseQueueModal"
+          style="background: transparent; border: none; color: var(--pl-text); cursor: pointer; padding: 4px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
-      <div id="queueListContainer" style="padding: 16px; max-height: 60vh; overflow-y: auto; background: var(--pl-bg); display: flex; flex-direction: column; gap: 10px;">
+      <div id="queueListContainer"
+        style="padding: 16px; max-height: 60vh; overflow-y: auto; background: var(--pl-bg); display: flex; flex-direction: column; gap: 10px;">
         <!-- Injected by JS -->
       </div>
     </div>
   </div>
-  
+
 </body>
+
 </html>
