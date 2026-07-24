@@ -8,9 +8,28 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="print-layout.css?v=68">
+  <link rel="stylesheet" href="print-layout.css?v=69">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var u = (params.get('user') || params.get('role') || params.get('mode') || '').toLowerCase();
+      var isStaff = (u === 'staff' || u === 'admin' || params.has('staff'));
+      if (!isStaff && u !== 'user' && u !== 'client' && u !== 'customer') {
+        try { isStaff = (localStorage.getItem('pl_staff_mode') === 'true'); } catch(e){}
+      }
+      if (u === 'user' || u === 'client' || u === 'customer') {
+        isStaff = false;
+        try { localStorage.removeItem('pl_staff_mode'); } catch(e){}
+      }
+      var cls = isStaff ? 'pl-mode-staff' : 'pl-mode-user';
+      document.documentElement.className = cls;
+      document.addEventListener('DOMContentLoaded', function() {
+        document.body.className = cls;
+      });
+    })();
+  </script>
 </head>
 <body class="pl-mode-user">
   <div class="pl-app">
@@ -159,7 +178,7 @@
 
   <!-- Core Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=68"></script>
+  <script type="module" src="js/print-layout.js?v=69"></script>
 
   <!-- LOGIN OVERLAY -->
   <div id="loginOverlay" style="position:fixed; inset:0; background:var(--pl-bg); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column;">
