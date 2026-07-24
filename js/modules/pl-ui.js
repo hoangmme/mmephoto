@@ -972,11 +972,14 @@ _initTemplate() {
     // Don't auto-select first slot to avoid accidental overwrites
     this.selectedSlotIndex = -1;
 
-    // Auto-fill slots automatically for better UX
-    setTimeout(() => {
-       this._autoFill();
-       this._renderCanvas();
-    }, 50);
+    // Auto-fill slots automatically for better UX only at Step 1 or 2 if no slots are filled yet
+    const hasFilledSlots = this.slots.some(s => s.imageId);
+    if (step <= 2 && !hasFilledSlots) {
+      setTimeout(() => {
+         this._autoFill();
+         this._renderCanvas();
+      }, 50);
+    }
   }
 
   // ── Render Image List ──

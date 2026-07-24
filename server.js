@@ -593,25 +593,21 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
   
 
   if (step !== undefined) sessionObj.step = step;
-  if (currentTemplate !== undefined) sessionObj.currentTemplate = currentTemplate;
+  if (currentTemplate && currentTemplate !== 'undefined') {
+    sessionObj.currentTemplate = currentTemplate;
+  }
   
-  // SAFEGUARD: Do not accept empty slots or empty selectedImages if we are at step >= 2, 
-  // because that means a client accidentally wiped them out.
-  const targetStep = sessionObj.step || 1;
-  if (selectedImages !== undefined) {
+  if (selectedImages && Array.isArray(selectedImages) && selectedImages.length > 0) {
     sessionObj.selectedImages = selectedImages;
   }
   
-  if (slots !== undefined) {
-      const hasImages = slots.some(s => s.imageId);
-      const hadImages = sessionObj.slots && sessionObj.slots.some(s => s.imageId);
-      if (targetStep >= 3 && !hasImages && hadImages) {
-          console.log(`[SAFEGUARD] Ignored empty slots sync for session ${session} at step ${targetStep}`);
-      } else {
-          sessionObj.slots = slots;
-      }
+  if (slots && Array.isArray(slots) && slots.length > 0) {
+    const hasImages = slots.some(s => s.imageId);
+    const hadImages = sessionObj.slots && sessionObj.slots.some(s => s.imageId);
+    if (hasImages || !hadImages) {
+      sessionObj.slots = slots;
+    }
   }
-
   
   saveRoomState();
   
