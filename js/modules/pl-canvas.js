@@ -126,36 +126,31 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
     const currentImages = roomData && roomData.images ? roomData.images : [];
     if (currentImages.length === 0) return;
 
-    const selectedArr = (this.selectedPhotos && this.selectedPhotos.size > 0)
-      ? Array.from(this.selectedPhotos)
-      : [];
+    const hasSelection = this.selectedPhotos && this.selectedPhotos.size > 0;
 
-    const usedImageIds = new Set();
-    for (let i = 0; i < this.slots.length; i++) {
-      if (this.slots[i].imageId) {
-        usedImageIds.add(this.slots[i].imageId);
+    if (hasSelection) {
+      // User made a selection — ONLY use selected photos, never add unselected ones
+      const selectedArr = Array.from(this.selectedPhotos);
+      let selectedIdx = 0;
+      for (let i = 0; i < this.slots.length && selectedIdx < selectedArr.length; i++) {
+        if (!this.slots[i].imageId) {
+          this._assignToSlot(i, selectedArr[selectedIdx], skipSync);
+          selectedIdx++;
+        }
       }
-    }
-
-    // 1. Assign selected photos to empty slots first
-    let selectedIdx = 0;
-    for (let i = 0; i < this.slots.length && selectedIdx < selectedArr.length; i++) {
-      if (!this.slots[i].imageId) {
-        const imgId = selectedArr[selectedIdx];
-        this._assignToSlot(i, imgId, skipSync);
-        usedImageIds.add(imgId);
-        selectedIdx++;
+    } else {
+      // No selection — fill empty slots with gallery photos (no duplicates)
+      const usedImageIds = new Set();
+      for (let i = 0; i < this.slots.length; i++) {
+        if (this.slots[i].imageId) usedImageIds.add(this.slots[i].imageId);
       }
-    }
-
-    // 2. Fill remaining empty slots with UNUSED gallery photos (no duplicates!)
-    const unusedImages = currentImages.filter(img => !usedImageIds.has(img.id));
-    let unusedIdx = 0;
-    for (let i = 0; i < this.slots.length && unusedIdx < unusedImages.length; i++) {
-      if (!this.slots[i].imageId) {
-        this._assignToSlot(i, unusedImages[unusedIdx].id, skipSync);
-        usedImageIds.add(unusedImages[unusedIdx].id);
-        unusedIdx++;
+      const unusedImages = currentImages.filter(img => !usedImageIds.has(img.id));
+      let unusedIdx = 0;
+      for (let i = 0; i < this.slots.length && unusedIdx < unusedImages.length; i++) {
+        if (!this.slots[i].imageId) {
+          this._assignToSlot(i, unusedImages[unusedIdx].id, skipSync);
+          unusedIdx++;
+        }
       }
     }
   }
