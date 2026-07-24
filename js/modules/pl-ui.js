@@ -438,7 +438,7 @@ export const UIMixin = {
 
         if (sNum === 4) {
           const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
-          const isStep4 = (roomData.step === 4 || (activeSess && activeSess.step === 4)) && !roomData.finished;
+          const isStep4 = (roomData.step === 4 || roomData.remoteStep === 4 || (activeSess && activeSess.step === 4)) && !roomData.finished;
           item.classList.toggle('ready-badge', isStaffMode && isStep4);
         }
       });

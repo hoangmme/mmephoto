@@ -100,9 +100,13 @@ _initSSE(branch) {
           // If this is the active session for this room
           if (this.rooms[room].session === data.session) {
             if (data.step !== undefined) {
-              this.rooms[room].step = data.step;
-              if (!isStaffMode && data.step < 4) {
-                this._startStepTimer(room, data.step);
+              if (!isStaffMode) {
+                this.rooms[room].step = data.step;
+                if (data.step < 4) {
+                  this._startStepTimer(room, data.step);
+                }
+              } else {
+                this.rooms[room].remoteStep = data.step;
               }
             }
             
