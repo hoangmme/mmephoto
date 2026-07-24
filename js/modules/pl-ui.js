@@ -470,7 +470,6 @@ _updateUIForRoom() {
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Chọn Ảnh (B2) <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-        if (btnNext) btnNext.style.display = 'none';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 2) {
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
@@ -480,7 +479,6 @@ _updateUIForRoom() {
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp (B3) <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-        if (btnNext) btnNext.style.display = 'none';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 3) {
         instructionText.textContent = '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
@@ -488,7 +486,6 @@ _updateUIForRoom() {
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B2';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = isStaffMode ? '✅ Hoàn Tất (Gửi cho User)' : '✅ Hoàn Tất (Gửi cho Nhân Viên)';
-        if (btnNext) btnNext.style.display = 'none';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 4) {
         instructionText.textContent = isStaffMode 
@@ -507,11 +504,6 @@ _updateUIForRoom() {
         btnStepPrev.style.display = isStaffMode ? 'inline-flex' : 'none';
         btnStepPrev.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại B3';
         btnStepNext.style.display = 'none';
-        
-        const btnStaffDownload = document.getElementById('btnStaffDownload');
-        if (btnStaffDownload) btnStaffDownload.style.display = isStaffMode ? 'inline-flex' : 'none';
-        
-        if (btnNext) btnNext.style.display = isStaffMode ? 'inline-flex' : 'none';
         if (qrOverlay) qrOverlay.style.display = isStaffMode ? 'none' : 'block';
       }
     }
