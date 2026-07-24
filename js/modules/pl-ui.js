@@ -434,7 +434,11 @@ export const UIMixin = {
         const sNum = parseInt(item.dataset.step);
         item.classList.toggle('active', sNum === step);
         item.classList.toggle('completed', sNum < step);
-        item.style.cursor = isStaffMode ? 'pointer' : 'default';
+        if (isStaffMode) {
+          item.style.cursor = 'pointer';
+        } else {
+          item.style.cursor = (step < 4 && sNum < 4) ? 'pointer' : 'default';
+        }
 
         if (sNum === 4) {
           const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
@@ -743,15 +747,23 @@ export const UIMixin = {
     if (stepBanner) {
       stepBanner.querySelectorAll('.pl-step-item').forEach(item => {
         item.addEventListener('click', () => {
-          if (!isStaffMode) return; // Disallow clicking step items for normal users
           if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) return;
           const targetStep = parseInt(item.dataset.step);
           if (!targetStep) return;
 
-          if (targetStep >= 1 && targetStep <= 4) {
-            // Staff clicking step banner items only previews locally for Staff (skipSync = true)
-            // It will NEVER affect or jump the user's screen!
-            this._setStep(this.activeRoom, targetStep, true);
+          const roomData = this.rooms[this.activeRoom];
+          const currentStep = roomData.step || 1;
+
+          if (!isStaffMode) {
+            if (currentStep === 4) return; // User cannot leave step 4
+            if (targetStep === 4) return; // User must use Next button to reach step 4
+            
+            this._setStep(this.activeRoom, targetStep, false);
+          } else {
+            if (targetStep >= 1 && targetStep <= 4) {
+              // Staff clicking step banner items only previews locally for Staff (skipSync = true)
+              this._setStep(this.activeRoom, targetStep, true);
+            }
           }
         });
       });
