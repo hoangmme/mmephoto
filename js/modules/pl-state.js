@@ -301,16 +301,20 @@ _syncState(room) {
     const roomData = this.rooms[room];
     if (!roomData || !this.branch || !roomData.session) return;
     
-    fetch(`/api/sync-state/${encodeURIComponent(this.branch)}/${encodeURIComponent(room)}/${encodeURIComponent(roomData.session)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        step: roomData.step,
-        currentTemplate: this.currentTemplate,
-        selectedImages: Array.from(this.selectedPhotos || []),
-        slots: this.slots || []
+    if (this._syncTimers === undefined) this._syncTimers = {};
+    if (this._syncTimers[room]) clearTimeout(this._syncTimers[room]);
+
+    this._syncTimers[room] = setTimeout(() => {
+      fetch(`/api/sync-state/${encodeURIComponent(this.branch)}/${encodeURIComponent(room)}/${encodeURIComponent(roomData.session)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          step: roomData.step,
+          currentTemplate: this.currentTemplate,
+          selectedImages: Array.from(this.selectedPhotos || []),
+          slots: this.slots || []
+        })
       })
-    })
     .then(res => res.json())
     .then(data => {
       if (data && data.sessionStartedAt) {
@@ -324,6 +328,7 @@ _syncState(room) {
       }
     })
     .catch(err => console.error('Sync error:', err));
+    }, 150);
   }
 ,
 
