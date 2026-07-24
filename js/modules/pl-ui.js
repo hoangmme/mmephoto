@@ -428,6 +428,13 @@ export const UIMixin = {
     // Update main mode class
     if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
 
+    // Failsafe: if we loaded into step 3 and slots are empty, force apply selection
+    if (step === 3 && !isStaffMode && this.slots && this.slots.some(s => !s.imageId)) {
+      if (this._applySelectionToSlots) {
+        setTimeout(() => this._applySelectionToSlots(), 100);
+      }
+    }
+
     // Update step banner active/completed items
     if (stepBanner) {
       stepBanner.querySelectorAll('.pl-step-item').forEach(item => {
