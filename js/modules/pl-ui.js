@@ -301,15 +301,20 @@ _renderTabs() {
         btn.style.color = 'var(--pl-text)';
       }
       
-      if (this.rooms[room].hasNew && room !== this.activeRoom) {
+      const roomD = this.rooms[room];
+      const isReadyStep4 = roomD && roomD.step === 4 && !roomD.finished;
+      if ((roomD.hasNew || isReadyStep4) && room !== this.activeRoom) {
         const dot = document.createElement('div');
         dot.style.position = 'absolute';
-        dot.style.top = '-2px';
-        dot.style.right = '-2px';
-        dot.style.width = '10px';
-        dot.style.height = '10px';
+        dot.style.top = '-3px';
+        dot.style.right = '-3px';
+        dot.style.width = '12px';
+        dot.style.height = '12px';
         dot.style.background = '#ef4444';
         dot.style.borderRadius = '50%';
+        dot.style.border = '2px solid #ffffff';
+        dot.style.boxShadow = '0 0 6px rgba(239, 68, 68, 0.8)';
+        dot.style.animation = 'pl-pulse 1.5s infinite';
         btn.appendChild(dot);
       }
       
@@ -395,6 +400,10 @@ _updateUIForRoom() {
         item.classList.toggle('active', sNum === step);
         item.classList.toggle('completed', sNum < step);
         item.style.cursor = isStaffMode ? 'pointer' : 'default';
+
+        if (sNum === 4) {
+          item.classList.toggle('ready-badge', isStaffMode && roomData.step === 4);
+        }
       });
     }
 
@@ -464,7 +473,9 @@ _updateUIForRoom() {
         if (btnNext) btnNext.style.display = 'none';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 4) {
-        instructionText.textContent = isStaffMode ? '✨ Vui lòng kiểm tra lại bố cục, tải ảnh layout và nhận khách tiếp theo.' : '✨ Xin chúc mừng bạn đã hoàn thành, xin vui lòng đợi nhân viên kiểm tra và in ảnh nhé';
+        instructionText.textContent = isStaffMode 
+          ? '🔔 Khách đã chỉnh xong! Nhân viên vui lòng kiểm tra lại bố cục, bấm "Tải Ảnh Layout" để in cho khách và bấm "Next Customer" để đón lượt tiếp theo.' 
+          : '✨ Xin chúc mừng bạn đã hoàn thành! Vui lòng đợi nhân viên kiểm tra và in ảnh cho bạn nhé.';
         
         // Force display block for swiper area and canvas
         const swiperArea = document.getElementById('mainSwiperArea');

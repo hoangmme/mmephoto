@@ -477,6 +477,33 @@ body {
   opacity: 0.8;
 }
 
+.pl-step-item[data-step="4"].ready-badge {
+  position: relative;
+  opacity: 1;
+}
+.pl-step-item[data-step="4"].ready-badge::after {
+  content: '🔔 Khách xong';
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  background: #ef4444;
+  color: #ffffff;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 0 0 2px var(--pl-bg-panel), 0 2px 8px rgba(239, 68, 68, 0.6);
+  animation: pl-pulse 1.5s infinite;
+  z-index: 20;
+}
+
+@keyframes pl-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
 .pl-step-num {
   width: 26px;
   height: 26px;
