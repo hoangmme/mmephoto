@@ -700,6 +700,7 @@ export const UIMixin = {
       btnStepPrev.addEventListener('click', () => {
         if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
         const cur = this.rooms[this.activeRoom].step || 1;
+        if (cur === 4 && !this._state.isStaffMode()) return; // Locked at step 4
         if (cur > 1) {
           this._setStep(this.activeRoom, cur - 1);
         }
@@ -1042,6 +1043,8 @@ export const UIMixin = {
 
       thumb.addEventListener('click', () => {
         const currentStep = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+        if (currentStep === 4 && !this._state.isStaffMode()) return;
+
         if (currentStep === 2) {
           if (this.selectedPhotos.has(img.id)) {
             this.selectedPhotos.delete(img.id);

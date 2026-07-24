@@ -91,7 +91,7 @@ _initSSE(branch) {
           let sessionObj = this.rooms[room].queue ? this.rooms[room].queue.find(s => s.id === data.session) : null;
           if (sessionObj) {
             if (data.step !== undefined) sessionObj.step = data.step;
-            if (data.stepStartedAt !== undefined) sessionObj.stepStartedAt = data.stepStartedAt;
+            if (data.sessionStartedAt !== undefined) sessionObj.sessionStartedAt = data.sessionStartedAt;
             if (data.currentTemplate !== undefined) sessionObj.currentTemplate = data.currentTemplate;
             if (data.slots && data.slots.length > 0) sessionObj.slots = data.slots;
             if (data.selectedImages) sessionObj.selectedImages = data.selectedImages;
@@ -204,9 +204,9 @@ _updateActiveSession(room, onlyBadge = false) {
       }
       
       if (active) {
-        if (active.stepStartedAt) {
+        if (active.sessionStartedAt) {
           const sessObj = roomData.queue ? roomData.queue.find(s => s.id === active.id) : null;
-          if (sessObj) sessObj.stepStartedAt = active.stepStartedAt;
+          if (sessObj) sessObj.sessionStartedAt = active.sessionStartedAt;
         }
         roomData.timerStarted = true;
         if (!isStaffMode && !roomData.timerInterval && (roomData.step || 1) < 4) {
@@ -309,10 +309,10 @@ _syncState(room) {
     })
     .then(res => res.json())
     .then(data => {
-      if (data && data.stepStartedAt) {
+      if (data && data.sessionStartedAt) {
         const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
         if (activeSess) {
-          activeSess.stepStartedAt = data.stepStartedAt;
+          activeSess.sessionStartedAt = data.sessionStartedAt;
           if (!isStaffMode && (roomData.step || 1) < 4) {
             this._startStepTimer(room, roomData.step || 1);
           }
@@ -339,11 +339,8 @@ _startStepTimer(room, step) {
       return;
     }
 
-    let duration = 60;
-    if (step === 1) duration = 60;
-    else if (step === 2) duration = 180;
-    else if (step === 3) duration = 180;
-    else {
+    let duration = 420; // 7 minutes
+    if (step === 4) {
       roomData.timeLeft = 0;
       if (this.activeRoom === room) this._updateUIForRoom();
       return;
@@ -351,8 +348,8 @@ _startStepTimer(room, step) {
 
     const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
     const updateTimeLeft = () => {
-      if (activeSess && activeSess.stepStartedAt) {
-        const elapsed = Math.floor((Date.now() - activeSess.stepStartedAt) / 1000);
+      if (activeSess && activeSess.sessionStartedAt) {
+        const elapsed = Math.floor((Date.now() - activeSess.sessionStartedAt) / 1000);
         roomData.timeLeft = Math.max(0, duration - elapsed);
       } else {
         if (roomData.timeLeft === undefined || roomData.timeLeft > duration) {
@@ -374,13 +371,11 @@ _startStepTimer(room, step) {
         clearInterval(roomData.timerInterval);
 
         if (!isStaffMode) {
-          if (step === 1) {
-            this._setStep(room, 2);
-          } else if (step === 2) {
+          if (step !== 4) {
+            // Auto fill remaining slots if any
             if (this._autoFill) this._autoFill();
-            this._setStep(room, 3);
-          } else if (step === 3) {
-            this._uploadFinalFrame();
+            // Try to upload whatever frame they have
+            if (this._uploadFinalFrame) this._uploadFinalFrame();
             this._setStep(room, 4);
           }
         }
