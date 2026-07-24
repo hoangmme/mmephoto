@@ -271,6 +271,19 @@ _initMainSwiper() {
 ,
 
   _renderTabs() {
+    const rooms = Object.keys(this.rooms);
+
+    if ((!this.activeRoom || !this.rooms[this.activeRoom]) && rooms.length > 0) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomParam = urlParams.get('room') || urlParams.get('roomId');
+      if (roomParam && this.rooms[roomParam]) {
+        this.activeRoom = roomParam;
+      } else {
+        this.activeRoom = rooms[0];
+      }
+      this._updateUIForRoom();
+    }
+
     const tabsContainer = document.getElementById('roomTabs');
     if (!tabsContainer) return;
     if (!isStaffMode) {
@@ -281,13 +294,7 @@ _initMainSwiper() {
     }
     tabsContainer.innerHTML = '';
     
-    const rooms = Object.keys(this.rooms);
     if (rooms.length === 0) return;
-    
-    if ((!this.activeRoom || !this.rooms[this.activeRoom]) && rooms.length > 0) {
-      this.activeRoom = rooms[0];
-      this._updateUIForRoom();
-    }
     
     rooms.forEach(room => {
       const btn = document.createElement('button');
