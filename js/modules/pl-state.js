@@ -103,9 +103,12 @@ _initSSE(branch) {
           if (this.rooms[room].session === data.session) {
             if (data.step !== undefined) {
               if (!isStaffMode) {
-                this.rooms[room].step = data.step;
-                if (data.step < 4) {
-                  this._startStepTimer(room, data.step);
+                // Do not allow sync events to downgrade the user from Step 4 (e.g., if Staff goes back to edit)
+                if (this.rooms[room].step !== 4 || data.step === 4) {
+                  this.rooms[room].step = data.step;
+                  if (data.step < 4) {
+                    this._startStepTimer(room, data.step);
+                  }
                 }
               } else {
                 this.rooms[room].remoteStep = data.step;
