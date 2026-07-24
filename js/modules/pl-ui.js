@@ -270,9 +270,15 @@ _initMainSwiper() {
   }
 ,
 
-_renderTabs() {
+  _renderTabs() {
     const tabsContainer = document.getElementById('roomTabs');
     if (!tabsContainer) return;
+    if (!isStaffMode) {
+      tabsContainer.style.display = 'none';
+      return;
+    } else {
+      tabsContainer.style.display = 'flex';
+    }
     tabsContainer.innerHTML = '';
     
     const rooms = Object.keys(this.rooms);
@@ -377,8 +383,20 @@ _updateUIForRoom() {
       return;
     }
     
-    if (stepFooter) stepFooter.style.display = 'flex';
-    
+    const mainHeader = document.getElementById('mainHeader');
+    const userHeader = document.getElementById('userHeader');
+    const roomTabs = document.getElementById('roomTabs');
+
+    if (isStaffMode) {
+      if (mainHeader) mainHeader.style.display = 'flex';
+      if (userHeader) userHeader.style.display = 'none';
+      if (roomTabs) roomTabs.style.display = 'flex';
+    } else {
+      if (mainHeader) mainHeader.style.display = 'none';
+      if (userHeader) userHeader.style.display = 'flex';
+      if (roomTabs) roomTabs.style.display = 'none';
+    }
+
     const btnQueue = document.getElementById('btnQueueManager');
     if (btnQueue) btnQueue.style.display = isStaffMode ? 'inline-flex' : 'none';
     const btnBuilder = document.getElementById('btnBuilder');

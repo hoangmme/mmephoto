@@ -52,9 +52,30 @@ body {
 }
 
 .pl-header-left {
+/* Dedicated User Header */
+.pl-user-header {
+  background: var(--pl-accent, #4f3219);
+  padding: 12px 20px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(79, 50, 25, 0.25);
+  width: 100%;
+  position: relative;
+  z-index: 100;
+}
+
+.pl-user-header-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pl-user-header-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .pl-back-btn {

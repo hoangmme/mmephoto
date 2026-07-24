@@ -8,14 +8,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="print-layout.css?v=65">
+  <link rel="stylesheet" href="print-layout.css?v=66">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
 </head>
 <body>
   <div class="pl-app">
-    <!-- Header -->
-    <header class="pl-header">
+    <!-- Dedicated User Header -->
+    <header class="pl-user-header" id="userHeader" style="display:none;">
+      <div class="pl-user-header-logo-container">
+        <img src="https://llphotobooth.vn/uploads/images/logo.webp" alt="LL Photobooth" class="pl-user-header-logo" />
+      </div>
+    </header>
+
+    <!-- Staff Header -->
+    <header class="pl-header" id="mainHeader">
       <div class="pl-header-left">
         <button id="btnLogout" class="pl-btn" style="background:var(--pl-bg-section); border:1px solid var(--pl-border); margin-left:10px;" title="Đăng xuất khỏi chi nhánh này">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
@@ -39,10 +46,6 @@
           <button id="btnQueueManager" class="pl-btn pl-btn-secondary" title="Quản lý Hàng chờ" style="font-weight: 600; display:none;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
             Hàng Chờ
-          </button>
-          <button id="btnRoleSwap" class="pl-btn" title="Chuyển đổi giữa Khách hàng và Nhân viên" style="background-color:var(--pl-bg-section); border-color:var(--pl-border);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            <span id="roleSwapText">Khách hàng</span>
           </button>
         </div>
       </div>
@@ -156,7 +159,7 @@
 
   <!-- Core Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=65"></script>
+  <script type="module" src="js/print-layout.js?v=66"></script>
 
   <!-- LOGIN OVERLAY -->
   <div id="loginOverlay" style="position:fixed; inset:0; background:var(--pl-bg); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column;">

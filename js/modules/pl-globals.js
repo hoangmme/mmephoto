@@ -1,7 +1,9 @@
 export const A5_WIDTH = 1748;
 export const A5_HEIGHT = 2480;
 export const PADDING = 40;
-export let isStaffMode = false;
+const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+const userParam = urlParams ? (urlParams.get('user') || urlParams.get('role') || '').toLowerCase() : '';
+export let isStaffMode = (userParam === 'staff' || userParam === 'admin');
 export function setStaffMode(val) { isStaffMode = val; }
 
 const TEMPLATES = {
