@@ -388,13 +388,11 @@ _updateUIForRoom() {
     const roomTabs = document.getElementById('roomTabs');
 
     if (isStaffMode) {
-      if (mainHeader) mainHeader.style.display = 'flex';
-      if (userHeader) userHeader.style.display = 'none';
-      if (roomTabs) roomTabs.style.display = 'flex';
+      document.body.classList.add('pl-mode-staff');
+      document.body.classList.remove('pl-mode-user');
     } else {
-      if (mainHeader) mainHeader.style.display = 'none';
-      if (userHeader) userHeader.style.display = 'flex';
-      if (roomTabs) roomTabs.style.display = 'none';
+      document.body.classList.add('pl-mode-user');
+      document.body.classList.remove('pl-mode-staff');
     }
 
     const btnQueue = document.getElementById('btnQueueManager');

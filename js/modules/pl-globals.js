@@ -1,10 +1,33 @@
 export const A5_WIDTH = 1748;
 export const A5_HEIGHT = 2480;
 export const PADDING = 40;
-const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-const userParam = urlParams ? (urlParams.get('user') || urlParams.get('role') || '').toLowerCase() : '';
-export let isStaffMode = (userParam === 'staff' || userParam === 'admin');
-export function setStaffMode(val) { isStaffMode = val; }
+let staffFromUrl = false;
+
+if (typeof window !== 'undefined' && window.location) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const userParam = (urlParams.get('user') || urlParams.get('role') || urlParams.get('mode') || '').toLowerCase();
+  
+  if (userParam === 'staff' || userParam === 'admin' || urlParams.has('staff')) {
+    staffFromUrl = true;
+    try { localStorage.setItem('pl_staff_mode', 'true'); } catch(e){}
+  } else if (userParam === 'user' || userParam === 'client' || userParam === 'customer') {
+    staffFromUrl = false;
+    try { localStorage.removeItem('pl_staff_mode'); } catch(e){}
+  } else {
+    try {
+      staffFromUrl = (localStorage.getItem('pl_staff_mode') === 'true');
+    } catch(e){}
+  }
+}
+
+export let isStaffMode = staffFromUrl;
+export function setStaffMode(val) { 
+  isStaffMode = val; 
+  try {
+    if (val) localStorage.setItem('pl_staff_mode', 'true');
+    else localStorage.removeItem('pl_staff_mode');
+  } catch(e){}
+}
 
 const TEMPLATES = {
   '1photo': {

@@ -57,17 +57,20 @@ body {
   gap: 10px;
 }
 
-/* Dedicated User Header */
+/* Dedicated User Header (Brown Background with Centered Logo) */
 .pl-user-header {
-  background: var(--pl-accent, #4f3219);
-  padding: 12px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: var(--pl-accent, #4f3219) !important;
+  height: 60px;
+  padding: 0 20px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   box-shadow: 0 4px 16px rgba(79, 50, 25, 0.25);
   width: 100%;
   position: relative;
   z-index: 100;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .pl-user-header-logo-container {
@@ -81,6 +84,23 @@ body {
   width: auto;
   object-fit: contain;
   display: block;
+}
+
+/* Visibility Control Based on Body Mode */
+body.pl-mode-user #userHeader {
+  display: flex !important;
+}
+body.pl-mode-user #mainHeader,
+body.pl-mode-user #roomTabs {
+  display: none !important;
+}
+
+body.pl-mode-staff #userHeader {
+  display: none !important;
+}
+body.pl-mode-staff #mainHeader,
+body.pl-mode-staff #roomTabs {
+  display: flex !important;
 }
 
 .pl-back-btn {
