@@ -1040,8 +1040,10 @@ export const UIMixin = {
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
 
     let imagesToRender = this.images;
-    if (step === 3 && this.selectedPhotos.size > 0) {
-      imagesToRender = this.images.filter(img => this.selectedPhotos.has(img.id));
+    if (step === 3) {
+      // At Step 3, only show images that are currently assigned to frame slots
+      const slotImageIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
+      imagesToRender = this.images.filter(img => slotImageIds.has(img.id));
     }
 
     imagesToRender.forEach(img => {
