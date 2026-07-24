@@ -9,24 +9,14 @@ if (typeof window !== 'undefined' && window.location) {
   
   if (userParam === 'staff' || userParam === 'admin' || urlParams.has('staff')) {
     staffFromUrl = true;
-    try { localStorage.setItem('pl_staff_mode', 'true'); } catch(e){}
-  } else if (userParam === 'user' || userParam === 'client' || userParam === 'customer') {
-    staffFromUrl = false;
-    try { localStorage.removeItem('pl_staff_mode'); } catch(e){}
   } else {
-    try {
-      staffFromUrl = (localStorage.getItem('pl_staff_mode') === 'true');
-    } catch(e){}
+    staffFromUrl = false;
   }
 }
 
 export let isStaffMode = staffFromUrl;
 export function setStaffMode(val) { 
   isStaffMode = val; 
-  try {
-    if (val) localStorage.setItem('pl_staff_mode', 'true');
-    else localStorage.removeItem('pl_staff_mode');
-  } catch(e){}
 }
 
 const TEMPLATES = {
