@@ -428,17 +428,7 @@ export const UIMixin = {
     // Update main mode class
     if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
 
-    // Failsafe: if we loaded into step 3 and slots are empty, force apply selection ONCE
-    if (step === 3 && !isStaffMode && this.slots && this.slots.some(s => !s.imageId)) {
-      if (!this._failsafeFired) {
-        this._failsafeFired = true;
-        if (this._applySelectionToSlots) {
-          setTimeout(() => this._applySelectionToSlots(), 100);
-        }
-      }
-    } else if (step !== 3) {
-      this._failsafeFired = false;
-    }
+    // (Removed dangerous async failsafe here. _applySelectionToSlots is now reliably called in _setStep)
 
     // Update step banner active/completed items
     if (stepBanner) {
@@ -589,10 +579,9 @@ export const UIMixin = {
     const roomData = this.rooms[room];
     if (!roomData) return;
     
-    // Automatically fill frame when entering step 3 by the user (if slots are empty)
+    // Automatically apply selection to frame when entering step 3 by the user
     if (step === 3 && !isStaffMode) {
-      const hasEmptySlots = this.slots && this.slots.some(s => !s.imageId);
-      if (hasEmptySlots && this._applySelectionToSlots) {
+      if (this._applySelectionToSlots) {
         this._applySelectionToSlots();
       }
     }
@@ -1043,9 +1032,13 @@ export const UIMixin = {
 
     let imagesToRender = this.images;
     if (step === 3) {
-      // At Step 3, only show images that are currently assigned to frame slots
-      const slotImageIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
-      imagesToRender = this.images.filter(img => slotImageIds.has(img.id));
+      // At Step 3, show ALL selected photos so users can swap them (even if not currently in a slot)
+      if (this.selectedPhotos && this.selectedPhotos.size > 0) {
+        imagesToRender = this.images.filter(img => this.selectedPhotos.has(img.id));
+      } else {
+        // Fallback: if no selection was made, show all images
+        imagesToRender = this.images;
+      }
     }
 
     imagesToRender.forEach(img => {

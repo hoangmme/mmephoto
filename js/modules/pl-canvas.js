@@ -172,17 +172,9 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
   }
 ,
 
-_applySelectionToSlots() {
-    if (this.selectedPhotos && this.selectedPhotos.size === 0) {
-      if (this._autoFill) this._autoFill(true);
-    } else {
-      const selectedArr = Array.from(this.selectedPhotos || []);
-      // Clear all slots first
-      this.slots.forEach(s => s.imageId = null);
-      // Assign selected photos
-      for (let i = 0; i < selectedArr.length && i < this.slots.length; i++) {
-        this._assignToSlot(i, selectedArr[i], true);
-      }
+  _applySelectionToSlots() {
+    if (this._autoFill) {
+      this._autoFill(true);
     }
   }
 ,
