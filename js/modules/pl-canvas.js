@@ -121,20 +121,29 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
   // ── Auto Fill ──
 ,
 
-_autoFill(skipSync = false) {
+  _autoFill(skipSync = false) {
     const roomData = this.activeRoom && this.rooms[this.activeRoom];
     const step = roomData ? (roomData.step || 1) : 1;
     const currentImages = roomData && roomData.images ? roomData.images : [];
     
-    const sourceImages = (step >= 2 && this.selectedPhotos && this.selectedPhotos.size > 0)
+    let sourceImages = (step >= 2 && this.selectedPhotos && this.selectedPhotos.size > 0)
       ? currentImages.filter(img => this.selectedPhotos.has(img.id))
       : currentImages;
 
+    if (sourceImages.length === 0) {
+      sourceImages = currentImages;
+    }
+
+    if (sourceImages.length === 0) return;
+
     let imgIndex = 0;
     for (let i = 0; i < this.slots.length; i++) {
-      if (!this.slots[i].imageId && imgIndex < sourceImages.length) {
-        this._assignToSlot(i, sourceImages[imgIndex].id, skipSync);
-        imgIndex++;
+      if (!this.slots[i].imageId) {
+        const targetImg = sourceImages[imgIndex % sourceImages.length];
+        if (targetImg) {
+          this._assignToSlot(i, targetImg.id, skipSync);
+          imgIndex++;
+        }
       }
     }
   }
