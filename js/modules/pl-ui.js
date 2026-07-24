@@ -402,7 +402,9 @@ _updateUIForRoom() {
         item.style.cursor = isStaffMode ? 'pointer' : 'default';
 
         if (sNum === 4) {
-          item.classList.toggle('ready-badge', isStaffMode && roomData.step === 4);
+          const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
+          const isStep4 = (roomData.step === 4 || (activeSess && activeSess.step === 4)) && !roomData.finished;
+          item.classList.toggle('ready-badge', isStaffMode && isStep4);
         }
       });
     }

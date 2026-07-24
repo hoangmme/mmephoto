@@ -118,9 +118,11 @@ _initSSE(branch) {
               
               if (templateChanged) {
                 this._loadTemplateImages();
-                this._updateUIForRoom();
-                this._renderCanvas();
               }
+              this._updateUIForRoom();
+              this._renderCanvas();
+            } else {
+              this._renderTabs();
             }
           }
         }
