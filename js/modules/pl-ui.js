@@ -72,9 +72,6 @@ _initLogin() {
             }
           }
         } catch (err) {}
-      }
-      const btnNext = document.getElementById('btnNextCustomer');
-      if (btnNext) btnNext.style.display = 'none';
       const lockOverlay = document.getElementById('lockOverlay');
       if (lockOverlay) lockOverlay.style.display = 'none';
       if (r) {
@@ -361,6 +358,20 @@ _updateUIForRoom() {
     const btnBuilder = document.getElementById('btnBuilder');
     if (btnBuilder) btnBuilder.style.display = isStaffMode ? 'inline-flex' : 'none';
 
+    const btnStaffDownload = document.getElementById('btnStaffDownload');
+    const btnNext = document.getElementById('btnNextCustomer');
+
+    const currentRoomD = (this.activeRoom && this.rooms[this.activeRoom]) ? this.rooms[this.activeRoom] : null;
+    const hasActiveSess = !!(currentRoomD && currentRoomD.session);
+    const hasQueuedSess = !!(currentRoomD && currentRoomD.queue && currentRoomD.queue.filter(s => !s.finished).length > 0);
+
+    if (btnStaffDownload) {
+      btnStaffDownload.style.display = (isStaffMode && hasActiveSess) ? 'inline-flex' : 'none';
+    }
+    if (btnNext) {
+      btnNext.style.display = (isStaffMode && (hasQueuedSess || hasActiveSess)) ? 'inline-flex' : 'none';
+    }
+
     this._updateActiveSession(this.activeRoom, false);
     
     // SAFEGUARD: Removed dangerous step 1 revert that caused user data wipe on sync.
@@ -374,7 +385,6 @@ _updateUIForRoom() {
     const timerEl = document.getElementById('countdownTimer');
     const qrOverlay = document.getElementById('qrOverlay');
     const lockOverlay = document.getElementById('lockOverlay');
-    const btnNext = document.getElementById('btnNextCustomer');
     const stepBanner = document.getElementById('stepBanner');
     const instructionText = document.getElementById('stepInstructionText');
     const uploadBadge = document.getElementById('uploadStatusBadge');
@@ -399,7 +409,6 @@ _updateUIForRoom() {
       if (timerEl) timerEl.style.display = 'none';
       if (qrOverlay) qrOverlay.style.display = 'none';
       if (lockOverlay) lockOverlay.style.display = 'none';
-      if (btnNext) btnNext.style.display = 'none';
       if (mainContainer) mainContainer.className = 'pl-main pl-step-mode-1';
       if (instructionText) instructionText.textContent = isStaffMode 
         ? '👉 Chào Staff! Chưa có phiên chụp nào trong phòng này. Vui lòng bấm "Hàng Chờ" hoặc mở phòng mới.'
