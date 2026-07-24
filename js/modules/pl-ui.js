@@ -180,8 +180,8 @@ export const UIMixin = {
               const activeSlide = this.mainSwiper.querySelector(`[data-id="${this.currentTemplate}"]`);
               if (activeSlide) {
                 this.isProgrammaticScroll = true;
-                this.mainSwiper.scrollLeft = activeSlide.offsetLeft - pad;
-                setTimeout(() => { this.isProgrammaticScroll = false; }, 500);
+                activeSlide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                setTimeout(() => { this.isProgrammaticScroll = false; }, 800);
               }
             });
           }
@@ -464,10 +464,9 @@ export const UIMixin = {
 
         const parentArea = this.mainSwiper.parentElement;
         if (parentArea && parentArea.offsetWidth > 0) {
-          const pad = Math.max(0, (parentArea.offsetWidth - activeSlide.offsetWidth) / 2);
           this.isProgrammaticScroll = true;
-          this.mainSwiper.scrollLeft = activeSlide.offsetLeft - pad;
-          setTimeout(() => { this.isProgrammaticScroll = false; }, 500);
+          activeSlide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+          setTimeout(() => { this.isProgrammaticScroll = false; }, 800);
         }
       }
     }
