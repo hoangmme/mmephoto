@@ -118,12 +118,13 @@
               const item = document.createElement('div');
               item.className = 'photo-item';
               
+              const cacheBustUrl = imgUrl + '?v=' + Date.now();
               const img = document.createElement('img');
-              img.src = imgUrl;
+              img.src = cacheBustUrl;
               
               const a = document.createElement('a');
               a.className = 'download-btn single-download';
-              a.href = imgUrl;
+              a.href = cacheBustUrl;
               a.download = `LL_Photobooth_${session}_${i+1}`;
               a.innerText = 'Tải Xuống';
               

@@ -485,23 +485,31 @@ async _exportJPG() {
 
 async _uploadFinalFrame() {
     if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) return;
-    try {
-      const exportCanvas = document.createElement('canvas');
-      this._drawToCanvas(exportCanvas, false);
-      exportCanvas.toBlob(async (blob) => {
-        if (!blob) return;
-        const branch = localStorage.getItem('branchId') || 'CN01';
-        const session = this.rooms[this.activeRoom].session;
-        const formData = new FormData();
-        formData.append('image', blob, '00_frame.jpg'); // Bắt đầu bằng 00_ để hiện đầu tiên
-        await fetch(`/api/stream-upload/${branch}/${this.activeRoom}/${session}`, {
-          method: 'POST',
-          body: formData
-        });
-      }, 'image/jpeg', 0.95);
-    } catch (err) {
-      console.error('Upload final frame failed:', err);
-    }
+    return new Promise((resolve) => {
+      try {
+        const exportCanvas = document.createElement('canvas');
+        this._drawToCanvas(exportCanvas, false);
+        exportCanvas.toBlob(async (blob) => {
+          if (!blob) return resolve();
+          const branch = localStorage.getItem('branchId') || 'CN01';
+          const session = this.rooms[this.activeRoom].session;
+          const formData = new FormData();
+          formData.append('image', blob, '00_frame.jpg');
+          try {
+            await fetch(`/api/stream-upload/${branch}/${this.activeRoom}/${session}`, {
+              method: 'POST',
+              body: formData
+            });
+          } catch (err) {
+            console.error('Upload final frame failed:', err);
+          }
+          resolve();
+        }, 'image/jpeg', 0.95);
+      } catch (err) {
+        console.error('Upload final frame error:', err);
+        resolve();
+      }
+    });
   }
 ,
 

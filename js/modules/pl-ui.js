@@ -673,7 +673,7 @@ _bindEvents() {
 
     const btnStepNext = document.getElementById('btnStepNext');
     if (btnStepNext) {
-      btnStepNext.addEventListener('click', () => {
+      btnStepNext.addEventListener('click', async () => {
         if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
         const cur = this.rooms[this.activeRoom].step || 1;
         if (cur === 1) {
@@ -692,7 +692,7 @@ _bindEvents() {
           }
           this._setStep(this.activeRoom, 3);
         } else if (cur === 3) {
-          this._uploadFinalFrame();
+          await this._uploadFinalFrame();
           this._setStep(this.activeRoom, 4);
         }
       });
