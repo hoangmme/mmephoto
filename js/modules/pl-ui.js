@@ -2,15 +2,17 @@ import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5
 
 export const UIMixin = {
   _initLogin() {
-    const branchId = localStorage.getItem('branchId');
+    const params = new URLSearchParams(window.location.search);
+    let branchId = params.get('branch') || params.get('branchId') || localStorage.getItem('branchId');
     const loginOverlay = document.getElementById('loginOverlay');
     const lockOverlay = document.getElementById('lockOverlay');
 
-    if (!branchId) {
-      if (loginOverlay) loginOverlay.style.display = 'flex';
-    } else {
+    if (branchId) {
+      localStorage.setItem('branchId', branchId);
       if (loginOverlay) loginOverlay.style.display = 'none';
       this._initSSE(branchId);
+    } else {
+      if (loginOverlay) loginOverlay.style.display = 'flex';
     }
 
     const handleLoginSubmit = async () => {
