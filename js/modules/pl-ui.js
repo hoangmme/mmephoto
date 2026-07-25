@@ -124,8 +124,117 @@ export const UIMixin = {
     this._loadBatch();
     this._initLogin();
     if (this._initQueueManager) this._initQueueManager();
+    this._initLightboxEvents();
   }
   ,
+
+  _openLightbox(index, imagesList) {
+    this.lightboxImages = imagesList || this.images;
+    this.lightboxIndex = index;
+    this._updateLightboxContent();
+
+    const overlay = document.getElementById('lightboxOverlay');
+    if (overlay) overlay.classList.add('active');
+  },
+
+  _updateLightboxContent() {
+    if (!this.lightboxImages || this.lightboxImages.length === 0) return;
+    if (this.lightboxIndex < 0) this.lightboxIndex = 0;
+    if (this.lightboxIndex >= this.lightboxImages.length) this.lightboxIndex = this.lightboxImages.length - 1;
+
+    const imgObj = this.lightboxImages[this.lightboxIndex];
+    const lightboxImg = document.getElementById('lightboxImg');
+    const counter = document.getElementById('lightboxCounter');
+    const selectText = document.getElementById('lightboxSelectText');
+
+    if (lightboxImg) lightboxImg.src = imgObj.objectUrl || imgObj.url;
+    if (counter) counter.textContent = `${this.lightboxIndex + 1} / ${this.lightboxImages.length}`;
+
+    if (selectText) {
+      const isSelected = this.selectedPhotos && this.selectedPhotos.has(imgObj.id);
+      selectText.textContent = isSelected ? 'Bỏ chọn ảnh này' : 'Chọn ảnh này';
+    }
+  },
+
+  _initLightboxEvents() {
+    const overlay = document.getElementById('lightboxOverlay');
+    const closeBtn = document.getElementById('btnLightboxClose');
+    const prevBtn = document.getElementById('btnLightboxPrev');
+    const nextBtn = document.getElementById('btnLightboxNext');
+    const selectBtn = document.getElementById('btnLightboxSelect');
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        if (overlay) overlay.classList.remove('active');
+      });
+    }
+
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
+        }
+      });
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (this.lightboxIndex > 0) {
+          this.lightboxIndex--;
+          this._updateLightboxContent();
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        if (this.lightboxImages && this.lightboxIndex < this.lightboxImages.length - 1) {
+          this.lightboxIndex++;
+          this._updateLightboxContent();
+        }
+      });
+    }
+
+    if (selectBtn) {
+      selectBtn.addEventListener('click', () => {
+        if (!this.lightboxImages || this.lightboxIndex < 0) return;
+        const imgObj = this.lightboxImages[this.lightboxIndex];
+        if (!imgObj) return;
+
+        if (this.selectedPhotos.has(imgObj.id)) {
+          this.selectedPhotos.delete(imgObj.id);
+        } else {
+          const template = ALL_TEMPLATES[this.currentTemplate];
+          const maxSlots = template ? template.slots.length : 0;
+          if (maxSlots > 0 && this.selectedPhotos.size >= maxSlots) {
+            alert(`Bạn chỉ được chọn tối đa ${maxSlots} ảnh cho khung này.`);
+            return;
+          }
+          this.selectedPhotos.add(imgObj.id);
+        }
+        if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].queue) {
+          const activeSess = this.rooms[this.activeRoom].queue.find(s => s.id === this.rooms[this.activeRoom].session);
+          if (activeSess) {
+            activeSess.selectedImages = Array.from(this.selectedPhotos);
+          }
+        }
+        this._updateImageListUI();
+        this._syncState(this.activeRoom);
+        this._updateLightboxContent();
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (!overlay || !overlay.classList.contains('active')) return;
+      if (e.key === 'Escape') {
+        overlay.classList.remove('active');
+      } else if (e.key === 'ArrowLeft') {
+        if (prevBtn) prevBtn.click();
+      } else if (e.key === 'ArrowRight') {
+        if (nextBtn) nextBtn.click();
+      }
+    });
+  },
 
   _initMainSwiper() {
     if (!this.mainSwiper) return;
@@ -493,7 +602,7 @@ export const UIMixin = {
           : '👉 Bước 1: Vuốt sang trái/phải và chạm chọn Mẫu Khung In (Frame) yêu thích của bạn';
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
-        btnStepNext.innerHTML = 'Tiếp theo: Chọn Ảnh (B2) <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+        btnStepNext.innerHTML = 'Tiếp theo: Chọn Ảnh <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 2) {
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
@@ -502,7 +611,7 @@ export const UIMixin = {
         instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
-        btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp (B3) <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+        btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 3) {
         instructionText.textContent = '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
@@ -550,9 +659,9 @@ export const UIMixin = {
       }
     }
 
-    if (t1) t1.textContent = '(B1)';
-    if (t2) t2.textContent = '(B2)';
-    if (t3) t3.textContent = '(B3)';
+    if (t1) t1.textContent = '';
+    if (t2) t2.textContent = '';
+    if (t3) t3.textContent = '';
 
 
     if (lockOverlay) {
@@ -1041,7 +1150,7 @@ export const UIMixin = {
       }
     }
 
-    imagesToRender.forEach(img => {
+    imagesToRender.forEach((img, idx) => {
       const thumb = document.createElement('div');
       thumb.className = 'pl-thumb';
       thumb.dataset.id = img.id;
@@ -1051,8 +1160,19 @@ export const UIMixin = {
 
       thumb.innerHTML = `
         <img src="${srcUrl}" alt="${imgName}">
+        <button class="pl-thumb-zoom-btn" title="Xem phóng to ảnh">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
+        </button>
         <div class="pl-thumb-info">${imgName}</div>
       `;
+
+      const zoomBtn = thumb.querySelector('.pl-thumb-zoom-btn');
+      if (zoomBtn) {
+        zoomBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this._openLightbox(idx, imagesToRender);
+        });
+      }
 
       thumb.addEventListener('click', () => {
         const currentStep = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;

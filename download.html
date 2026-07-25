@@ -156,10 +156,20 @@
   </header>
 
   <div class="container">
-    <p style="text-align: center; color: var(--text-muted); font-size: 14px;">Nhấn vào nút Tải Xuống bên dưới mỗi tấm ảnh để lưu về máy.</p>
+    <p style="text-align: center; color: var(--text-muted); font-size: 14px;">Chạm vào ảnh để xem phóng to. Bấm nút bên dưới để lưu toàn bộ ảnh về máy.</p>
     
-    <button id="btnDownloadAll" class="download-btn" style="width: 100%; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; display: none;">Tải Toàn Bộ Ảnh</button>
-    
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+      <button id="btnDownloadAll" class="download-btn" style="width: 100%; border: none; border-radius: 8px; cursor: pointer; display: none;">📲 Lưu Tất Cả Vào Album Ảnh (iOS/iPad)</button>
+      <button id="btnDownloadZip" class="download-btn" style="width: 100%; border: none; border-radius: 8px; cursor: pointer; display: none; background: #666;">📦 Tải File ZIP</button>
+    </div>
+
+    <div id="iosTip" style="display: none; margin-top: 14px; padding: 12px 16px; background: rgba(79, 50, 25, 0.08); border: 1px dashed var(--accent); border-radius: 10px; font-size: 13px; color: var(--text); line-height: 1.6;">
+      💡 <strong>Mẹo lưu vào Album trên iPhone / iPad:</strong><br>
+      1. Bấm <strong>"📲 Lưu Tất Cả Vào Album Ảnh"</strong><br>
+      2. Trong bảng hiện ra của iOS, chọn <strong>"Lưu [X] Hình Ảnh" (Save X Images)</strong> để lưu thẳng vào thư viện Ảnh.<br>
+      3. Hoặc bạn cũng có thể đè giữ vào từng bức ảnh bên dưới và chọn <strong>"Lưu vào Ảnh"</strong>.
+    </div>
+
     <div id="loading" class="loading">Đang tải ảnh...</div>
     
     <div id="photoGrid" class="photo-grid"></div>
@@ -168,33 +178,19 @@
   <!-- Lightbox -->
   <div id="lightbox" class="lightbox">
     <img id="lightboxImg" src="" alt="Zoomed Photo">
-    <div class="lightbox-controls">
-      <a id="lightboxDownload" href="" download class="lightbox-btn">Tải Xuống</a>
-      <button id="lightboxClose" class="lightbox-btn close">Đóng</button>
-    </div>
   </div>
 
   <script>
     // Lightbox Logic
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightboxImg');
-    const lightboxDownload = document.getElementById('lightboxDownload');
-    const lightboxClose = document.getElementById('lightboxClose');
 
-    lightboxClose.addEventListener('click', () => {
+    lightbox.addEventListener('click', () => {
       lightbox.classList.remove('active');
     });
 
-    lightbox.addEventListener('click', (e) => {
-      if (e.target === lightbox) {
-        lightbox.classList.remove('active');
-      }
-    });
-
-    function openLightbox(src, filename) {
+    function openLightbox(src) {
       lightboxImg.src = src;
-      lightboxDownload.href = src;
-      lightboxDownload.download = filename;
       lightbox.classList.add('active');
     }
 
@@ -206,6 +202,14 @@
       
       const grid = document.getElementById('photoGrid');
       const loading = document.getElementById('loading');
+      const btnDownloadAll = document.getElementById('btnDownloadAll');
+      const btnDownloadZip = document.getElementById('btnDownloadZip');
+      const iosTip = document.getElementById('iosTip');
+
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isIOS && iosTip) {
+        iosTip.style.display = 'block';
+      }
 
       if (!branch || !room || !session) {
         loading.innerText = 'Đường dẫn không hợp lệ.';
@@ -229,22 +233,60 @@
               const img = document.createElement('img');
               img.src = cacheBustUrl;
               
-              const filename = `LL_Photobooth_${session}_${i+1}`;
-              
               item.addEventListener('click', () => {
-                openLightbox(cacheBustUrl, filename);
+                openLightbox(cacheBustUrl);
               });
               
               item.appendChild(img);
               grid.appendChild(item);
             });
 
-            // Show download all button
-            const btnDownloadAll = document.getElementById('btnDownloadAll');
+            // Show download buttons
             btnDownloadAll.style.display = 'block';
+            btnDownloadZip.style.display = 'block';
+
             btnDownloadAll.addEventListener('click', async () => {
-              btnDownloadAll.innerText = 'Đang nén file (0%)...';
+              btnDownloadAll.innerText = 'Đang chuẩn bị ảnh (0%)...';
               btnDownloadAll.disabled = true;
+
+              try {
+                const files = [];
+                for (let i = 0; i < data.images.length; i++) {
+                  const url = data.images[i];
+                  const response = await fetch(url);
+                  const blob = await response.blob();
+                  const mimeType = blob.type || 'image/jpeg';
+                  const ext = mimeType.includes('png') ? 'png' : (mimeType.includes('webp') ? 'webp' : 'jpg');
+                  const file = new File([blob], `LL_Photobooth_${session}_${i+1}.${ext}`, { type: mimeType });
+                  files.push(file);
+                  btnDownloadAll.innerText = `Đang chuẩn bị ảnh (${Math.round(((i + 1) / data.images.length) * 100)}%)...`;
+                }
+
+                if (navigator.share && navigator.canShare && navigator.canShare({ files })) {
+                  btnDownloadAll.innerText = 'Đang mở menu lưu ảnh...';
+                  await navigator.share({
+                    files: files,
+                    title: 'LL Photobooth'
+                  });
+                  btnDownloadAll.innerText = '📲 Lưu Tất Cả Vào Album Ảnh (iOS/iPad)';
+                } else {
+                  alert('Trình duyệt không hỗ trợ chia sẻ trực tiếp. Đang chuyển sang tải file ZIP...');
+                  btnDownloadZip.click();
+                }
+              } catch (err) {
+                if (err.name !== 'AbortError') {
+                  console.error(err);
+                  alert('Có lỗi hoặc bạn đã hủy lưu ảnh.');
+                }
+                btnDownloadAll.innerText = '📲 Lưu Tất Cả Vào Album Ảnh (iOS/iPad)';
+              } finally {
+                btnDownloadAll.disabled = false;
+              }
+            });
+
+            btnDownloadZip.addEventListener('click', async () => {
+              btnDownloadZip.innerText = 'Đang nén file (0%)...';
+              btnDownloadZip.disabled = true;
               try {
                 const JSZip = window.JSZip;
                 const zip = new JSZip();
@@ -255,10 +297,10 @@
                   const response = await fetch(url);
                   const blob = await response.blob();
                   zip.file(filename, blob);
-                  btnDownloadAll.innerText = `Đang nén file (${Math.round(((i + 1) / data.images.length) * 100)}%)...`;
+                  btnDownloadZip.innerText = `Đang nén file (${Math.round(((i + 1) / data.images.length) * 100)}%)...`;
                 }
 
-                btnDownloadAll.innerText = 'Đang tạo file tải xuống...';
+                btnDownloadZip.innerText = 'Đang tạo file tải xuống...';
                 const zipBlob = await zip.generateAsync({type: "blob"});
                 
                 const link = document.createElement('a');
@@ -268,13 +310,13 @@
                 link.click();
                 document.body.removeChild(link);
                 
-                btnDownloadAll.innerText = 'Tải Toàn Bộ Ảnh (ZIP)';
+                btnDownloadZip.innerText = '📦 Tải File ZIP';
               } catch (err) {
                 console.error(err);
                 alert('Có lỗi xảy ra khi tạo file zip!');
-                btnDownloadAll.innerText = 'Tải Toàn Bộ Ảnh (Lỗi)';
+                btnDownloadZip.innerText = '📦 Tải File ZIP (Lỗi)';
               } finally {
-                btnDownloadAll.disabled = false;
+                btnDownloadZip.disabled = false;
               }
             });
           } else {

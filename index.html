@@ -123,17 +123,17 @@
       <div class="pl-step-banner" id="stepBanner">
         <div class="pl-step-item active" data-step="1">
           <span class="pl-step-num">1</span>
-          <span class="pl-step-label">B1: Chọn Khung <small id="stepTimer1">(01:00)</small></span>
+          <span class="pl-step-label">B1: Chọn Khung <small id="stepTimer1"></small></span>
         </div>
         <div class="pl-step-connector"></div>
         <div class="pl-step-item" data-step="2">
           <span class="pl-step-num">2</span>
-          <span class="pl-step-label">B2: Chọn Ảnh <small id="stepTimer2">(03:00)</small></span>
+          <span class="pl-step-label">B2: Chọn Ảnh <small id="stepTimer2"></small></span>
         </div>
         <div class="pl-step-connector"></div>
         <div class="pl-step-item" data-step="3">
           <span class="pl-step-num">3</span>
-          <span class="pl-step-label">B3: Sắp Xếp <small id="stepTimer3">(03:00)</small></span>
+          <span class="pl-step-label">B3: Sắp Xếp <small id="stepTimer3"></small></span>
         </div>
         <div class="pl-step-connector"></div>
         <div class="pl-step-item" data-step="4">
@@ -304,6 +304,29 @@
         style="padding: 16px; max-height: 60vh; overflow-y: auto; background: var(--pl-bg); display: flex; flex-direction: column; gap: 10px;">
         <!-- Injected by JS -->
       </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX MODAL -->
+  <div id="lightboxOverlay" class="pl-lightbox-overlay">
+    <div class="pl-lightbox-header">
+      <span id="lightboxCounter" class="pl-lightbox-counter">1 / 1</span>
+      <button id="btnLightboxClose" class="pl-lightbox-close" title="Đóng">&times;</button>
+    </div>
+    <div class="pl-lightbox-container">
+      <button id="btnLightboxPrev" class="pl-lightbox-nav pl-lightbox-prev" title="Ảnh trước">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <img id="lightboxImg" class="pl-lightbox-img" src="" alt="Preview Photo">
+      <button id="btnLightboxNext" class="pl-lightbox-nav pl-lightbox-next" title="Ảnh tiếp">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+    <div class="pl-lightbox-actions">
+      <button id="btnLightboxSelect" class="pl-btn pl-btn-primary" style="padding: 10px 20px; font-size: 14px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><path d="M20 6L9 17l-5-5"/></svg>
+        <span id="lightboxSelectText">Chọn Ảnh Này</span>
+      </button>
     </div>
   </div>
 
