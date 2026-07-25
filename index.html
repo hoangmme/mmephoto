@@ -38,8 +38,8 @@
   <div class="pl-app">
     <!-- Dedicated User Header -->
     <header class="pl-user-header" id="userHeader">
-      <div class="pl-user-header-logo-container">
-        <img class="pl-user-header-logo" src="https://llphotobooth.vn/uploads/images/logo.webp" alt="LL Photobooth" style="height: 40px;">
+      <div class="pl-user-header-logo-container" style="height: 40px; overflow: hidden;">
+        <img class="pl-user-header-logo" src="https://llphotobooth.vn/uploads/images/logo.webp" alt="LL Photobooth" style="height: 100px;">
       </div>
       <div id="globalTimer" style="font-size: 16px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 6px;">⏱ 07:00</div>
     </header>
@@ -215,8 +215,8 @@
         <!-- Note giải thích khổ giấy A4 & A5 cho khách -->
         <div id="paperInfoNote" class="pl-paper-info-note" style="margin: 12px auto 0 auto; max-width: 520px; padding: 10px 14px; background: rgba(79, 50, 25, 0.08); border: 1px dashed var(--pl-border); border-radius: 10px; font-size: 12px; color: var(--pl-text); text-align: center; line-height: 1.6;">
           💡 <strong>Lưu ý quy cách khổ giấy in:</strong><br>
-          📄 <strong>Khổ A4:</strong> Chọn được 1 iframe (1 khung đơn)<br>
-          📄 <strong>Khổ A5:</strong> Chọn được 2 iframe (combo 2 khung)
+          📄 <strong>Khổ A4:</strong> Chọn được 1 Frame (1 khung đơn)<br>
+          📄 <strong>Khổ A5:</strong> Chọn được 2 Frame (combo 2 khung)
         </div>
       </div>
     </main>
@@ -294,7 +294,7 @@
   <div id="queueModalOverlay"
     style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; display:none; align-items:center; justify-content:center;">
     <div
-      style="background:var(--pl-bg-panel); width: 450px; max-width: 90%; border-radius: 12px; border: 1px solid var(--pl-border); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;">
+      style="background:var(--pl-bg-panel); width: 565px; max-width: 90%; border-radius: 12px; border: 1px solid var(--pl-border); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;">
       <div
         style="padding: 16px 20px; border-bottom: 1px solid var(--pl-border); display: flex; justify-content: space-between; align-items: center; background: var(--pl-bg-section);">
         <h3 style="margin: 0; color: var(--pl-text); font-size: 16px; display: flex; align-items: center; gap: 8px;">
