@@ -967,26 +967,25 @@ export const UIMixin = {
       const x = (e.clientX - rect.left) * scaleX;
       const y = (e.clientY - rect.top) * scaleY;
 
-      // Check if mouse hit Canva rotate handle
-      if (slotDef) {
-        const dx = x - slotDef.cx;
-        const dy = y - slotDef.cy;
-        const rotRad = (slotDef.rotation || 0) * Math.PI / 180;
-        const localX = dx * Math.cos(-rotRad) - dy * Math.sin(-rotRad);
-        const localY = dx * Math.sin(-rotRad) + dy * Math.cos(-rotRad);
-        
-        const distRight = Math.hypot(localX - (slotDef.w / 2 + 45), localY);
-        const distBottom = Math.hypot(localX, localY - (slotDef.h / 2 + 50));
+        // Check if mouse hit Canva rotate handle (nằm ở cạnh dưới: 0, slotDef.h / 2 + 65)
+        if (slotDef) {
+          const dx = x - slotDef.cx;
+          const dy = y - slotDef.cy;
+          const rotRad = (slotDef.rotation || 0) * Math.PI / 180;
+          const localX = dx * Math.cos(-rotRad) - dy * Math.sin(-rotRad);
+          const localY = dx * Math.sin(-rotRad) + dy * Math.cos(-rotRad);
+          
+          const distBottom = Math.hypot(localX, localY - (slotDef.h / 2 + 65));
 
-        if (distRight <= 50 || distBottom <= 50) {
-          isRotatingSlot = true;
-          touchRotateStartTime = Date.now();
-          rotateStartAngle = Math.atan2(y - slotDef.cy, x - slotDef.cx) * (180 / Math.PI);
-          initialSlotRot = slot.rotation || 0;
-          this.canvas.style.cursor = 'grab';
-          return;
+          if (distBottom <= 45) {
+            isRotatingSlot = true;
+            touchRotateStartTime = Date.now();
+            rotateStartAngle = Math.atan2(y - slotDef.cy, x - slotDef.cx) * (180 / Math.PI);
+            initialSlotRot = slot.rotation || 0;
+            this.canvas.style.cursor = 'grab';
+            return;
+          }
         }
-      }
 
       isDragging = true;
       dragStartX = e.offsetX;
@@ -1074,7 +1073,7 @@ export const UIMixin = {
         const x = (touch.clientX - rect.left) * scaleX;
         const y = (touch.clientY - rect.top) * scaleY;
 
-        // Check hit Canva rotate handle on Touch (Bán kính vùng chạm rộng 70px)
+        // Check hit Canva rotate handle on Touch (nằm ở cạnh dưới: 0, slotDef.h / 2 + 65)
         if (slotDef) {
           const dx = x - slotDef.cx;
           const dy = y - slotDef.cy;
@@ -1082,10 +1081,9 @@ export const UIMixin = {
           const localX = dx * Math.cos(-rotRad) - dy * Math.sin(-rotRad);
           const localY = dx * Math.sin(-rotRad) + dy * Math.cos(-rotRad);
 
-          const distRight = Math.hypot(localX - (slotDef.w / 2 + 45), localY);
           const distBottom = Math.hypot(localX, localY - (slotDef.h / 2 + 65));
 
-          if (distRight <= 70 || distBottom <= 70) {
+          if (distBottom <= 55) {
             isRotatingSlot = true;
             touchRotateStartTime = Date.now();
             rotateStartAngle = Math.atan2(y - slotDef.cy, x - slotDef.cx) * (180 / Math.PI);

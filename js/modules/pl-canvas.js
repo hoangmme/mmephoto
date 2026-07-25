@@ -89,10 +89,8 @@ _onCanvasClick(e) {
       this.selectedSlotIndex = clickedSlot;
 
       if (!this.slots) this.slots = [];
-      const currentSlotData = this.slots[clickedSlot];
-
-      // If an image is selected in sidebar, assign it
-      if (this.selectedImageId && (!currentSlotData || !currentSlotData.imageId)) {
+      // If an image is selected in sidebar, assign it to the clicked slot (replaces existing photo if any)
+      if (this.selectedImageId) {
         this._assignToSlot(clickedSlot, this.selectedImageId);
         this.selectedImageId = null;
       }
@@ -101,10 +99,9 @@ _onCanvasClick(e) {
       this._renderSlotProps();
       this._renderImageList();
     }
-  }
-,
+  },
 
-_assignToSlot(slotIndex, imageId, skipSync = false) {
+  _assignToSlot(slotIndex, imageId, skipSync = false) {
     if (!this.slots) this.slots = [];
     if (!this.slots[slotIndex]) {
       this.slots[slotIndex] = {
@@ -119,24 +116,19 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
     this.slots[slotIndex].zoom = 1.0;
     this.slots[slotIndex].panX = 0;
     this.slots[slotIndex].panY = 0;
-    this.slots[slotIndex].rotation = 0; // In degrees
+    this.slots[slotIndex].rotation = 0;
     this.slots[slotIndex].assignedAt = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    this.selectedImageId = null;
 
     this._renderCanvas();
     this._renderSlotProps();
     this._renderImageList();
-    if (!skipSync) {
-      this._syncState(this.activeRoom);
-    }
-  }
+  },
 
   // ── Auto Fill ──
-,
 
   _autoFill(skipSync = false) {
     const roomData = this.activeRoom && this.rooms[this.activeRoom];
-    const currentImages = roomData && roomData.images ? roomData.images : [];
+    const currentImages = (this.images && this.images.length > 0) ? this.images : (roomData && roomData.images ? roomData.images : []);
     if (currentImages.length === 0) return;
 
     if (!this._imageCache) this._imageCache = {};
