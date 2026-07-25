@@ -126,51 +126,58 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
     const currentImages = roomData && roomData.images ? roomData.images : [];
     if (currentImages.length === 0) return;
 
-    const hasSelection = this.selectedPhotos && this.selectedPhotos.size > 0;
+    if (!this.selectedPhotos) this.selectedPhotos = new Set();
+    const tmpl = ALL_TEMPLATES[this.currentTemplate];
+    const maxSlots = tmpl ? tmpl.slots.length : (this.slots ? this.slots.length : 0);
 
-    if (hasSelection) {
-      // 1. Remove images from slots that are NO LONGER in selectedPhotos
-      for (let i = 0; i < this.slots.length; i++) {
-        if (this.slots[i].imageId && !this.selectedPhotos.has(this.slots[i].imageId)) {
-          this._removeSlotImage(i, true); // skipSync = true
+    // Nếu chưa chọn đủ số lượng ảnh cho khung, tự động tick thêm các ảnh đầu tiên trong bộ ảnh
+    if (maxSlots > 0 && this.selectedPhotos.size < maxSlots) {
+      for (let i = 0; i < currentImages.length && this.selectedPhotos.size < maxSlots; i++) {
+        const img = currentImages[i];
+        if (img && img.id && !this.selectedPhotos.has(img.id)) {
+          this.selectedPhotos.add(img.id);
         }
       }
 
-      // 2. Find which selected photos are not yet in any slot
-      const usedImageIds = new Set();
-      for (let i = 0; i < this.slots.length; i++) {
-        if (this.slots[i].imageId) usedImageIds.add(this.slots[i].imageId);
-      }
-
-      const selectedArr = Array.from(this.selectedPhotos).filter(id => !usedImageIds.has(id));
-      
-      // 3. Fill empty slots with the remaining selected photos
-      let selectedIdx = 0;
-      for (let i = 0; i < this.slots.length && selectedIdx < selectedArr.length; i++) {
-        if (!this.slots[i].imageId) {
-          this._assignToSlot(i, selectedArr[selectedIdx], skipSync);
-          selectedIdx++;
+      // Đồng bộ danh sách ảnh đã tick vào session
+      if (roomData && roomData.queue) {
+        const activeSess = roomData.queue.find(s => s.id === roomData.session);
+        if (activeSess) {
+          activeSess.selectedImages = Array.from(this.selectedPhotos);
         }
+      }
+      if (this._updateImageListUI) this._updateImageListUI();
+    }
+
+    // 1. Remove images from slots that are NO LONGER in selectedPhotos
+    for (let i = 0; i < this.slots.length; i++) {
+      if (this.slots[i].imageId && !this.selectedPhotos.has(this.slots[i].imageId)) {
+        this._removeSlotImage(i, true); // skipSync = true
       }
     }
 
-    // 4. If any slots remain empty, fill them with unselected photos (or repeat images if needed)
+    // 2. Find which selected photos are not yet in any slot
     const usedImageIds = new Set();
     for (let i = 0; i < this.slots.length; i++) {
       if (this.slots[i].imageId) usedImageIds.add(this.slots[i].imageId);
     }
-    const unusedImages = currentImages.filter(img => !usedImageIds.has(img.id));
-    let unusedIdx = 0;
 
-    for (let i = 0; i < this.slots.length; i++) {
+    const selectedArr = Array.from(this.selectedPhotos).filter(id => !usedImageIds.has(id));
+    
+    // 3. Fill empty slots with the remaining selected photos
+    let selectedIdx = 0;
+    for (let i = 0; i < this.slots.length && selectedIdx < selectedArr.length; i++) {
       if (!this.slots[i].imageId) {
-        if (unusedIdx < unusedImages.length) {
-          this._assignToSlot(i, unusedImages[unusedIdx].id, skipSync);
-          unusedIdx++;
-        } else if (currentImages.length > 0) {
-          const fallbackImg = currentImages[i % currentImages.length];
-          this._assignToSlot(i, fallbackImg.id, skipSync);
-        }
+        this._assignToSlot(i, selectedArr[selectedIdx], skipSync);
+        selectedIdx++;
+      }
+    }
+
+    // 4. Nếu số ảnh chụp ít hơn số ô (vd 2 ảnh nhưng khung 6 ô), tự lặp lại ảnh để lấp đầy 100% ô
+    for (let i = 0; i < this.slots.length; i++) {
+      if (!this.slots[i].imageId && currentImages.length > 0) {
+        const fallbackImg = currentImages[i % currentImages.length];
+        this._assignToSlot(i, fallbackImg.id, skipSync);
       }
     }
   }

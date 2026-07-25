@@ -865,10 +865,15 @@ export const UIMixin = {
           const maxSlots = tmpl ? tmpl.slots.length : 0;
           const selectedCount = this.selectedPhotos ? this.selectedPhotos.size : 0;
 
-          if (maxSlots > 0 && selectedCount > 0 && selectedCount < maxSlots) {
-            alert(`Khung in cần ${maxSlots} ảnh (bạn mới chọn ${selectedCount} ảnh). Hệ thống sẽ tự động điền các ô còn lại giúp bạn nhé!`);
+          if (maxSlots > 0 && selectedCount < maxSlots) {
+            if (selectedCount === 0) {
+              alert(`Khung in cần ${maxSlots} ảnh (bạn chưa chọn ảnh nào). Hệ thống sẽ tự động chọn ${maxSlots} ảnh đầu tiên giúp bạn nhé!`);
+            } else {
+              alert(`Khung in cần ${maxSlots} ảnh (bạn mới chọn ${selectedCount} ảnh). Hệ thống sẽ tự động chọn thêm các ảnh còn thiếu giúp bạn nhé!`);
+            }
           }
 
+          if (this._autoFill) this._autoFill();
           this._setStep(this.activeRoom, 3);
         } else if (cur === 3) {
           await this._uploadFinalFrame();
@@ -893,9 +898,14 @@ export const UIMixin = {
             const maxSlots = tmpl ? tmpl.slots.length : 0;
             const selectedCount = this.selectedPhotos ? this.selectedPhotos.size : 0;
 
-            if (maxSlots > 0 && selectedCount > 0 && selectedCount < maxSlots) {
-              alert(`Khung in cần ${maxSlots} ảnh (bạn mới chọn ${selectedCount} ảnh). Hệ thống sẽ tự động điền các ô còn lại giúp bạn nhé!`);
+            if (maxSlots > 0 && selectedCount < maxSlots) {
+              if (selectedCount === 0) {
+                alert(`Khung in cần ${maxSlots} ảnh (bạn chưa chọn ảnh nào). Hệ thống sẽ tự động chọn ${maxSlots} ảnh đầu tiên giúp bạn nhé!`);
+              } else {
+                alert(`Khung in cần ${maxSlots} ảnh (bạn mới chọn ${selectedCount} ảnh). Hệ thống sẽ tự động chọn thêm các ảnh còn thiếu giúp bạn nhé!`);
+              }
             }
+            if (this._autoFill) this._autoFill();
           }
 
           if (!isStaffMode) {
