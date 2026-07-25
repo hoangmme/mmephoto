@@ -8,7 +8,7 @@ _initSSE(branch) {
     const branchNameEl = document.getElementById('headerBranchName');
     if (branchNameEl) {
       branchNameEl.textContent = `Chi nhánh: ${branch}`;
-      branchNameEl.style.display = 'inline';
+      branchNameEl.style.display = 'none';
     }
 
     // Immediate REST fetch for initial state (works even if SSE is buffered)
