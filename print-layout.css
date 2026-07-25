@@ -996,5 +996,9 @@ body.pl-mode-staff #roomTabs {
   transform: scale(1.15);
 }
 
+.pl-step-mode-4 .pl-thumb-zoom-btn {
+  display: none !important;
+}
+
 
 
