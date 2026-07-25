@@ -1018,7 +1018,7 @@ export const UIMixin = {
 
           slot.rotation = Math.round(rawRot);
           this._clampPan(this.selectedSlotIndex);
-          this._renderCanvas();
+          if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
         }
         return;
       }
@@ -1039,7 +1039,7 @@ export const UIMixin = {
           if (slot) {
             slot.rotation = (slot.rotation + 90) % 360;
             this._clampPan(this.selectedSlotIndex);
-            this._renderCanvas();
+            if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
           }
         }
         this._syncState(this.activeRoom);
@@ -1076,7 +1076,7 @@ export const UIMixin = {
         const x = (touch.clientX - rect.left) * scaleX;
         const y = (touch.clientY - rect.top) * scaleY;
 
-        // Check hit Canva rotate handle on Touch
+        // Check hit Canva rotate handle on Touch (Bán kính vùng chạm rộng 70px)
         if (slotDef) {
           const dx = x - slotDef.cx;
           const dy = y - slotDef.cy;
@@ -1085,9 +1085,9 @@ export const UIMixin = {
           const localY = dx * Math.sin(-rotRad) + dy * Math.cos(-rotRad);
 
           const distRight = Math.hypot(localX - (slotDef.w / 2 + 45), localY);
-          const distBottom = Math.hypot(localX, localY - (slotDef.h / 2 + 50));
+          const distBottom = Math.hypot(localX, localY - (slotDef.h / 2 + 65));
 
-          if (distRight <= 50 || distBottom <= 50) {
+          if (distRight <= 70 || distBottom <= 70) {
             isRotatingSlot = true;
             touchRotateStartTime = Date.now();
             rotateStartAngle = Math.atan2(y - slotDef.cy, x - slotDef.cx) * (180 / Math.PI);
@@ -1134,7 +1134,7 @@ export const UIMixin = {
 
         slot.rotation = Math.round(rawRot);
         this._clampPan(this.selectedSlotIndex);
-        this._renderCanvas();
+        if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
         e.preventDefault();
         return;
       }
@@ -1157,7 +1157,7 @@ export const UIMixin = {
 
         slot.zoom = newZoom;
         this._clampPan(this.selectedSlotIndex);
-        this._renderCanvas();
+        if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
         e.preventDefault();
       }
     }, { passive: false });
@@ -1169,7 +1169,7 @@ export const UIMixin = {
           if (slot) {
             slot.rotation = (slot.rotation + 90) % 360;
             this._clampPan(this.selectedSlotIndex);
-            this._renderCanvas();
+            if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
           }
         }
         this._syncState(this.activeRoom);

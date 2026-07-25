@@ -180,35 +180,32 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
       if (this._updateImageListUI) this._updateImageListUI();
     }
 
-    // 1. Remove images from slots that are NO LONGER in selectedPhotos
-    for (let i = 0; i < this.slots.length; i++) {
-      if (this.slots[i] && this.slots[i].imageId && !this.selectedPhotos.has(this.slots[i].imageId)) {
-        this._removeFromSlot(i);
+    // Gán trực tiếp danh sách ảnh đã tick (selectedArr) vào từng ô slot theo đúng thứ tự 1..N
+    const selectedArr = Array.from(this.selectedPhotos);
+
+    for (let i = 0; i < maxSlots; i++) {
+      if (!this.slots[i]) {
+        this.slots[i] = { imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: 0 };
       }
-    }
 
-    // 2. Find which selected photos are not yet in any slot
-    const usedImageIds = new Set();
-    for (let i = 0; i < this.slots.length; i++) {
-      if (this.slots[i] && this.slots[i].imageId) usedImageIds.add(this.slots[i].imageId);
-    }
-
-    const selectedArr = Array.from(this.selectedPhotos).filter(id => !usedImageIds.has(id));
-    
-    // 3. Fill empty slots with the remaining selected photos
-    let selectedIdx = 0;
-    for (let i = 0; i < this.slots.length && selectedIdx < selectedArr.length; i++) {
-      if (this.slots[i] && !this.slots[i].imageId) {
-        this._assignToSlot(i, selectedArr[selectedIdx], skipSync);
-        selectedIdx++;
-      }
-    }
-
-    // 4. Nếu số ảnh chụp ít hơn số ô (vd 2 ảnh nhưng khung 6 ô), tự lặp lại ảnh để lấp đầy 100% ô
-    for (let i = 0; i < this.slots.length; i++) {
-      if (this.slots[i] && !this.slots[i].imageId && currentImages.length > 0) {
+      let targetImgId = null;
+      if (i < selectedArr.length) {
+        targetImgId = selectedArr[i];
+      } else if (currentImages.length > 0) {
+        // Nếu bộ ảnh chụp ít hơn số ô slot (vd 2 ảnh nhưng khung 6 ô), lặp lại ảnh để lấp đầy 100%
         const fallbackImg = currentImages[i % currentImages.length];
-        this._assignToSlot(i, fallbackImg.id, skipSync);
+        targetImgId = fallbackImg.id;
+      }
+
+      if (targetImgId) {
+        if (this.slots[i].imageId !== targetImgId) {
+          this.slots[i].imageId = targetImgId;
+          this.slots[i].zoom = 1.0;
+          this.slots[i].panX = 0;
+          this.slots[i].panY = 0;
+          this.slots[i].rotation = 0;
+          this.slots[i].assignedAt = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        }
       }
     }
   }
@@ -384,10 +381,17 @@ _renderSlotProps() {
   // ══════════════════════════════════════
 ,
 
+_requestRenderCanvas() {
+    if (this._rafPending) return;
+    this._rafPending = true;
+    requestAnimationFrame(() => {
+      this._rafPending = false;
+      this._renderCanvas();
+    });
+  },
+
 _renderCanvas() {
     this._drawToCanvas(this.canvas, true);
-
-
   }
 ,
 
@@ -439,7 +443,7 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
           if (imgObj) {
             const srcUrl = imgObj.objectUrl || imgObj.url;
             if (srcUrl) {
-              this._preloadImage(slotData.imageId, srcUrl).then(() => this._renderCanvas());
+              this._preloadImage(slotData.imageId, srcUrl).then(() => this._requestRenderCanvas());
             }
           }
           ctx.fillStyle = '#e4e4e7';
@@ -501,10 +505,10 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
     // Draw active slot highlight & Canva controls (layer 4)
     if (isPreview && this.selectedSlotIndex >= 0 && step !== 1 && step !== 4 && !isPreviewSwiper) {
        const s = tmpl.slots[this.selectedSlotIndex];
+       const slotData = this.slots ? this.slots[this.selectedSlotIndex] : null;
        if (s) {
          ctx.save();
          ctx.translate(s.cx, s.cy);
-         if (s.rotation) ctx.rotate(s.rotation);
          
          const halfW = s.w / 2;
          const halfH = s.h / 2;
@@ -532,27 +536,30 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
            ctx.stroke();
          });
 
-         // 3. Canva-style Rotate Handle (Nút Xoay 🔄 bên phải hoặc bên dưới)
-         const handleOffsetX = halfW + 45;
-         const handleOffsetY = 0;
+         // 3. Canva-style Large Rotate Handle below slot (Bán kính 32px, dễ giữ trên iPad)
+         const handleOffsetY = halfH + 65;
 
-         // Outer Circle Background
+         // Stem line
          ctx.beginPath();
-         ctx.arc(handleOffsetX, handleOffsetY, 22, 0, Math.PI * 2);
+         ctx.moveTo(0, halfH);
+         ctx.lineTo(0, handleOffsetY);
+         ctx.strokeStyle = '#8b5cf6';
+         ctx.lineWidth = 4;
+         ctx.stroke();
+
+         // Outer Circle Background (Đường kính 64px)
+         ctx.beginPath();
+         ctx.arc(0, handleOffsetY, 32, 0, Math.PI * 2);
          ctx.fillStyle = '#ffffff';
          ctx.fill();
          ctx.strokeStyle = '#8b5cf6';
-         ctx.lineWidth = 3;
+         ctx.lineWidth = 4;
          ctx.stroke();
 
          // Rotate Icon 🔄
          ctx.strokeStyle = '#6d28d9';
-         ctx.lineWidth = 3;
+         ctx.lineWidth = 4;
          ctx.lineCap = 'round';
-         ctx.beginPath();
-         ctx.arc(handleOffsetX, handleOffsetY, 11, -Math.PI * 0.75, Math.PI * 0.75);
-         ctx.stroke();
-
          ctx.beginPath();
          ctx.arc(handleOffsetX, handleOffsetY, 11, Math.PI * 0.25, -Math.PI * 0.25);
          ctx.stroke();
