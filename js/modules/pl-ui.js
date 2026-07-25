@@ -250,6 +250,28 @@ export const UIMixin = {
         slide.classList.add('active');
       }
 
+      const paperSize = t.paper_size || (t.canvas_width > 2000 ? 'A4' : 'A5');
+      const badgeText = paperSize === 'A4' ? 'Khổ A4 (1 iframe)' : 'Khổ A5 (Combo 2 iframe)';
+
+      const badge = document.createElement('div');
+      badge.className = 'pl-slide-badge';
+      badge.textContent = badgeText;
+      badge.style.position = 'absolute';
+      badge.style.top = '10px';
+      badge.style.left = '50%';
+      badge.style.transform = 'translateX(-50%)';
+      badge.style.background = paperSize === 'A4' ? '#ef4444' : 'var(--pl-accent, #4f3219)';
+      badge.style.color = '#fff';
+      badge.style.fontSize = '11px';
+      badge.style.fontWeight = '600';
+      badge.style.padding = '4px 10px';
+      badge.style.borderRadius = '12px';
+      badge.style.zIndex = '5';
+      badge.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+      badge.style.whiteSpace = 'nowrap';
+      badge.style.pointerEvents = 'none';
+      slide.appendChild(badge);
+
       const preview = document.createElement('div');
       preview.className = 'pl-slide-preview';
 
@@ -838,6 +860,14 @@ export const UIMixin = {
         if (cur === 1) {
           this._setStep(this.activeRoom, 2);
         } else if (cur === 2) {
+          const tmpl = ALL_TEMPLATES[this.currentTemplate];
+          const maxSlots = tmpl ? tmpl.slots.length : 0;
+          const selectedCount = this.selectedPhotos ? this.selectedPhotos.size : 0;
+
+          if (maxSlots > 0 && selectedCount > 0 && selectedCount < maxSlots) {
+            alert(`Khung in cần ${maxSlots} ảnh (bạn mới chọn ${selectedCount} ảnh). Hệ thống sẽ tự động điền các ô còn lại giúp bạn nhé!`);
+          }
+
           this._setStep(this.activeRoom, 3);
         } else if (cur === 3) {
           await this._uploadFinalFrame();
@@ -856,6 +886,16 @@ export const UIMixin = {
 
           const roomData = this.rooms[this.activeRoom];
           const currentStep = roomData.step || 1;
+
+          if (currentStep === 2 && targetStep === 3) {
+            const tmpl = ALL_TEMPLATES[this.currentTemplate];
+            const maxSlots = tmpl ? tmpl.slots.length : 0;
+            const selectedCount = this.selectedPhotos ? this.selectedPhotos.size : 0;
+
+            if (maxSlots > 0 && selectedCount > 0 && selectedCount < maxSlots) {
+              alert(`Khung in cần ${maxSlots} ảnh (bạn mới chọn ${selectedCount} ảnh). Hệ thống sẽ tự động điền các ô còn lại giúp bạn nhé!`);
+            }
+          }
 
           if (!isStaffMode) {
             if (currentStep === 4) return; // User cannot leave step 4

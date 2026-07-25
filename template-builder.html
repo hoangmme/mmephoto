@@ -59,13 +59,24 @@
             <input type="text" id="tplName" class="tb-input" placeholder="VD: Khung Hoa Lá A5">
           </div>
           <div class="tb-group">
+            <label>Khổ Giấy / Quy Cách In</label>
+            <select id="paperSize" class="tb-input" style="background:var(--tb-bg); color:var(--tb-text);">
+              <option value="A5">Khổ A5 (Combo 2 Khung / 2 iframe)</option>
+              <option value="A4">Khổ A4 (Khung Đơn / 1 iframe)</option>
+            </select>
+            <small style="display:block; margin-top:4px; color:var(--tb-text-muted);">
+              Khổ A4: Chọn được 1 iframe<br>
+              Khổ A5: Chọn được 2 iframe (combo)
+            </small>
+          </div>
+          <div class="tb-group">
             <label>Kích thước Canvas (px)</label>
             <div class="tb-flex-row">
               <input type="number" id="canvasW" class="tb-input" value="1748" title="Width">
               <span>×</span>
               <input type="number" id="canvasH" class="tb-input" value="2480" title="Height">
             </div>
-            <small>Khổ A5 300DPI mặc định là 1748×2480</small>
+            <small>Khổ A5 (1748×2480), Khổ A4 (2480×3508)</small>
           </div>
           <div class="tb-group">
             <label>Frame Overlay (PNG/JPG có chứa các khối màu Slot)</label>

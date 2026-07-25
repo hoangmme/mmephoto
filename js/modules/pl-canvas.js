@@ -129,12 +129,10 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
     const hasSelection = this.selectedPhotos && this.selectedPhotos.size > 0;
 
     if (hasSelection) {
-      // User made a selection — ONLY use selected photos, never add unselected ones
-      
       // 1. Remove images from slots that are NO LONGER in selectedPhotos
       for (let i = 0; i < this.slots.length; i++) {
         if (this.slots[i].imageId && !this.selectedPhotos.has(this.slots[i].imageId)) {
-           this._removeSlotImage(i, true); // skipSync = true
+          this._removeSlotImage(i, true); // skipSync = true
         }
       }
 
@@ -154,18 +152,24 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
           selectedIdx++;
         }
       }
-    } else {
-      // No selection — fill empty slots with gallery photos (no duplicates)
-      const usedImageIds = new Set();
-      for (let i = 0; i < this.slots.length; i++) {
-        if (this.slots[i].imageId) usedImageIds.add(this.slots[i].imageId);
-      }
-      const unusedImages = currentImages.filter(img => !usedImageIds.has(img.id));
-      let unusedIdx = 0;
-      for (let i = 0; i < this.slots.length && unusedIdx < unusedImages.length; i++) {
-        if (!this.slots[i].imageId) {
+    }
+
+    // 4. If any slots remain empty, fill them with unselected photos (or repeat images if needed)
+    const usedImageIds = new Set();
+    for (let i = 0; i < this.slots.length; i++) {
+      if (this.slots[i].imageId) usedImageIds.add(this.slots[i].imageId);
+    }
+    const unusedImages = currentImages.filter(img => !usedImageIds.has(img.id));
+    let unusedIdx = 0;
+
+    for (let i = 0; i < this.slots.length; i++) {
+      if (!this.slots[i].imageId) {
+        if (unusedIdx < unusedImages.length) {
           this._assignToSlot(i, unusedImages[unusedIdx].id, skipSync);
           unusedIdx++;
+        } else if (currentImages.length > 0) {
+          const fallbackImg = currentImages[i % currentImages.length];
+          this._assignToSlot(i, fallbackImg.id, skipSync);
         }
       }
     }

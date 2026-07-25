@@ -72,6 +72,7 @@ class TemplateBuilderApp {
 
   _cacheDOM() {
     this.tplNameInput = document.getElementById('tplName');
+    this.paperSizeSelect = document.getElementById('paperSize');
     this.canvasWInput = document.getElementById('canvasW');
     this.canvasHInput = document.getElementById('canvasH');
     
@@ -108,6 +109,26 @@ class TemplateBuilderApp {
   _bindEvents() {
     // Basic settings
     this.tplNameInput.addEventListener('input', (e) => this.template.name = e.target.value);
+    
+    if (this.paperSizeSelect) {
+      this.paperSizeSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        this.template.paper_size = val;
+        if (val === 'A4') {
+          this.canvasWInput.value = 2480;
+          this.canvasHInput.value = 3508;
+          this.template.canvas_width = 2480;
+          this.template.canvas_height = 3508;
+        } else {
+          this.canvasWInput.value = 1748;
+          this.canvasHInput.value = 2480;
+          this.template.canvas_width = 1748;
+          this.template.canvas_height = 2480;
+        }
+        this._renderWorkspace();
+      });
+    }
+
     this.canvasWInput.addEventListener('change', (e) => {
       this.template.canvas_width = parseInt(e.target.value) || 1748;
       this._renderWorkspace();
@@ -655,12 +676,14 @@ class TemplateBuilderApp {
     this.template = {
       id: 'tpl_' + Date.now(),
       name: '',
+      paper_size: 'A5',
       canvas_width: 1748,
       canvas_height: 2480,
       frame_url: '',
       slots: []
     };
     this.tplNameInput.value = '';
+    if (this.paperSizeSelect) this.paperSizeSelect.value = 'A5';
     this.canvasWInput.value = 1748;
     this.canvasHInput.value = 2480;
     this.framePreview.style.display = 'none';
@@ -676,7 +699,11 @@ class TemplateBuilderApp {
   _loadTemplate(t) {
     // deep copy to avoid editing reference directly until save
     this.template = JSON.parse(JSON.stringify(t));
+    const paperSize = this.template.paper_size || (this.template.canvas_width > 2000 ? 'A4' : 'A5');
+    this.template.paper_size = paperSize;
+    
     this.tplNameInput.value = this.template.name || '';
+    if (this.paperSizeSelect) this.paperSizeSelect.value = paperSize;
     this.canvasWInput.value = this.template.canvas_width || 1748;
     this.canvasHInput.value = this.template.canvas_height || 2480;
     
