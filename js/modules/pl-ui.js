@@ -97,6 +97,7 @@ export const UIMixin = {
         arr.forEach(t => {
           customTemplates[t.id] = {
             name: t.name || 'Custom Template',
+            paper_size: t.paper_size || (t.canvas_width > 2000 ? 'A4' : 'A5'),
             slots: t.slots.map(s => ({
               cx: s.cx !== undefined ? s.cx : (s.x + s.width / 2),
               cy: s.cy !== undefined ? s.cy : (s.y + s.height / 2),
@@ -1364,6 +1365,7 @@ export const UIMixin = {
           // Add to customTemplates
           customTemplates[t.id] = {
             name: t.name || 'Custom Template',
+            paper_size: t.paper_size || (t.canvas_width > 2000 ? 'A4' : 'A5'),
             slots: t.slots.map(s => ({
               cx: s.cx !== undefined ? s.cx : (s.x + s.width / 2),
               cy: s.cy !== undefined ? s.cy : (s.y + s.height / 2),
