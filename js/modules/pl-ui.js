@@ -837,6 +837,16 @@ export const UIMixin = {
     const btnLockExportJPG = document.getElementById('btnLockExportJPG');
     if (btnLockExportJPG) btnLockExportJPG.addEventListener('click', () => this._exportJPG());
 
+    const btnLockResetTimer = document.getElementById('btnLockResetTimer');
+    if (btnLockResetTimer) {
+      btnLockResetTimer.addEventListener('click', () => {
+        const roomData = this.rooms[this.activeRoom];
+        if (roomData && roomData.session && this._resetSessionTimer) {
+          this._resetSessionTimer(roomData.session);
+        }
+      });
+    }
+
     const btnExportPDF = document.getElementById('btnExportPDF');
     if (btnExportPDF) btnExportPDF.addEventListener('click', () => this._exportPDF());
 

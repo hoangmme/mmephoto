@@ -65,8 +65,8 @@ export const QueueMixin = {
         const qrUrl = `${window.location.origin}/download.html?branch=${encodeURIComponent(this.branch)}&room=${encodeURIComponent(this.activeRoom)}&session=${encodeURIComponent(sess.id)}`;
         
         html += `
-          <div style="background: ${isActive ? 'var(--pl-bg-section)' : 'var(--pl-bg-panel)'}; border: 1px solid ${isActive ? 'var(--pl-accent)' : 'var(--pl-border)'}; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-            <div style="display: flex; flex-direction: column; gap: 4px; overflow: hidden; max-width: 48%;">
+          <div style="background: ${isActive ? 'var(--pl-bg-section)' : 'var(--pl-bg-panel)'}; border: 1px solid ${isActive ? 'var(--pl-accent)' : 'var(--pl-border)'}; border-radius: 8px; padding: 12px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 8px;">
+            <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
               <div style="font-weight: 600; color: var(--pl-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px;" title="${sess.id}">
                 ${sess.id}
               </div>
@@ -74,21 +74,21 @@ export const QueueMixin = {
                 ${stepStr} | ${sess.images ? sess.images.length : 0} ảnh
               </div>
             </div>
-            <div style="display: flex; gap: 6px; flex-shrink: 0; align-items:center;">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
               ${(!isActive && !sess.finished) ? `
-                <button class="pl-btn" style="padding: 5px 10px; font-size: 12px; background: var(--pl-accent); color: #fff; border: none; font-weight: 600; cursor: pointer;" onclick="window.printApp._setActiveSession('${sess.id}')">
+                <button class="pl-btn" style="padding: 6px 12px; font-size: 12px; background: var(--pl-accent); color: #fff; border: none; font-weight: 600; cursor: pointer; border-radius: 6px;" onclick="window.printApp._setActiveSession('${sess.id}')">
                   Chọn
                 </button>
-              ` : (isActive ? '<span style="font-size:11px; font-weight:bold; color:var(--pl-accent); padding:4px 6px;">ĐANG CHỌN</span>' : '')}
-              <a href="${qrUrl}" target="_blank" class="pl-btn" style="padding: 5px 10px; font-size: 12px; background: var(--pl-bg-section); color: var(--pl-text); border: 1px solid var(--pl-border); font-weight: 500; text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Xem QR code & Tải ảnh phiên này">
+              ` : (isActive ? '<span style="font-size:11px; font-weight:bold; color:var(--pl-accent); padding:4px 8px; background:rgba(79,50,25,0.1); border-radius:4px;">ĐANG CHỌN</span>' : '')}
+              <a href="${qrUrl}" target="_blank" class="pl-btn" style="padding: 6px 10px; font-size: 12px; background: var(--pl-bg-section); color: var(--pl-text); border: 1px solid var(--pl-border); font-weight: 500; text-decoration:none; display:inline-flex; align-items:center; gap:4px; border-radius: 6px;" title="Xem QR code & Tải ảnh phiên này">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                Xem QR / Ảnh
+                Xem QR
               </a>
-              <button class="pl-btn" style="padding: 5px 10px; font-size: 12px; background: #f59e0b; color: #fff; border: none; font-weight: 600; cursor: pointer; display:inline-flex; align-items:center; gap:4px;" title="Reset thời gian 7 phút để khách chọn lại từ đầu" onclick="window.printApp._resetSessionTimer('${sess.id}')">
+              <button class="pl-btn" style="padding: 6px 12px; font-size: 12px; background: #f59e0b; color: #fff; border: none; font-weight: 600; cursor: pointer; display:inline-flex; align-items:center; gap:4px; border-radius: 6px;" title="Reset thời gian 7 phút để khách chọn lại từ đầu" onclick="window.printApp._resetSessionTimer('${sess.id}')">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
                 Reset 7p
               </button>
-              <button class="pl-btn" style="padding: 5px 10px; font-size: 12px; background: #ef4444; color: #fff; border: none; font-weight: 600; cursor: pointer; display:inline-flex; align-items:center; gap:4px;" onclick="window.printApp._deleteSessionFromQueue('${sess.id}')">
+              <button class="pl-btn" style="padding: 6px 12px; font-size: 12px; background: #ef4444; color: #fff; border: none; font-weight: 600; cursor: pointer; display:inline-flex; align-items:center; gap:4px; border-radius: 6px;" onclick="window.printApp._deleteSessionFromQueue('${sess.id}')">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 Xóa
               </button>
