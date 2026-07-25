@@ -268,21 +268,35 @@ _updateActiveSession(room, onlyBadge = false) {
             active.currentTemplate = this.currentTemplate;
           }
 
-          if (active.slots && active.slots.length > 0) {
-            this.slots = JSON.parse(JSON.stringify(active.slots));
-          } else {
-            const t = ALL_TEMPLATES[this.currentTemplate] || Object.values(ALL_TEMPLATES)[0];
-            if (t && t.slots) {
-              this.slots = t.slots.map(s => ({ ...s, imageId: null, scale: 1, rotate: 0, x: 0, y: 0 }));
+          if (isStaffMode) {
+            if (active.slots && active.slots.length > 0) {
+              this.slots = JSON.parse(JSON.stringify(active.slots));
             } else {
-              this.slots = [];
+              const t = ALL_TEMPLATES[this.currentTemplate] || Object.values(ALL_TEMPLATES)[0];
+              if (t && t.slots) {
+                this.slots = t.slots.map(s => ({ ...s, imageId: null, scale: 1, rotate: 0, x: 0, y: 0 }));
+              } else {
+                this.slots = [];
+              }
             }
-          }
 
-          if (active.selectedImages) {
-            this.selectedPhotos = new Set(active.selectedImages);
+            if (active.selectedImages) {
+              this.selectedPhotos = new Set(active.selectedImages);
+            } else {
+              this.selectedPhotos.clear();
+            }
           } else {
-            this.selectedPhotos.clear();
+            // Màn Khách: Chỉ nạp ban đầu nếu slots chưa có dữ liệu, không bao giờ ghi đè dữ liệu Khách đang chỉnh sửa cục bộ
+            if (!this.slots || this.slots.length === 0) {
+              if (active.slots && active.slots.length > 0) {
+                this.slots = JSON.parse(JSON.stringify(active.slots));
+              }
+            }
+            if (!this.selectedPhotos || this.selectedPhotos.size === 0) {
+              if (active.selectedImages && active.selectedImages.length > 0) {
+                this.selectedPhotos = new Set(active.selectedImages);
+              }
+            }
           }
         }
         
