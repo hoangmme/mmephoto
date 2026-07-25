@@ -1183,8 +1183,6 @@ export const UIMixin = {
       if (!slot || !slot.imageId) return;
       const delta = e.deltaY > 0 ? -0.05 : 0.05;
       this._zoomSlot(this.selectedSlotIndex, Math.max(0.3, Math.min(4.0, (slot.zoom || 1.0) + delta)));
-    });
-
       e.preventDefault();
     }, { passive: false });
   }
