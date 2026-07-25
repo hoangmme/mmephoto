@@ -561,7 +561,11 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
          ctx.lineWidth = 4;
          ctx.lineCap = 'round';
          ctx.beginPath();
-         ctx.arc(handleOffsetX, handleOffsetY, 11, Math.PI * 0.25, -Math.PI * 0.25);
+         ctx.arc(0, handleOffsetY, 16, -Math.PI * 0.75, Math.PI * 0.75);
+         ctx.stroke();
+
+         ctx.beginPath();
+         ctx.arc(0, handleOffsetY, 16, Math.PI * 0.25, -Math.PI * 0.25);
          ctx.stroke();
 
          ctx.restore();
@@ -578,17 +582,17 @@ _drawImageInSlot(ctx, img, slotDef, slotData) {
     const { drawW, drawH } = this._calcCover(
       imgW, imgH,
       slotDef.w, slotDef.h,
-      slotData.zoom
+      slotData.zoom || 1.0
     );
 
     // Clip to slot
     ctx.save();
     ctx.beginPath();
-    ctx.rect(-slotDef.w/2, -slotDef.h/2, slotDef.w, slotDef.h);
+    ctx.rect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
     ctx.clip();
     
     // Translate to pan position
-    ctx.translate(slotData.panX, slotData.panY);
+    ctx.translate(slotData.panX || 0, slotData.panY || 0);
     
     if (slotData.rotation) {
       ctx.rotate(slotData.rotation * Math.PI / 180);

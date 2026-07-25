@@ -886,6 +886,7 @@ export const UIMixin = {
           if (this._autoFill) this._autoFill();
           this._setStep(this.activeRoom, 3);
         } else if (cur === 3) {
+          this._syncState(this.activeRoom);
           await this._uploadFinalFrame();
           this._setStep(this.activeRoom, 4);
         }
@@ -1042,9 +1043,6 @@ export const UIMixin = {
             if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
           }
         }
-        this._syncState(this.activeRoom);
-      } else if (isDragging) {
-        this._syncState(this.activeRoom);
       }
       isDragging = false;
       isRotatingSlot = false;
@@ -1172,9 +1170,6 @@ export const UIMixin = {
             if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
           }
         }
-        this._syncState(this.activeRoom);
-      } else if (this.selectedSlotIndex >= 0) {
-        this._syncState(this.activeRoom);
       }
       isRotatingSlot = false;
     });
@@ -1188,10 +1183,7 @@ export const UIMixin = {
       if (!slot || !slot.imageId) return;
       const delta = e.deltaY > 0 ? -0.05 : 0.05;
       this._zoomSlot(this.selectedSlotIndex, Math.max(0.3, Math.min(4.0, (slot.zoom || 1.0) + delta)));
-
-      // Debounce wheel sync
-      clearTimeout(this._wheelSyncTimer);
-      this._wheelSyncTimer = setTimeout(() => this._syncState(this.activeRoom), 200);
+    });
 
       e.preventDefault();
     }, { passive: false });

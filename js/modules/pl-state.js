@@ -101,6 +101,9 @@ _initSSE(branch) {
 
           // If this is the active session for this room
           if (this.rooms[room].session === data.session) {
+            // Nếu là gói tin echo của chính máy mình vừa phát đi thì bỏ qua không đè dữ liệu vị trí cũ lại
+            if (data.clientId && data.clientId === this.clientId) return;
+
             if (data.step !== undefined) {
               if (!isStaffMode) {
                 // Do not allow sync events to downgrade the user from Step 4 (e.g., if Staff goes back to edit)
