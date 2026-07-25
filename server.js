@@ -581,6 +581,30 @@ app.post('/api/delete-session/:branch/:room/:session', (req, res) => {
   res.json({ success: true });
 });
 
+app.post('/api/reset-session-timer/:branch/:room/:session', (req, res) => {
+  const { branch, room, session } = req.params;
+  const now = Date.now();
+  
+  if (roomState[branch] && roomState[branch][room]) {
+    const roomD = roomState[branch][room];
+    const sess = (roomD.sessions || []).find(s => s.id === session);
+    if (sess) {
+      sess.finished = false;
+      sess.step = 1;
+      sess.sessionStartedAt = now;
+    }
+    roomD.activeSessionId = session;
+    saveRoomState();
+  }
+  
+  if (clients[branch]) {
+    clients[branch].forEach(client => {
+      client.write(`data: ${JSON.stringify({ type: 'session_reset', room, session, sessionStartedAt: now })}\n\n`);
+    });
+  }
+  res.json({ success: true, sessionStartedAt: now });
+});
+
 app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) => {
   const { branch, room, session } = req.params;
   const { step, currentTemplate, selectedImages, slots, clientId } = req.body;

@@ -157,7 +157,35 @@ _initSSE(branch) {
            }
            this._renderTabs();
         }
-      } else if (data.type === 'session_deleted') {
+       } else if (data.type === 'session_reset') {
+        const room = data.room;
+        if (this.rooms[room]) {
+          const roomData = this.rooms[room];
+          roomData.session = data.session;
+          roomData.activeSessionId = data.session;
+          roomData.step = 1;
+          roomData.locked = false;
+          roomData.timeLeft = 420;
+          if (roomData.timedOutSteps) roomData.timedOutSteps.clear();
+
+          const sessObj = (roomData.queue || []).find(s => s.id === data.session);
+          if (sessObj) {
+            sessObj.finished = false;
+            sessObj.step = 1;
+            sessObj.sessionStartedAt = data.sessionStartedAt || Date.now();
+          }
+
+          this._updateActiveSession(room);
+          this._startStepTimer(room, 1);
+          if (this.activeRoom === room) {
+            this._setStep(room, 1);
+            this._updateUIForRoom();
+            this._renderCanvas();
+            if (this._renderQueueModal) this._renderQueueModal();
+          }
+          this._renderTabs();
+        }
+       } else if (data.type === 'session_deleted') {
         const room = data.room;
         if (this.rooms[room]) {
            this.rooms[room].queue = (this.rooms[room].queue || []).filter(s => s.id !== data.session);

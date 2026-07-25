@@ -84,6 +84,10 @@ export const QueueMixin = {
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                 Xem QR / Ảnh
               </a>
+              <button class="pl-btn" style="padding: 5px 10px; font-size: 12px; background: #f59e0b; color: #fff; border: none; font-weight: 600; cursor: pointer; display:inline-flex; align-items:center; gap:4px;" title="Reset thời gian 7 phút để khách chọn lại từ đầu" onclick="window.printApp._resetSessionTimer('${sess.id}')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                Reset 7p
+              </button>
               <button class="pl-btn" style="padding: 5px 10px; font-size: 12px; background: #ef4444; color: #fff; border: none; font-weight: 600; cursor: pointer; display:inline-flex; align-items:center; gap:4px;" onclick="window.printApp._deleteSessionFromQueue('${sess.id}')">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 Xóa
@@ -127,6 +131,43 @@ export const QueueMixin = {
       }
     } catch (err) {
       console.error('Failed to set active session:', err);
+    }
+  },
+
+  async _resetSessionTimer(sessionId) {
+    if (!confirm(`Bạn có chắc chắn muốn reset lại 7 phút thời gian chọn cho phiên "${sessionId}"?`)) return;
+    if (!this.activeRoom || !this.branch) return;
+
+    try {
+      const res = await fetch(`/api/reset-session-timer/${encodeURIComponent(this.branch)}/${encodeURIComponent(this.activeRoom)}/${encodeURIComponent(sessionId)}`, { method: 'POST' });
+      if (res.ok) {
+        if (this.rooms[this.activeRoom]) {
+          const roomData = this.rooms[this.activeRoom];
+          const now = Date.now();
+          roomData.activeSessionId = sessionId;
+          roomData.session = sessionId;
+          roomData.step = 1;
+          roomData.locked = false;
+          roomData.timeLeft = 420;
+          if (roomData.timedOutSteps) roomData.timedOutSteps.clear();
+
+          const sessObj = (roomData.queue || []).find(s => s.id === sessionId);
+          if (sessObj) {
+            sessObj.finished = false;
+            sessObj.step = 1;
+            sessObj.sessionStartedAt = now;
+          }
+
+          this._setActiveSession(sessionId);
+          this._startStepTimer(this.activeRoom, 1);
+          this._setStep(this.activeRoom, 1);
+          this._updateUIForRoom();
+          this._renderCanvas();
+          if (this._renderQueueModal) this._renderQueueModal();
+        }
+      }
+    } catch (err) {
+      console.error('Failed to reset session timer:', err);
     }
   },
 
