@@ -88,8 +88,11 @@ _onCanvasClick(e) {
     if (clickedSlot >= 0) {
       this.selectedSlotIndex = clickedSlot;
 
-      // If an image is selected, assign it
-      if (this.selectedImageId && !this.slots[clickedSlot].imageId) {
+      if (!this.slots) this.slots = [];
+      const currentSlotData = this.slots[clickedSlot];
+
+      // If an image is selected in sidebar, assign it
+      if (this.selectedImageId && (!currentSlotData || !currentSlotData.imageId)) {
         this._assignToSlot(clickedSlot, this.selectedImageId);
         this.selectedImageId = null;
       }
@@ -102,6 +105,16 @@ _onCanvasClick(e) {
 ,
 
 _assignToSlot(slotIndex, imageId, skipSync = false) {
+    if (!this.slots) this.slots = [];
+    if (!this.slots[slotIndex]) {
+      this.slots[slotIndex] = {
+        imageId: null,
+        zoom: 1.0,
+        panX: 0,
+        panY: 0,
+        rotation: 0
+      };
+    }
     this.slots[slotIndex].imageId = imageId;
     this.slots[slotIndex].zoom = 1.0;
     this.slots[slotIndex].panX = 0;
@@ -126,10 +139,28 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
     const currentImages = roomData && roomData.images ? roomData.images : [];
     if (currentImages.length === 0) return;
 
-    if (!this.selectedPhotos) this.selectedPhotos = new Set();
+    if (!this._imageCache) this._imageCache = {};
     const tmpl = ALL_TEMPLATES[this.currentTemplate];
-    const maxSlots = tmpl ? tmpl.slots.length : (this.slots ? this.slots.length : 0);
+    if (!tmpl || !tmpl.slots) return;
+    const maxSlots = tmpl.slots.length;
 
+    // Đảm bảo array this.slots luôn được khởi tạo đúng độ dài số ô của template
+    if (!this.slots || this.slots.length !== maxSlots) {
+      this._initTemplate();
+    }
+
+    // Ensure all current images are preloaded in imageCache
+    currentImages.forEach(img => {
+      if (img.id && !this._imageCache[img.id]) {
+        const srcUrl = img.objectUrl || img.url;
+        if (srcUrl) {
+          this._preloadImage(img.id, srcUrl).then(() => this._renderCanvas());
+        }
+      }
+    });
+
+    if (!this.selectedPhotos) this.selectedPhotos = new Set();
+    
     // Nếu chưa chọn đủ số lượng ảnh cho khung, tự động tick thêm các ảnh đầu tiên trong bộ ảnh
     if (maxSlots > 0 && this.selectedPhotos.size < maxSlots) {
       for (let i = 0; i < currentImages.length && this.selectedPhotos.size < maxSlots; i++) {
@@ -151,7 +182,7 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
 
     // 1. Remove images from slots that are NO LONGER in selectedPhotos
     for (let i = 0; i < this.slots.length; i++) {
-      if (this.slots[i].imageId && !this.selectedPhotos.has(this.slots[i].imageId)) {
+      if (this.slots[i] && this.slots[i].imageId && !this.selectedPhotos.has(this.slots[i].imageId)) {
         this._removeSlotImage(i, true); // skipSync = true
       }
     }
@@ -159,7 +190,7 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
     // 2. Find which selected photos are not yet in any slot
     const usedImageIds = new Set();
     for (let i = 0; i < this.slots.length; i++) {
-      if (this.slots[i].imageId) usedImageIds.add(this.slots[i].imageId);
+      if (this.slots[i] && this.slots[i].imageId) usedImageIds.add(this.slots[i].imageId);
     }
 
     const selectedArr = Array.from(this.selectedPhotos).filter(id => !usedImageIds.has(id));
@@ -167,7 +198,7 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
     // 3. Fill empty slots with the remaining selected photos
     let selectedIdx = 0;
     for (let i = 0; i < this.slots.length && selectedIdx < selectedArr.length; i++) {
-      if (!this.slots[i].imageId) {
+      if (this.slots[i] && !this.slots[i].imageId) {
         this._assignToSlot(i, selectedArr[selectedIdx], skipSync);
         selectedIdx++;
       }
@@ -175,7 +206,7 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
 
     // 4. Nếu số ảnh chụp ít hơn số ô (vd 2 ảnh nhưng khung 6 ô), tự lặp lại ảnh để lấp đầy 100% ô
     for (let i = 0; i < this.slots.length; i++) {
-      if (!this.slots[i].imageId && currentImages.length > 0) {
+      if (this.slots[i] && !this.slots[i].imageId && currentImages.length > 0) {
         const fallbackImg = currentImages[i % currentImages.length];
         this._assignToSlot(i, fallbackImg.id, skipSync);
       }
@@ -395,10 +426,25 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
         ctx.rotate(slotDef.rotation);
       }
 
-      if (slotData && slotData.imageId && this._imageCache[slotData.imageId]) {
-        // Draw assigned user photo
-        const img = this._imageCache[slotData.imageId];
-        this._drawImageInSlot(ctx, img, slotDef, slotData);
+      if (slotData && slotData.imageId) {
+        const cachedImg = this._imageCache ? this._imageCache[slotData.imageId] : null;
+        if (cachedImg && cachedImg.complete && cachedImg.naturalWidth > 0) {
+          // Draw assigned user photo
+          this._drawImageInSlot(ctx, cachedImg, slotDef, slotData);
+        } else {
+          // Auto-preload missing image and re-render canvas when ready
+          const roomData = this.activeRoom && this.rooms[this.activeRoom];
+          const currentImages = roomData && roomData.images ? roomData.images : [];
+          const imgObj = currentImages.find(i => i.id === slotData.imageId);
+          if (imgObj) {
+            const srcUrl = imgObj.objectUrl || imgObj.url;
+            if (srcUrl) {
+              this._preloadImage(slotData.imageId, srcUrl).then(() => this._renderCanvas());
+            }
+          }
+          ctx.fillStyle = '#e4e4e7';
+          ctx.fillRect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
+        }
       } else if (step === 1 || isPreviewSwiper) {
         // Fill default image in Step 1 or swiper thumbnail
         let defaultImgToDraw = null;
@@ -452,19 +498,65 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
       ctx.drawImage(this.frameImageObj, 0, 0, w, h);
     }
 
-    // Draw active slot highlight OVER the frame (layer 4)
+    // Draw active slot highlight & Canva controls (layer 4)
     if (isPreview && this.selectedSlotIndex >= 0 && step !== 1 && step !== 4 && !isPreviewSwiper) {
        const s = tmpl.slots[this.selectedSlotIndex];
        if (s) {
          ctx.save();
          ctx.translate(s.cx, s.cy);
          if (s.rotation) ctx.rotate(s.rotation);
-         ctx.strokeStyle = '#38bdf8';
-         ctx.lineWidth = 12; // Thicker so it's very obvious
-         ctx.strokeRect(-s.w/2, -s.h/2, s.w, s.h);
-         ctx.strokeStyle = '#fff';
+         
+         const halfW = s.w / 2;
+         const halfH = s.h / 2;
+
+         // 1. Selection Bounding Box (Đường viền khung chọn)
+         ctx.strokeStyle = '#8b5cf6';
          ctx.lineWidth = 4;
-         ctx.strokeRect(-s.w/2 + 6, -s.h/2 + 6, s.w - 12, s.h - 12);
+         ctx.strokeRect(-halfW, -halfH, s.w, s.h);
+
+         // 2. 4 Corner Handles (4 Nút điểm trắng ở 4 góc)
+         const corners = [
+           { x: -halfW, y: -halfH },
+           { x: halfW, y: -halfH },
+           { x: -halfW, y: halfH },
+           { x: halfW, y: halfH }
+         ];
+
+         corners.forEach(c => {
+           ctx.beginPath();
+           ctx.arc(c.x, c.y, 14, 0, Math.PI * 2);
+           ctx.fillStyle = '#ffffff';
+           ctx.fill();
+           ctx.strokeStyle = '#8b5cf6';
+           ctx.lineWidth = 3;
+           ctx.stroke();
+         });
+
+         // 3. Canva-style Rotate Handle (Nút Xoay 🔄 bên phải hoặc bên dưới)
+         const handleOffsetX = halfW + 45;
+         const handleOffsetY = 0;
+
+         // Outer Circle Background
+         ctx.beginPath();
+         ctx.arc(handleOffsetX, handleOffsetY, 22, 0, Math.PI * 2);
+         ctx.fillStyle = '#ffffff';
+         ctx.fill();
+         ctx.strokeStyle = '#8b5cf6';
+         ctx.lineWidth = 3;
+         ctx.stroke();
+
+         // Rotate Icon 🔄
+         ctx.strokeStyle = '#6d28d9';
+         ctx.lineWidth = 3;
+         ctx.lineCap = 'round';
+         ctx.beginPath();
+         ctx.arc(handleOffsetX, handleOffsetY, 11, -Math.PI * 0.75, Math.PI * 0.75);
+         ctx.stroke();
+
+         ctx.beginPath();
+         ctx.arc(handleOffsetX, handleOffsetY, 11, Math.PI * 0.25, -Math.PI * 0.25);
+         ctx.stroke();
+
          ctx.restore();
        }
     }

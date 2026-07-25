@@ -934,21 +934,85 @@ export const UIMixin = {
     // Canvas click → select slot
     this.canvas.addEventListener('click', (e) => this._onCanvasClick(e));
 
-    // Canvas drag for pan
-    let isDragging = false, dragStartX, dragStartY, dragSlot;
+    // Canvas Drag & Canva Rotate Handle support (Mouse & Touch)
+    let isDragging = false, isRotatingSlot = false;
+    let dragStartX, dragStartY, dragSlot;
+    let rotateStartAngle = 0, initialSlotRot = 0, touchRotateStartTime = 0;
+
+    // Desktop Mouse Drag & Rotate
     this.canvas.addEventListener('mousedown', (e) => {
       const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
       if (step === 1 || step === 4) return;
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];
       if (!slot || !slot.imageId) return;
+
+      const tmpl = ALL_TEMPLATES[this.currentTemplate];
+      const slotDef = tmpl ? tmpl.slots[this.selectedSlotIndex] : null;
+
+      const rect = this.canvas.getBoundingClientRect();
+      const scaleX = this.canvas.width / rect.width;
+      const scaleY = this.canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+
+      // Check if mouse hit Canva rotate handle
+      if (slotDef) {
+        const dx = x - slotDef.cx;
+        const dy = y - slotDef.cy;
+        const rotRad = (slotDef.rotation || 0) * Math.PI / 180;
+        const localX = dx * Math.cos(-rotRad) - dy * Math.sin(-rotRad);
+        const localY = dx * Math.sin(-rotRad) + dy * Math.cos(-rotRad);
+        
+        const distRight = Math.hypot(localX - (slotDef.w / 2 + 45), localY);
+        const distBottom = Math.hypot(localX, localY - (slotDef.h / 2 + 50));
+
+        if (distRight <= 50 || distBottom <= 50) {
+          isRotatingSlot = true;
+          touchRotateStartTime = Date.now();
+          rotateStartAngle = Math.atan2(y - slotDef.cy, x - slotDef.cx) * (180 / Math.PI);
+          initialSlotRot = slot.rotation || 0;
+          this.canvas.style.cursor = 'grab';
+          return;
+        }
+      }
+
       isDragging = true;
       dragStartX = e.offsetX;
       dragStartY = e.offsetY;
       dragSlot = this.selectedSlotIndex;
       this.canvas.style.cursor = 'grabbing';
     });
+
     this.canvas.addEventListener('mousemove', (e) => {
+      if (isRotatingSlot && this.selectedSlotIndex >= 0) {
+        const slot = this.slots[this.selectedSlotIndex];
+        const tmpl = ALL_TEMPLATES[this.currentTemplate];
+        const slotDef = tmpl ? tmpl.slots[this.selectedSlotIndex] : null;
+        if (slot && slotDef) {
+          const rect = this.canvas.getBoundingClientRect();
+          const scaleX = this.canvas.width / rect.width;
+          const scaleY = this.canvas.height / rect.height;
+          const x = (e.clientX - rect.left) * scaleX;
+          const y = (e.clientY - rect.top) * scaleY;
+
+          const currentAngle = Math.atan2(y - slotDef.cy, x - slotDef.cx) * (180 / Math.PI);
+          let delta = currentAngle - rotateStartAngle;
+          let rawRot = (initialSlotRot + delta) % 360;
+          if (rawRot < 0) rawRot += 360;
+
+          // Snap 90deg nếu gần các góc vuông 0, 90, 180, 270
+          [0, 90, 180, 270, 360].forEach(target => {
+            if (Math.abs(rawRot - target) < 6) rawRot = target % 360;
+          });
+
+          slot.rotation = Math.round(rawRot);
+          this._clampPan(this.selectedSlotIndex);
+          this._renderCanvas();
+        }
+        return;
+      }
+
       if (!isDragging) return;
       const scale = this.canvas.width / this.canvas.offsetWidth;
       const dx = (e.offsetX - dragStartX) * scale;
@@ -957,24 +1021,33 @@ export const UIMixin = {
       dragStartY = e.offsetY;
       this._panSlot(dragSlot, dx, dy);
     });
-    this.canvas.addEventListener('mouseup', () => {
-      if (isDragging) {
+
+    const endMouseDrag = () => {
+      if (isRotatingSlot && this.selectedSlotIndex >= 0) {
+        if (Date.now() - touchRotateStartTime < 250) {
+          const slot = this.slots[this.selectedSlotIndex];
+          if (slot) {
+            slot.rotation = (slot.rotation + 90) % 360;
+            this._clampPan(this.selectedSlotIndex);
+            this._renderCanvas();
+          }
+        }
+        this._syncState(this.activeRoom);
+      } else if (isDragging) {
         this._syncState(this.activeRoom);
       }
       isDragging = false;
+      isRotatingSlot = false;
       this.canvas.style.cursor = '';
-    });
-    this.canvas.addEventListener('mouseleave', () => {
-      isDragging = false;
-      this.canvas.style.cursor = '';
-    });
+    };
 
+    this.canvas.addEventListener('mouseup', endMouseDrag);
+    this.canvas.addEventListener('mouseleave', endMouseDrag);
 
-
-    // Touch support for pan, zoom (pinch), and rotation (2-finger twist)
+    // Touch support (iOS / iPad): Smooth 1-finger Pan & Canva Rotate Handle, 2-finger Pinch Zoom (No Rotation Jitter)
     let touchStartX, touchStartY;
-    let initialPinchDistance = 0, initialPinchAngle = 0;
-    let initialSlotZoom = 1.0, initialSlotRot = 0;
+    let initialPinchDistance = 0;
+    let initialSlotZoom = 1.0;
 
     this.canvas.addEventListener('touchstart', (e) => {
       const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
@@ -982,25 +1055,81 @@ export const UIMixin = {
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];
       if (!slot || !slot.imageId) return;
+      const tmpl = ALL_TEMPLATES[this.currentTemplate];
+      const slotDef = tmpl ? tmpl.slots[this.selectedSlotIndex] : null;
 
       if (e.touches.length === 1) {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
+        const touch = e.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        const x = (touch.clientX - rect.left) * scaleX;
+        const y = (touch.clientY - rect.top) * scaleY;
+
+        // Check hit Canva rotate handle on Touch
+        if (slotDef) {
+          const dx = x - slotDef.cx;
+          const dy = y - slotDef.cy;
+          const rotRad = (slotDef.rotation || 0) * Math.PI / 180;
+          const localX = dx * Math.cos(-rotRad) - dy * Math.sin(-rotRad);
+          const localY = dx * Math.sin(-rotRad) + dy * Math.cos(-rotRad);
+
+          const distRight = Math.hypot(localX - (slotDef.w / 2 + 45), localY);
+          const distBottom = Math.hypot(localX, localY - (slotDef.h / 2 + 50));
+
+          if (distRight <= 50 || distBottom <= 50) {
+            isRotatingSlot = true;
+            touchRotateStartTime = Date.now();
+            rotateStartAngle = Math.atan2(y - slotDef.cy, x - slotDef.cx) * (180 / Math.PI);
+            initialSlotRot = slot.rotation || 0;
+            e.preventDefault();
+            return;
+          }
+        }
+
+        isRotatingSlot = false;
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
       } else if (e.touches.length === 2) {
+        isRotatingSlot = false;
         const t0 = e.touches[0], t1 = e.touches[1];
         initialPinchDistance = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
-        initialPinchAngle = Math.atan2(t1.clientY - t0.clientY, t1.clientX - t0.clientX) * (180 / Math.PI);
         initialSlotZoom = slot.zoom || 1.0;
-        initialSlotRot = slot.rotation || 0;
       }
-    }, { passive: true });
+    }, { passive: false });
 
     this.canvas.addEventListener('touchmove', (e) => {
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];
       if (!slot || !slot.imageId) return;
+      const tmpl = ALL_TEMPLATES[this.currentTemplate];
+      const slotDef = tmpl ? tmpl.slots[this.selectedSlotIndex] : null;
 
-      if (e.touches.length === 1) {
+      if (isRotatingSlot && e.touches.length === 1 && slotDef) {
+        const touch = e.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        const x = (touch.clientX - rect.left) * scaleX;
+        const y = (touch.clientY - rect.top) * scaleY;
+
+        const currentAngle = Math.atan2(y - slotDef.cy, x - slotDef.cx) * (180 / Math.PI);
+        let delta = currentAngle - rotateStartAngle;
+        let rawRot = (initialSlotRot + delta) % 360;
+        if (rawRot < 0) rawRot += 360;
+
+        [0, 90, 180, 270, 360].forEach(target => {
+          if (Math.abs(rawRot - target) < 6) rawRot = target % 360;
+        });
+
+        slot.rotation = Math.round(rawRot);
+        this._clampPan(this.selectedSlotIndex);
+        this._renderCanvas();
+        e.preventDefault();
+        return;
+      }
+
+      if (e.touches.length === 1 && !isRotatingSlot) {
         const touch = e.touches[0];
         const scale = this.canvas.width / this.canvas.offsetWidth;
         const dx = (touch.clientX - touchStartX) * scale;
@@ -1010,28 +1139,34 @@ export const UIMixin = {
         this._panSlot(this.selectedSlotIndex, dx, dy);
         e.preventDefault();
       } else if (e.touches.length === 2 && initialPinchDistance > 0) {
+        // Pure Pinch Zoom (No Rotation Gesture -> 100% Smooth on iOS)
         const t0 = e.touches[0], t1 = e.touches[1];
         const currentDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
         const scaleFactor = currentDist / initialPinchDistance;
         const newZoom = Math.max(0.3, Math.min(4.0, initialSlotZoom * scaleFactor));
 
-        const currentAngle = Math.atan2(t1.clientY - t0.clientY, t1.clientX - t0.clientX) * (180 / Math.PI);
-        let deltaAngle = currentAngle - initialPinchAngle;
-        let newRot = (initialSlotRot + deltaAngle) % 360;
-        if (newRot < 0) newRot += 360;
-
         slot.zoom = newZoom;
-        slot.rotation = newRot;
         this._clampPan(this.selectedSlotIndex);
         this._renderCanvas();
         e.preventDefault();
       }
     }, { passive: false });
 
-    this.canvas.addEventListener('touchend', () => {
-      if (this.selectedSlotIndex >= 0) {
+    this.canvas.addEventListener('touchend', (e) => {
+      if (isRotatingSlot && this.selectedSlotIndex >= 0) {
+        if (Date.now() - touchRotateStartTime < 250) {
+          const slot = this.slots[this.selectedSlotIndex];
+          if (slot) {
+            slot.rotation = (slot.rotation + 90) % 360;
+            this._clampPan(this.selectedSlotIndex);
+            this._renderCanvas();
+          }
+        }
+        this._syncState(this.activeRoom);
+      } else if (this.selectedSlotIndex >= 0) {
         this._syncState(this.activeRoom);
       }
+      isRotatingSlot = false;
     });
 
     // Mouse wheel zoom support for desktop testing/usage
