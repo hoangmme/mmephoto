@@ -183,7 +183,7 @@ _assignToSlot(slotIndex, imageId, skipSync = false) {
     // 1. Remove images from slots that are NO LONGER in selectedPhotos
     for (let i = 0; i < this.slots.length; i++) {
       if (this.slots[i] && this.slots[i].imageId && !this.selectedPhotos.has(this.slots[i].imageId)) {
-        this._removeSlotImage(i, true); // skipSync = true
+        this._removeFromSlot(i);
       }
     }
 
