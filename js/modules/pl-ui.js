@@ -1386,11 +1386,11 @@ export const UIMixin = {
           this._syncState(this.activeRoom);
         } else {
           this.selectedImageId = img.id;
-          this._updateImageListUI();
-          // If a slot is selected, assign image to it
           if (this.selectedSlotIndex >= 0) {
             this._assignToSlot(this.selectedSlotIndex, img.id);
+            this.selectedImageId = null;
           }
+          this._updateImageListUI();
         }
       });
 

@@ -270,10 +270,7 @@ _clampPan(slotIndex) {
     if (!img) return;
 
     // Calculate cover dimensions
-    const isRotated = (slot.rotation === 90 || slot.rotation === 270);
-    const imgW = isRotated ? img.naturalHeight : img.naturalWidth;
-    const imgH = isRotated ? img.naturalWidth : img.naturalHeight;
-    const { drawW, drawH } = this._calcCover(imgW, imgH, slotDef.w, slotDef.h, slot.zoom);
+    const { drawW, drawH } = this._calcCover(img.naturalWidth, img.naturalHeight, slotDef.w, slotDef.h, slot.zoom);
 
     const maxPanX = Math.max(0, (drawW - slotDef.w) / 2);
     const maxPanY = Math.max(0, (drawH - slotDef.h) / 2);
@@ -566,16 +563,9 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
   }
 ,
 
-_drawImageInSlot(ctx, img, slotDef, slotData) {
-    const isRotated = (slotData.rotation === 90 || slotData.rotation === 270);
-    const imgW = isRotated ? img.naturalHeight : img.naturalWidth;
-    const imgH = isRotated ? img.naturalWidth : img.naturalHeight;
-
-    const { drawW, drawH } = this._calcCover(
-      imgW, imgH,
-      slotDef.w, slotDef.h,
-      slotData.zoom || 1.0
-    );
+  _drawImageInSlot(ctx, img, slotDef, slotData) {
+    const zoom = slotData.zoom || 1.0;
+    const { drawW, drawH } = this._calcCover(img.naturalWidth, img.naturalHeight, slotDef.w, slotDef.h, zoom);
 
     // Clip to slot
     ctx.save();
@@ -586,15 +576,13 @@ _drawImageInSlot(ctx, img, slotDef, slotData) {
     // Translate to pan position
     ctx.translate(slotData.panX || 0, slotData.panY || 0);
     
+    // Rotate canvas around center
     if (slotData.rotation) {
-      ctx.rotate(slotData.rotation * Math.PI / 180);
+      ctx.rotate((slotData.rotation * Math.PI) / 180);
     }
     
-    if (isRotated) {
-      ctx.drawImage(img, -drawH / 2, -drawW / 2, drawH, drawW);
-    } else {
-      ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
-    }
+    // Draw image centered (ctx.rotate handles the rotation)
+    ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
     
     ctx.restore();
   }
