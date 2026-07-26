@@ -241,6 +241,11 @@ export const UIMixin = {
 
   _initMainSwiper(filterToSelected = false) {
     if (!this.mainSwiper) return;
+
+    // Safely detach canvas before clearing swiper innerHTML so canvas DOM element is NOT destroyed
+    if (this.canvas && this.canvas.parentElement) {
+      this.canvas.parentElement.removeChild(this.canvas);
+    }
     this.mainSwiper.innerHTML = '';
 
     if (!this.selectedTemplates || !Array.isArray(this.selectedTemplates) || this.selectedTemplates.length === 0) {
@@ -315,6 +320,16 @@ export const UIMixin = {
 
       this.mainSwiper.appendChild(slide);
     });
+
+    // Re-attach interactive canvas if in Step 3 or 4
+    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    if (step >= 3 && this.canvas) {
+      const activeSlide = this.mainSwiper.querySelector(`[data-id="${this.currentTemplate}"]`) || this.mainSwiper.children[0];
+      if (activeSlide) {
+        activeSlide.classList.add('active');
+        activeSlide.appendChild(this.canvas);
+      }
+    }
 
     this._updateSwiperCheckBadges();
 
