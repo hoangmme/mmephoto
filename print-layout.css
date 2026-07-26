@@ -885,8 +885,6 @@ body.pl-mode-staff #roomTabs {
 .pl-mode-staff .pl-step-mode-4 .pl-slide {
   height: min(calc(100vh - 280px), calc((100vw - 380px) * 1.418)) !important;
   width: auto !important;
-  display: block !important;
-  opacity: 1 !important;
 }
 
 .pl-qr-overlay,
