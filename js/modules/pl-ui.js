@@ -982,8 +982,18 @@ export const UIMixin = {
     if (btnLockResetTimer) {
       btnLockResetTimer.addEventListener('click', () => {
         const roomData = this.rooms[this.activeRoom];
-        if (roomData && roomData.session && this._resetSessionTimer) {
-          this._resetSessionTimer(roomData.session);
+        if (roomData) {
+          roomData.sessionStarted = false;
+          const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
+          if (activeSess) {
+            activeSess.sessionStartedAt = null;
+          }
+          if (roomData.session && this._resetSessionTimer) {
+            this._resetSessionTimer(roomData.session);
+          } else {
+            this._setStep(this.activeRoom, 1);
+            this._updateUIForRoom();
+          }
         }
       });
     }

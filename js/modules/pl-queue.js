@@ -141,30 +141,27 @@ export const QueueMixin = {
     try {
       const res = await fetch(`/api/reset-session-timer/${encodeURIComponent(this.branch)}/${encodeURIComponent(this.activeRoom)}/${encodeURIComponent(sessionId)}`, { method: 'POST' });
       if (res.ok) {
-        if (this.rooms[this.activeRoom]) {
           const roomData = this.rooms[this.activeRoom];
-          const now = Date.now();
           roomData.activeSessionId = sessionId;
           roomData.session = sessionId;
           roomData.step = 1;
           roomData.locked = false;
           roomData.timeLeft = 420;
+          roomData.sessionStarted = false; // Trigger start.png overlay for customer
           if (roomData.timedOutSteps) roomData.timedOutSteps.clear();
 
           const sessObj = (roomData.queue || []).find(s => s.id === sessionId);
           if (sessObj) {
             sessObj.finished = false;
             sessObj.step = 1;
-            sessObj.sessionStartedAt = now;
+            sessObj.sessionStartedAt = null; // Require customer to click start.png
           }
 
           this._setActiveSession(sessionId);
-          this._startStepTimer(this.activeRoom, 1);
           this._setStep(this.activeRoom, 1);
           this._updateUIForRoom();
           this._renderCanvas();
           if (this._renderQueueModal) this._renderQueueModal();
-        }
       }
     } catch (err) {
       console.error('Failed to reset session timer:', err);
