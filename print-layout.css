@@ -536,6 +536,12 @@ body.pl-mode-staff #roomTabs {
   text-align: center;
 }
 
+.pl-step-mode-2 .pl-canvas-info,
+.pl-step-mode-3 .pl-canvas-info,
+.pl-step-mode-4 .pl-canvas-info {
+  display: none !important;
+}
+
 /* ── Top Wizard Area ── */
 .pl-top-wizard-area {
   background: var(--pl-bg-panel);
