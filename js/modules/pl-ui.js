@@ -485,7 +485,6 @@ export const UIMixin = {
       }
     }
   },
-  ,
 
   _renderTabs() {
     const rooms = Object.keys(this.rooms);
