@@ -491,74 +491,106 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
       ctx.drawImage(this.frameImageObj, 0, 0, w, h);
     }
 
-    // Draw active slot highlight & Canva controls (layer 4)
+    // Draw active slot highlight & Canva controls (layer 4 - Topmost layer)
     if (isPreview && this.selectedSlotIndex >= 0 && step !== 1 && step !== 4 && !isPreviewSwiper) {
-       const s = tmpl.slots[this.selectedSlotIndex];
-       const slotData = this.slots ? this.slots[this.selectedSlotIndex] : null;
-       if (s) {
-         ctx.save();
-         ctx.translate(s.cx, s.cy);
-         
-         const halfW = s.w / 2;
-         const halfH = s.h / 2;
+      const s = tmpl.slots[this.selectedSlotIndex];
+      const slotData = this.slots ? this.slots[this.selectedSlotIndex] : null;
+      if (s) {
+        ctx.save();
+        ctx.translate(s.cx, s.cy);
+        if (s.rotation) {
+          ctx.rotate(s.rotation);
+        }
 
-         // 1. Selection Bounding Box (Đường viền khung chọn)
-         ctx.strokeStyle = '#8b5cf6';
-         ctx.lineWidth = 4;
-         ctx.strokeRect(-halfW, -halfH, s.w, s.h);
+        let halfW = s.w / 2;
+        let halfH = s.h / 2;
 
-         // 2. 4 Corner Handles (4 Nút điểm trắng ở 4 góc)
-         const corners = [
-           { x: -halfW, y: -halfH },
-           { x: halfW, y: -halfH },
-           { x: -halfW, y: halfH },
-           { x: halfW, y: halfH }
-         ];
+        if (slotData && slotData.imageId && this._imageCache && this._imageCache[slotData.imageId]) {
+          const img = this._imageCache[slotData.imageId];
+          if (img.naturalWidth && img.naturalHeight) {
+            const zoom = slotData.zoom || 1.0;
+            const cover = this._calcCover(img.naturalWidth, img.naturalHeight, s.w, s.h, zoom);
+            halfW = cover.drawW / 2;
+            halfH = cover.drawH / 2;
 
-         corners.forEach(c => {
-           ctx.beginPath();
-           ctx.arc(c.x, c.y, 14, 0, Math.PI * 2);
-           ctx.fillStyle = '#ffffff';
-           ctx.fill();
-           ctx.strokeStyle = '#8b5cf6';
-           ctx.lineWidth = 3;
-           ctx.stroke();
-         });
+            // Translate to image pan position
+            ctx.translate(slotData.panX || 0, slotData.panY || 0);
 
-         // 3. Canva-style Large Rotate Handle below slot (Bán kính 32px, dễ giữ trên iPad)
-         const handleOffsetY = halfH + 65;
+            // Rotate by image rotation angle
+            if (slotData.rotation) {
+              ctx.rotate(((slotData.rotation || 0) * Math.PI) / 180);
+            }
+          }
+        }
 
-         // Stem line
-         ctx.beginPath();
-         ctx.moveTo(0, halfH);
-         ctx.lineTo(0, handleOffsetY);
-         ctx.strokeStyle = '#8b5cf6';
-         ctx.lineWidth = 4;
-         ctx.stroke();
+        const drawW = halfW * 2;
+        const drawH = halfH * 2;
 
-         // Outer Circle Background (Đường kính 64px)
-         ctx.beginPath();
-         ctx.arc(0, handleOffsetY, 32, 0, Math.PI * 2);
-         ctx.fillStyle = '#ffffff';
-         ctx.fill();
-         ctx.strokeStyle = '#8b5cf6';
-         ctx.lineWidth = 4;
-         ctx.stroke();
+        // 1. Selection Bounding Box (Bao quanh ảnh đã zoom, pan, rotate)
+        ctx.strokeStyle = '#8b5cf6';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(-halfW, -halfH, drawW, drawH);
 
-         // Rotate Icon 🔄
-         ctx.strokeStyle = '#6d28d9';
-         ctx.lineWidth = 4;
-         ctx.lineCap = 'round';
-         ctx.beginPath();
-         ctx.arc(0, handleOffsetY, 16, -Math.PI * 0.75, Math.PI * 0.75);
-         ctx.stroke();
+        // 2. 4 Corner Handles (4 Nút mốc màu trắng ở 4 góc ảnh)
+        const corners = [
+          { x: -halfW, y: -halfH },
+          { x: halfW, y: -halfH },
+          { x: -halfW, y: halfH },
+          { x: halfW, y: halfH }
+        ];
 
-         ctx.beginPath();
-         ctx.arc(0, handleOffsetY, 16, Math.PI * 0.25, -Math.PI * 0.25);
-         ctx.stroke();
+        corners.forEach(c => {
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, 14, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+          ctx.strokeStyle = '#8b5cf6';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        });
 
-         ctx.restore();
-       }
+        // 3. Canva-style Large Rotate Handle below image (Nút xoay tròn Canva lớn)
+        const handleOffsetY = halfH + 65;
+
+        // Stem line
+        ctx.beginPath();
+        ctx.moveTo(0, halfH);
+        ctx.lineTo(0, handleOffsetY);
+        ctx.strokeStyle = '#8b5cf6';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Outer Circle Background (Đường kính 64px)
+        ctx.beginPath();
+        ctx.arc(0, handleOffsetY, 32, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.strokeStyle = '#8b5cf6';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Rotate Icon 🔄
+        ctx.strokeStyle = '#6d28d9';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(0, handleOffsetY, 16, -Math.PI * 0.75, Math.PI * 0.75);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(0, handleOffsetY, 16, Math.PI * 0.25, -Math.PI * 0.25);
+        ctx.stroke();
+
+        // Angle Badge Text (Hiển thị góc xoay ví dụ 90°)
+        const currentDeg = Math.round(((slotData ? (slotData.rotation || 0) : 0) % 360 + 360) % 360);
+        ctx.font = 'bold 22px Inter, sans-serif';
+        ctx.fillStyle = '#8b5cf6';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(`${currentDeg}°`, 0, handleOffsetY - 40);
+
+        ctx.restore();
+      }
     }
   }
 ,
