@@ -247,13 +247,17 @@ _updateActiveSession(room, onlyBadge = false) {
         if (active.sessionStartedAt) {
           const sessObj = roomData.queue ? roomData.queue.find(s => s.id === active.id) : null;
           if (sessObj) sessObj.sessionStartedAt = active.sessionStartedAt;
+          roomData.sessionStarted = true;
+        } else {
+          roomData.sessionStarted = false;
         }
         roomData.timerStarted = true;
-        if (!isStaffMode && !roomData.timerInterval && (roomData.step || 1) < 4) {
+        if (!isStaffMode && roomData.sessionStarted && !roomData.timerInterval && (roomData.step || 1) < 4) {
           this._startStepTimer(room, roomData.step || 1);
         }
       } else {
         roomData.timerStarted = false;
+        roomData.sessionStarted = false;
       }
       roomData.lastImageTime = Date.now();
       
