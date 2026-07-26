@@ -239,16 +239,23 @@ export const UIMixin = {
     });
   },
 
-  _initMainSwiper() {
+  _initMainSwiper(filterToSelected = false) {
     if (!this.mainSwiper) return;
     this.mainSwiper.innerHTML = '';
 
-    if (!this.selectedTemplates || !Array.isArray(this.selectedTemplates)) {
+    if (!this.selectedTemplates || !Array.isArray(this.selectedTemplates) || this.selectedTemplates.length === 0) {
       this.selectedTemplates = [this.currentTemplate || Object.keys(ALL_TEMPLATES)[0]];
     }
 
-    Object.keys(ALL_TEMPLATES).forEach(k => {
+    let templateKeys = Object.keys(ALL_TEMPLATES);
+    if (filterToSelected) {
+      templateKeys = templateKeys.filter(k => this.selectedTemplates.includes(k));
+      if (templateKeys.length === 0) templateKeys = [this.currentTemplate];
+    }
+
+    templateKeys.forEach(k => {
       const t = ALL_TEMPLATES[k];
+      if (!t) return;
       const slide = document.createElement('div');
       slide.className = 'pl-slide';
       slide.dataset.id = k;
@@ -716,6 +723,20 @@ export const UIMixin = {
       }
     }
 
+    // Update swiper filtering based on step
+    if (this.mainSwiper) {
+      if (step === 1) {
+        if (this.mainSwiper.children.length !== Object.keys(ALL_TEMPLATES).length) {
+          this._initMainSwiper(false);
+        }
+      } else if (step === 3 || step === 4) {
+        const expectedCount = this.selectedTemplates ? this.selectedTemplates.length : 1;
+        if (this.mainSwiper.children.length !== expectedCount) {
+          this._initMainSwiper(true);
+        }
+      }
+    }
+
     // Control swiper arrow buttons visibility
     const btnSwiperPrev = document.getElementById('btnSwiperPrev');
     const btnSwiperNext = document.getElementById('btnSwiperNext');
@@ -748,8 +769,12 @@ export const UIMixin = {
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 2) {
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
-        const tmpl = ALL_TEMPLATES[this.currentTemplate];
-        const maxSlots = tmpl ? tmpl.slots.length : (this.slots ? this.slots.length : 0);
+        const selTmpls = (this.selectedTemplates && this.selectedTemplates.length > 0) ? this.selectedTemplates : [this.currentTemplate];
+        const maxSlots = Math.max(...selTmpls.map(id => {
+          const tmpl = ALL_TEMPLATES[id];
+          return tmpl && tmpl.slots ? tmpl.slots.length : 0;
+        }));
+
         instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
@@ -759,7 +784,7 @@ export const UIMixin = {
         const currentT = ALL_TEMPLATES[this.currentTemplate];
         const paperSize = currentT ? (currentT.paper_size || (currentT.canvas_width > 2000 ? 'A4' : 'A5')) : 'A5';
         instructionText.textContent = (paperSize === 'A5' && this.selectedTemplates && this.selectedTemplates.length > 1)
-          ? '👉 Bước 3: Dùng ngón tay chạm/xoay/phóng to ảnh trên khung. Bấm nút mũi tên ↔ để chuyển sang Khung A5 thứ 2.'
+          ? '👉 Bước 3: Dùng ngón tay chạm/xoay/phóng to ảnh trên khung. Bấm nút mũi tên ↔ để chuyển qua lại giữa 2 khung A5 đã chọn.'
           : '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
