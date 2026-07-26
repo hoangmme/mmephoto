@@ -418,7 +418,10 @@ body.pl-mode-staff #roomTabs {
   flex: 1;
   min-height: 0;
   overflow-x: auto;
+  overflow-y: hidden;
   scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
   scrollbar-width: none;
   align-items: center;
   gap: 40px;
@@ -433,8 +436,8 @@ body.pl-mode-staff #roomTabs {
 .pl-slide {
   flex: 0 0 auto;
   scroll-snap-align: center;
-  height: min(calc(100vh - 300px), calc((100vw - 80px) * 1.418));
-  max-height: 100%;
+  height: min(calc(100vh - 350px), calc((100vw - 80px) * 1.418));
+  max-height: calc(100% - 60px);
   aspect-ratio: 1748 / 2480;
   background: #fff;
   border-radius: 6px;
@@ -442,7 +445,8 @@ body.pl-mode-staff #roomTabs {
   position: relative;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   cursor: pointer;
-  transition: box-shadow 0.25s ease;
+  transition: transform 0.25s ease, opacity 0.25s ease, box-shadow 0.25s ease;
+  touch-action: pan-x;
 }
 
 .pl-slide:not(.active) {
@@ -464,12 +468,50 @@ body.pl-mode-staff #roomTabs {
   align-items: center;
   justify-content: center;
   background: #fff;
+  pointer-events: none;
+  touch-action: pan-x;
 }
 .pl-slide-preview img,
 .pl-slide-preview canvas {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  pointer-events: none;
+  touch-action: pan-x;
+}
+
+.pl-swiper-arrow {
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--pl-border);
+  color: var(--pl-accent, #4f3219);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 25;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  transition: all 0.2s ease;
+}
+.pl-swiper-arrow:hover {
+  background: var(--pl-accent, #4f3219);
+  color: #fff;
+  transform: translateY(-50%) scale(1.1);
+}
+.pl-swiper-arrow.prev { left: 16px; }
+.pl-swiper-arrow.next { right: 16px; }
+
+.pl-paper-info-note {
+  margin: 6px auto 0 auto !important;
+  padding: 6px 12px !important;
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+  flex-shrink: 0;
 }
 
 #printCanvas {

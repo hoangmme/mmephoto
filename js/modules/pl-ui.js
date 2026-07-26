@@ -824,6 +824,27 @@ export const UIMixin = {
       });
     }
 
+    const btnSwiperPrev = document.getElementById('btnSwiperPrev');
+    const btnSwiperNext = document.getElementById('btnSwiperNext');
+    if (btnSwiperPrev) {
+      btnSwiperPrev.addEventListener('click', () => {
+        const keys = Object.keys(ALL_TEMPLATES);
+        const idx = keys.indexOf(this.currentTemplate);
+        if (idx > 0) {
+          this._selectSlide(keys[idx - 1]);
+        }
+      });
+    }
+    if (btnSwiperNext) {
+      btnSwiperNext.addEventListener('click', () => {
+        const keys = Object.keys(ALL_TEMPLATES);
+        const idx = keys.indexOf(this.currentTemplate);
+        if (idx < keys.length - 1) {
+          this._selectSlide(keys[idx + 1]);
+        }
+      });
+    }
+
     document.getElementById('btnSelectAll').addEventListener('click', () => this._selectAll());
     document.getElementById('btnDeselectAll').addEventListener('click', () => this._deselectAll());
     document.getElementById('btnAutoFill').addEventListener('click', () => this._autoFill());
