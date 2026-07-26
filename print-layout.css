@@ -812,15 +812,15 @@ body.pl-mode-staff #roomTabs {
 .pl-step-mode-4:not(.pl-mode-staff) #mainSwiper,
 .pl-step-mode-4:not(.pl-mode-staff) #paperInfoNote,
 .pl-step-mode-4:not(.pl-mode-staff) #canvasInfo,
-.pl-mode-user.pl-step-mode-4 #panelLeft,
-.pl-mode-user.pl-step-mode-4 #mainSwiper,
-.pl-mode-user.pl-step-mode-4 #paperInfoNote,
-.pl-mode-user.pl-step-mode-4 #canvasInfo {
+.pl-mode-user .pl-step-mode-4 #panelLeft,
+.pl-mode-user .pl-step-mode-4 #mainSwiper,
+.pl-mode-user .pl-step-mode-4 #paperInfoNote,
+.pl-mode-user .pl-step-mode-4 #canvasInfo {
   display: none !important;
 }
 
 .pl-step-mode-4:not(.pl-mode-staff) #mainSwiperArea,
-.pl-mode-user.pl-step-mode-4 #mainSwiperArea {
+.pl-mode-user .pl-step-mode-4 #mainSwiperArea {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -833,7 +833,7 @@ body.pl-mode-staff #roomTabs {
 }
 
 .pl-step-mode-4:not(.pl-mode-staff) #qrOverlay,
-.pl-mode-user.pl-step-mode-4 #qrOverlay {
+.pl-mode-user .pl-step-mode-4 #qrOverlay {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -843,7 +843,7 @@ body.pl-mode-staff #roomTabs {
 }
 
 .pl-step-mode-4:not(.pl-mode-staff) #crossSellBanner,
-.pl-mode-user.pl-step-mode-4 #crossSellBanner {
+.pl-mode-user .pl-step-mode-4 #crossSellBanner {
   display: flex !important;
   flex-direction: column !important;
   flex: 1 !important;
@@ -861,28 +861,28 @@ body.pl-mode-staff #roomTabs {
 /* Staff / Admin View - Step 4 */
 .pl-mode-staff #crossSellBanner,
 .pl-mode-staff #qrOverlay,
-.pl-mode-staff.pl-step-mode-4 #crossSellBanner,
-.pl-mode-staff.pl-step-mode-4 #qrOverlay {
+.pl-mode-staff .pl-step-mode-4 #crossSellBanner,
+.pl-mode-staff .pl-step-mode-4 #qrOverlay {
   display: none !important;
 }
 
-.pl-mode-staff.pl-step-mode-4 #panelLeft {
+.pl-mode-staff .pl-step-mode-4 #panelLeft {
   display: flex !important;
   width: 320px !important;
 }
 
-.pl-mode-staff.pl-step-mode-4 #mainSwiperArea {
+.pl-mode-staff .pl-step-mode-4 #mainSwiperArea {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
 }
 
-.pl-mode-staff.pl-step-mode-4 #mainSwiper {
+.pl-mode-staff .pl-step-mode-4 #mainSwiper {
   display: flex !important;
 }
 
-.pl-mode-staff.pl-step-mode-4 .pl-slide {
+.pl-mode-staff .pl-step-mode-4 .pl-slide {
   height: min(calc(100vh - 280px), calc((100vw - 380px) * 1.418)) !important;
   width: auto !important;
   display: block !important;
@@ -902,7 +902,7 @@ body.pl-mode-staff #roomTabs {
   cursor: default !important;
 }
 
-.pl-mode-user.pl-step-mode-4 #crossSellBanner {
+.pl-mode-user .pl-step-mode-4 #crossSellBanner {
   display: flex !important;
   flex-direction: column !important;
   flex: 1 !important;
