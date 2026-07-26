@@ -239,28 +239,12 @@ export const UIMixin = {
     });
   },
 
-  _initMainSwiper(filterToSelected = false) {
+  _initMainSwiper() {
     if (!this.mainSwiper) return;
-
-    // Safely detach canvas before clearing swiper innerHTML so canvas DOM element is NOT destroyed
-    if (this.canvas && this.canvas.parentElement) {
-      this.canvas.parentElement.removeChild(this.canvas);
-    }
     this.mainSwiper.innerHTML = '';
 
-    if (!this.selectedTemplates || !Array.isArray(this.selectedTemplates) || this.selectedTemplates.length === 0) {
-      this.selectedTemplates = [this.currentTemplate || Object.keys(ALL_TEMPLATES)[0]];
-    }
-
-    let templateKeys = Object.keys(ALL_TEMPLATES);
-    if (filterToSelected) {
-      templateKeys = templateKeys.filter(k => this.selectedTemplates.includes(k));
-      if (templateKeys.length === 0) templateKeys = [this.currentTemplate];
-    }
-
-    templateKeys.forEach(k => {
+    Object.keys(ALL_TEMPLATES).forEach(k => {
       const t = ALL_TEMPLATES[k];
-      if (!t) return;
       const slide = document.createElement('div');
       slide.className = 'pl-slide';
       slide.dataset.id = k;
@@ -291,17 +275,6 @@ export const UIMixin = {
       badge.style.pointerEvents = 'none';
       slide.appendChild(badge);
 
-      // Checkmark selection button on top-right of slide
-      const checkBtn = document.createElement('div');
-      checkBtn.className = 'pl-slide-check-btn';
-      checkBtn.dataset.id = k;
-      checkBtn.innerHTML = `<span>+ Chọn khung</span>`;
-      checkBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this._toggleTemplateSelection(k);
-      });
-      slide.appendChild(checkBtn);
-
       const preview = document.createElement('div');
       preview.className = 'pl-slide-preview';
 
@@ -315,23 +288,13 @@ export const UIMixin = {
       slide.appendChild(preview);
 
       slide.addEventListener('click', () => {
-        this._toggleTemplateSelection(k);
+        if (this.currentTemplate !== k) {
+          this._selectSlide(k);
+        }
       });
 
       this.mainSwiper.appendChild(slide);
     });
-
-    // Re-attach interactive canvas if in Step 3 or 4
-    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
-    if (step >= 3 && this.canvas) {
-      const activeSlide = this.mainSwiper.querySelector(`[data-id="${this.currentTemplate}"]`) || this.mainSwiper.children[0];
-      if (activeSlide) {
-        activeSlide.classList.add('active');
-        activeSlide.appendChild(this.canvas);
-      }
-    }
-
-    this._updateSwiperCheckBadges();
 
     // Padding to center first/last
     this._updatePadding = () => {
@@ -436,91 +399,8 @@ export const UIMixin = {
 
     // Force select first without scrolling animation
     this._selectSlide(this.currentTemplate, true);
-    this._updateSwiperCheckBadges();
-  },
-
-  _toggleTemplateSelection(k) {
-    if (!ALL_TEMPLATES[k]) return;
-    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
-
-    if (step === 3) {
-      const currentT = ALL_TEMPLATES[this.currentTemplate];
-      const paperSize = currentT ? (currentT.paper_size || (currentT.canvas_width > 2000 ? 'A4' : 'A5')) : 'A5';
-      if (paperSize === 'A4') {
-        if (k !== this.currentTemplate) return;
-      } else {
-        if (this.selectedTemplates && !this.selectedTemplates.includes(k)) return;
-      }
-      this._selectSlide(k);
-      return;
-    }
-
-    const targetTemplate = ALL_TEMPLATES[k];
-    const paperSize = targetTemplate.paper_size || (targetTemplate.canvas_width > 2000 ? 'A4' : 'A5');
-    const maxAllowed = (paperSize === 'A4') ? 1 : 2;
-
-    if (!this.selectedTemplates || !Array.isArray(this.selectedTemplates)) {
-      this.selectedTemplates = [];
-    }
-
-    if (maxAllowed === 1) {
-      this.selectedTemplates = [k];
-    } else {
-      if (this.selectedTemplates.includes(k)) {
-        if (this.selectedTemplates.length > 1) {
-          this.selectedTemplates = this.selectedTemplates.filter(id => id !== k);
-        }
-      } else {
-        if (this.selectedTemplates.length >= 2) {
-          this.selectedTemplates.shift();
-        }
-        this.selectedTemplates.push(k);
-      }
-    }
-
-    this._selectSlide(k);
-    this._updateSwiperCheckBadges();
-  },
-
-  _updateSwiperCheckBadges() {
-    if (!this.mainSwiper) return;
-    if (!this.selectedTemplates) this.selectedTemplates = [this.currentTemplate];
-
-    const currentT = ALL_TEMPLATES[this.currentTemplate];
-    const paperSize = currentT ? (currentT.paper_size || (currentT.canvas_width > 2000 ? 'A4' : 'A5')) : 'A5';
-    const maxAllowed = (paperSize === 'A4') ? 1 : 2;
-
-    Array.from(this.mainSwiper.children).forEach(slide => {
-      const k = slide.dataset.id;
-      const isSel = this.selectedTemplates.includes(k);
-      const checkBtn = slide.querySelector('.pl-slide-check-btn');
-
-      if (isSel) {
-        slide.classList.add('is-selected');
-        if (checkBtn) {
-          checkBtn.classList.add('active');
-          const selIndex = this.selectedTemplates.indexOf(k) + 1;
-          checkBtn.innerHTML = (maxAllowed > 1) ? `✓ Đã chọn (${selIndex}/${maxAllowed})` : `✓ Đã chọn`;
-        }
-      } else {
-        slide.classList.remove('is-selected');
-        if (checkBtn) {
-          checkBtn.classList.remove('active');
-          checkBtn.innerHTML = `+ Chọn khung`;
-        }
-      }
-    });
-
-    const note = document.getElementById('paperInfoNote');
-    if (note) {
-      const selectedNames = this.selectedTemplates.map(id => (ALL_TEMPLATES[id] ? (ALL_TEMPLATES[id].name || id) : id)).join(' + ');
-      if (paperSize === 'A4') {
-        note.innerHTML = `💡 <strong>Khổ A4 (Chọn 1 khung):</strong> Đã chọn: <span style="color:#10b981; font-weight:bold;">${selectedNames}</span>`;
-      } else {
-        note.innerHTML = `💡 <strong>Khổ A5 (Combo chọn 2 khung):</strong> Đã chọn <span style="color:#10b981; font-weight:bold;">${this.selectedTemplates.length}/2 khung</span> (${selectedNames})`;
-      }
-    }
-  },
+  }
+  ,
 
   _renderTabs() {
     const rooms = Object.keys(this.rooms);
@@ -738,39 +618,6 @@ export const UIMixin = {
       }
     }
 
-    // Update swiper filtering based on step
-    if (this.mainSwiper) {
-      if (step === 1) {
-        if (this.mainSwiper.children.length !== Object.keys(ALL_TEMPLATES).length) {
-          this._initMainSwiper(false);
-        }
-      } else if (step === 3 || step === 4) {
-        const expectedCount = this.selectedTemplates ? this.selectedTemplates.length : 1;
-        if (this.mainSwiper.children.length !== expectedCount) {
-          this._initMainSwiper(true);
-        }
-      }
-    }
-
-    // Control swiper arrow buttons visibility
-    const btnSwiperPrev = document.getElementById('btnSwiperPrev');
-    const btnSwiperNext = document.getElementById('btnSwiperNext');
-    if (btnSwiperPrev && btnSwiperNext) {
-      if (step === 1) {
-        btnSwiperPrev.style.display = 'flex';
-        btnSwiperNext.style.display = 'flex';
-      } else if (step === 3) {
-        const currentT = ALL_TEMPLATES[this.currentTemplate];
-        const paperSize = currentT ? (currentT.paper_size || (currentT.canvas_width > 2000 ? 'A4' : 'A5')) : 'A5';
-        const hasMultipleA5 = (paperSize === 'A5' && this.selectedTemplates && this.selectedTemplates.length > 1);
-        btnSwiperPrev.style.display = hasMultipleA5 ? 'flex' : 'none';
-        btnSwiperNext.style.display = hasMultipleA5 ? 'flex' : 'none';
-      } else {
-        btnSwiperPrev.style.display = 'none';
-        btnSwiperNext.style.display = 'none';
-      }
-    }
-
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
 
@@ -784,23 +631,15 @@ export const UIMixin = {
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 2) {
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
-        const selTmpls = (this.selectedTemplates && this.selectedTemplates.length > 0) ? this.selectedTemplates : [this.currentTemplate];
-        const maxSlots = Math.max(...selTmpls.map(id => {
-          const tmpl = ALL_TEMPLATES[id];
-          return tmpl && tmpl.slots ? tmpl.slots.length : 0;
-        }));
-
+        const tmpl = ALL_TEMPLATES[this.currentTemplate];
+        const maxSlots = tmpl ? tmpl.slots.length : (this.slots ? this.slots.length : 0);
         instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 3) {
-        const currentT = ALL_TEMPLATES[this.currentTemplate];
-        const paperSize = currentT ? (currentT.paper_size || (currentT.canvas_width > 2000 ? 'A4' : 'A5')) : 'A5';
-        instructionText.textContent = (paperSize === 'A5' && this.selectedTemplates && this.selectedTemplates.length > 1)
-          ? '👉 Bước 3: Dùng ngón tay chạm/xoay/phóng to ảnh trên khung. Bấm nút mũi tên ↔ để chuyển qua lại giữa 2 khung A5 đã chọn.'
-          : '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
+        instructionText.textContent = '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = isStaffMode ? '✅ Hoàn Tất (Gửi cho User)' : '✅ Hoàn Tất (Gửi cho Nhân Viên)';
@@ -1628,17 +1467,11 @@ export const UIMixin = {
           this._syncState(this.activeRoom);
         } else {
           this.selectedImageId = img.id;
-          let targetSlotIdx = this.selectedSlotIndex;
-          if (targetSlotIdx < 0 && this.slots && this.slots.length > 0) {
-            targetSlotIdx = 0;
-            this.selectedSlotIndex = 0;
-          }
-          if (targetSlotIdx >= 0) {
-            this._assignToSlot(targetSlotIdx, img.id);
+          if (this.selectedSlotIndex >= 0) {
+            this._assignToSlot(this.selectedSlotIndex, img.id);
             this.selectedImageId = null;
           }
           this._updateImageListUI();
-          this._renderCanvas();
         }
       });
 
