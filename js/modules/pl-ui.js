@@ -618,6 +618,14 @@ export const UIMixin = {
       }
     }
 
+    // Control swiper arrow buttons visibility (Only show in Step 1)
+    const btnSwiperPrev = document.getElementById('btnSwiperPrev');
+    const btnSwiperNext = document.getElementById('btnSwiperNext');
+    if (btnSwiperPrev && btnSwiperNext) {
+      btnSwiperPrev.style.display = (step === 1) ? 'flex' : 'none';
+      btnSwiperNext.style.display = (step === 1) ? 'flex' : 'none';
+    }
+
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
 

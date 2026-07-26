@@ -546,6 +546,12 @@ body.pl-mode-staff #roomTabs {
   padding: 8px 16px 4px 16px;
 }
 
+.pl-step-mode-2 .pl-swiper-arrow,
+.pl-step-mode-3 .pl-swiper-arrow,
+.pl-step-mode-4 .pl-swiper-arrow {
+  display: none !important;
+}
+
 .pl-step-mode-3 .pl-thumb-zoom-btn,
 .pl-step-mode-4 .pl-thumb-zoom-btn {
   display: none !important;
