@@ -994,7 +994,6 @@ body.pl-mode-staff #roomTabs {
 
 .pl-step-mode-4 .pl-slide {
   height: 300px !important;
-  max-height: 300px !important;
   width: 211px !important;
   flex-shrink: 0 !important;
   display: block !important;
