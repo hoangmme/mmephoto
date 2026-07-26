@@ -740,13 +740,70 @@ body.pl-mode-staff #roomTabs {
   padding: 20px;
 }
 
-.pl-step-mode-3 #panelLeft,
+/* ── Step 3: Move Photo List to Bottom ── */
+.pl-main.pl-step-mode-3 {
+  flex-direction: column !important;
+}
+
+.pl-step-mode-3 #mainSwiperArea {
+  flex: 1 !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  order: 1 !important;
+}
+
+.pl-step-mode-3 #panelLeft {
+  display: flex !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 115px !important;
+  border-right: none !important;
+  border-top: 1px solid var(--pl-border) !important;
+  order: 2 !important;
+  flex-shrink: 0 !important;
+  background: var(--pl-bg-panel);
+}
+
+.pl-step-mode-3 .pl-image-list {
+  display: flex !important;
+  flex-direction: row !important;
+  grid-template-columns: none !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  gap: 10px !important;
+  padding: 10px 14px !important;
+  align-items: center !important;
+  width: 100% !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pl-step-mode-3 .pl-thumb {
+  width: 90px !important;
+  height: 90px !important;
+  min-width: 90px !important;
+  flex-shrink: 0 !important;
+  padding-bottom: 0 !important;
+  border-radius: 8px !important;
+}
+
+.pl-step-mode-3 .pl-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .pl-step-mode-4 #panelLeft {
   display: flex !important;
   width: 320px;
   max-width: 42%;
 }
-.pl-step-mode-3 .pl-slide,
+
+.pl-step-mode-3 .pl-slide {
+  height: min(calc(100vh - 280px), calc((100vw - 40px) * 1.418)) !important;
+}
+
 .pl-step-mode-4 .pl-slide {
   height: min(calc(100vh - 300px), calc((100vw - 380px) * 1.418));
 }
