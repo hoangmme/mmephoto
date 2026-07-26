@@ -852,6 +852,7 @@ body.pl-mode-staff #roomTabs {
   gap: 16px !important;
   width: 100% !important;
   flex: 1 !important;
+  max-height: calc(100vh - 482px) !important;
   overflow-y: auto !important;
   padding: 10px 4px !important;
   align-content: start !important;
@@ -890,12 +891,11 @@ body.pl-mode-staff #roomTabs {
   font-size: 13px !important;
   font-weight: 600 !important;
   color: var(--pl-text) !important;
-  line-height: 1.3 !important;
+  line-height: 1 !important;
   text-align: center !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  min-height: 34px !important;
 }
 
 .pl-cross-sell-price {
