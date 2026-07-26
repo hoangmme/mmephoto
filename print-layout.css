@@ -514,6 +514,12 @@ body.pl-mode-staff #roomTabs {
   flex-shrink: 0;
 }
 
+.pl-step-mode-2 .pl-paper-info-note,
+.pl-step-mode-3 .pl-paper-info-note,
+.pl-step-mode-4 .pl-paper-info-note {
+  display: none !important;
+}
+
 #printCanvas {
   position: absolute;
   inset: 0;
