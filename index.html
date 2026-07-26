@@ -207,22 +207,41 @@
           <div class="pl-qr-title" style="font-size:12px; color:var(--pl-text-muted); margin-top:4px;">Dùng camera điện thoại để mở link tải bộ ảnh</div>
         </div>
 
-        <!-- 2. MIDDLE: BANNER GIỚI THIỆU SẢN PHẨM BÁN KÈM -->
-        <div id="crossSellBanner" class="pl-cross-sell-banner" style="display:none;">
-          <div style="font-weight:700; font-size:14px; color:#d97706; margin-bottom:8px;">🎁 SẢN PHẨM MUA KÈM ƯU ĐÃI CHO BỘ ẢNH NÀY</div>
-          <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--pl-text);">
-            <div style="background:var(--pl-bg-panel); padding:8px 14px; border-radius:8px; border:1px solid var(--pl-border); display:flex; align-items:center; gap:6px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-              <span>🖼️ Khung Gỗ Để Bàn</span>
-              <strong style="color:#ef4444;">+39k</strong>
+        <!-- 2. MIDDLE: BANNER GIỚI THIỆU SẢN PHẨM BÁN KÈM DẠNG SLIDER -->
+        <div id="crossSellBanner" class="pl-cross-sell-banner" style="display:none; max-width:640px; width:100%; margin:4px auto 12px auto;">
+          <div style="font-weight:700; font-size:13px; color:#d97706; margin-bottom:8px; text-align:center;">
+            🎁 SẢN PHẨM MUA KÈM ƯU ĐÃI DÀNH CHO BỘ ẢNH NÀY
+          </div>
+          <div class="pl-cross-sell-slider" style="display:flex; gap:12px; overflow-x:auto; padding:4px 4px 8px 4px; -webkit-overflow-scrolling:touch; justify-content:center;">
+            
+            <!-- Item 1: Khung Gỗ Để Bàn -->
+            <div class="pl-cross-sell-item" style="flex:0 0 120px; background:var(--pl-bg-panel); border:1px solid var(--pl-border); border-radius:10px; padding:6px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+              <img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?q=80&w=200&auto=format&fit=crop" alt="Khung gỗ để bàn" style="width:100%; height:75px; object-fit:cover; border-radius:6px; margin-bottom:4px;" />
+              <div style="font-size:11px; font-weight:600; color:var(--pl-text); line-height:1.2; height:26px; overflow:hidden; display:flex; align-items:center; justify-content:center;">Khung Gỗ Để Bàn</div>
+              <div style="font-size:11px; font-weight:700; color:#ef4444; margin-top:2px;">+39.000đ</div>
             </div>
-            <div style="background:var(--pl-bg-panel); padding:8px 14px; border-radius:8px; border:1px solid var(--pl-border); display:flex; align-items:center; gap:6px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-              <span>🔑 Móc Khóa In Hình</span>
-              <strong style="color:#ef4444;">+25k</strong>
+
+            <!-- Item 2: Móc Khóa In Hình -->
+            <div class="pl-cross-sell-item" style="flex:0 0 120px; background:var(--pl-bg-panel); border:1px solid var(--pl-border); border-radius:10px; padding:6px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+              <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&auto=format&fit=crop" alt="Móc khóa in ảnh" style="width:100%; height:75px; object-fit:cover; border-radius:6px; margin-bottom:4px;" />
+              <div style="font-size:11px; font-weight:600; color:var(--pl-text); line-height:1.2; height:26px; overflow:hidden; display:flex; align-items:center; justify-content:center;">Móc Khóa In Hình</div>
+              <div style="font-size:11px; font-weight:700; color:#ef4444; margin-top:2px;">+25.000đ</div>
             </div>
-            <div style="background:var(--pl-bg-panel); padding:8px 14px; border-radius:8px; border:1px solid var(--pl-border); display:flex; align-items:center; gap:6px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-              <span>✨ Khung Mica Trong Suốt</span>
-              <strong style="color:#ef4444;">+59k</strong>
+
+            <!-- Item 3: Khung Mica Trong Suốt -->
+            <div class="pl-cross-sell-item" style="flex:0 0 120px; background:var(--pl-bg-panel); border:1px solid var(--pl-border); border-radius:10px; padding:6px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+              <img src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=200&auto=format&fit=crop" alt="Khung mica trong" style="width:100%; height:75px; object-fit:cover; border-radius:6px; margin-bottom:4px;" />
+              <div style="font-size:11px; font-weight:600; color:var(--pl-text); line-height:1.2; height:26px; overflow:hidden; display:flex; align-items:center; justify-content:center;">Khung Mica Trong</div>
+              <div style="font-size:11px; font-weight:700; color:#ef4444; margin-top:2px;">+59.000đ</div>
             </div>
+
+            <!-- Item 4: Album Ảnh Mini -->
+            <div class="pl-cross-sell-item" style="flex:0 0 120px; background:var(--pl-bg-panel); border:1px solid var(--pl-border); border-radius:10px; padding:6px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+              <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=200&auto=format&fit=crop" alt="Album ảnh mini" style="width:100%; height:75px; object-fit:cover; border-radius:6px; margin-bottom:4px;" />
+              <div style="font-size:11px; font-weight:600; color:var(--pl-text); line-height:1.2; height:26px; overflow:hidden; display:flex; align-items:center; justify-content:center;">Album Ảnh Mini</div>
+              <div style="font-size:11px; font-weight:700; color:#ef4444; margin-top:2px;">+89.000đ</div>
+            </div>
+
           </div>
         </div>
 
@@ -260,7 +279,7 @@
 
   <!-- Core Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=114"></script>
+  <script type="module" src="js/print-layout.js?v=115"></script>
 
   <!-- LOGIN OVERLAY -->
   <div id="loginOverlay"
