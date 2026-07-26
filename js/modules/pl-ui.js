@@ -168,8 +168,15 @@ export const UIMixin = {
     // 2. START SESSION OVERLAY (Click start.png to start 7-min timer)
     const startOverlay = document.getElementById('startSessionOverlay');
     if (startOverlay) {
-      startOverlay.addEventListener('click', async () => {
+      const handleStartClick = async (e) => {
+        if (e) {
+          try { e.preventDefault(); } catch (err) {}
+          try { e.stopPropagation(); } catch (err) {}
+        }
         startOverlay.style.display = 'none';
+        startOverlay.classList.add('dismissed');
+
+        this.sessionStarted = true;
         if (this.activeRoom && this.rooms[this.activeRoom]) {
           const roomData = this.rooms[this.activeRoom];
           roomData.sessionStarted = true;
@@ -178,11 +185,14 @@ export const UIMixin = {
             activeSess.sessionStartedAt = Date.now();
           }
           if (this.resetSessionTimer) {
-            try { await this.resetSessionTimer(); } catch (e) { }
+            try { await this.resetSessionTimer(); } catch (err) { }
           }
           this._startStepTimer(this.activeRoom, roomData.step || 1);
         }
-      });
+      };
+
+      startOverlay.addEventListener('click', handleStartClick);
+      startOverlay.addEventListener('touchstart', handleStartClick, { passive: false });
     }
   }
   ,
@@ -703,7 +713,9 @@ export const UIMixin = {
 
     const startOverlay = document.getElementById('startSessionOverlay');
     if (startOverlay) {
-      if (!isStaffMode && roomData && !roomData.sessionStarted && step !== 4) {
+      const isDismissed = startOverlay.classList.contains('dismissed');
+      const isStarted = this.sessionStarted || (roomData && roomData.sessionStarted);
+      if (!isStaffMode && !isStarted && !isDismissed && step !== 4) {
         startOverlay.style.display = 'flex';
       } else {
         startOverlay.style.display = 'none';

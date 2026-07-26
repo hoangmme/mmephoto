@@ -141,20 +141,24 @@ export const QueueMixin = {
     try {
       const res = await fetch(`/api/reset-session-timer/${encodeURIComponent(this.branch)}/${encodeURIComponent(this.activeRoom)}/${encodeURIComponent(sessionId)}`, { method: 'POST' });
       if (res.ok) {
+          this.sessionStarted = false;
+          const startOverlay = document.getElementById('startSessionOverlay');
+          if (startOverlay) startOverlay.classList.remove('dismissed');
+
           const roomData = this.rooms[this.activeRoom];
           roomData.activeSessionId = sessionId;
           roomData.session = sessionId;
           roomData.step = 1;
           roomData.locked = false;
           roomData.timeLeft = 420;
-          roomData.sessionStarted = false; // Trigger start.png overlay for customer
+          roomData.sessionStarted = false;
           if (roomData.timedOutSteps) roomData.timedOutSteps.clear();
 
           const sessObj = (roomData.queue || []).find(s => s.id === sessionId);
           if (sessObj) {
             sessObj.finished = false;
             sessObj.step = 1;
-            sessObj.sessionStartedAt = null; // Require customer to click start.png
+            sessObj.sessionStartedAt = null;
           }
 
           this._setActiveSession(sessionId);
