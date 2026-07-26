@@ -802,6 +802,10 @@ body.pl-mode-staff #roomTabs {
 }
 
 /* ── Step 4: Finish Layout (Customer View: Products | Staff View: Canvas Preview) ── */
+.pl-step-mode-4:not(.pl-mode-staff) #panelLeft,
+.pl-step-mode-4:not(.pl-mode-staff) #mainSwiper,
+.pl-step-mode-4:not(.pl-mode-staff) #paperInfoNote,
+.pl-step-mode-4:not(.pl-mode-staff) #canvasInfo,
 .pl-mode-user.pl-step-mode-4 #panelLeft,
 .pl-mode-user.pl-step-mode-4 #mainSwiper,
 .pl-mode-user.pl-step-mode-4 #paperInfoNote,
@@ -809,6 +813,7 @@ body.pl-mode-staff #roomTabs {
   display: none !important;
 }
 
+.pl-step-mode-4:not(.pl-mode-staff) #mainSwiperArea,
 .pl-mode-user.pl-step-mode-4 #mainSwiperArea {
   display: flex !important;
   flex-direction: column !important;
@@ -816,18 +821,22 @@ body.pl-mode-staff #roomTabs {
   justify-content: flex-start !important;
   width: 100% !important;
   height: 100% !important;
-  padding: 16px 14px !important;
+  padding: 16px 20px !important;
+  box-sizing: border-box !important;
   overflow-y: auto !important;
 }
 
+.pl-step-mode-4:not(.pl-mode-staff) #qrOverlay,
 .pl-mode-user.pl-step-mode-4 #qrOverlay {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  margin: 0 auto 12px auto !important;
+  margin: 0 auto 16px auto !important;
+  flex-shrink: 0 !important;
 }
 
+.pl-step-mode-4:not(.pl-mode-staff) #crossSellBanner,
 .pl-mode-user.pl-step-mode-4 #crossSellBanner {
   display: flex !important;
   flex-direction: column !important;
@@ -1327,7 +1336,7 @@ body.pl-mode-staff #roomTabs {
   background: rgba(0, 0, 0, 0.85) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
-  display: flex !important;
+  display: none;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
