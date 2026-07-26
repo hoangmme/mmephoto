@@ -713,7 +713,7 @@ export const UIMixin = {
 
     const startOverlay = document.getElementById('startSessionOverlay');
     if (startOverlay) {
-      if (!isStaffMode && roomData && !roomData.sessionStarted && step !== 4) {
+      if (!isStaffMode && roomData && roomData.session && !roomData.sessionStarted && step !== 4) {
         this.sessionStarted = false;
         startOverlay.classList.remove('dismissed');
         startOverlay.style.display = 'flex';
