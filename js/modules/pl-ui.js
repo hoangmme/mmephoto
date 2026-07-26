@@ -1599,8 +1599,11 @@ export const UIMixin = {
             const template = ALL_TEMPLATES[this.currentTemplate];
             const maxSlots = template ? template.slots.length : 0;
             if (maxSlots > 0 && this.selectedPhotos.size >= maxSlots) {
-              alert(`Bạn chỉ được chọn tối đa ${maxSlots} ảnh cho khung này.`);
-              return;
+              // Auto-deselect oldest photo to make room for new one (FIFO)
+              const firstItem = this.selectedPhotos.values().next().value;
+              if (firstItem) {
+                this.selectedPhotos.delete(firstItem);
+              }
             }
             this.selectedPhotos.add(img.id);
           }
@@ -1617,6 +1620,18 @@ export const UIMixin = {
           if (this.selectedSlotIndex >= 0) {
             this._assignToSlot(this.selectedSlotIndex, img.id);
             this.selectedImageId = null;
+          } else {
+            // No slot selected: find first slot that doesn't have this image
+            if (this.slots) {
+               const idx = this.slots.findIndex(s => s.imageId !== img.id);
+               if (idx >= 0) {
+                  this._assignToSlot(idx, img.id);
+                  this.selectedImageId = null;
+               } else if (this.slots.length > 0) {
+                  this._assignToSlot(0, img.id);
+                  this.selectedImageId = null;
+               }
+            }
           }
           this._updateImageListUI();
         }
