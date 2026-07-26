@@ -801,8 +801,9 @@ body.pl-mode-staff #roomTabs {
   background: #ffffff;
 }
 
-/* ── Step 4: Finish Layout (QR Top -> Banner Middle -> Customer Canvas Bottom) ── */
-.pl-step-mode-4 #panelLeft {
+/* ── Step 4: Finish Layout (QR Top -> Full Upsell Product Grid Bottom) ── */
+.pl-step-mode-4 #panelLeft,
+.pl-step-mode-4 #mainSwiper {
   display: none !important;
 }
 
@@ -812,8 +813,9 @@ body.pl-mode-staff #roomTabs {
   align-items: center !important;
   justify-content: flex-start !important;
   overflow-y: auto !important;
-  padding: 16px 10px !important;
+  padding: 16px 14px !important;
   width: 100% !important;
+  height: 100% !important;
 }
 
 .pl-qr-overlay,
@@ -829,15 +831,50 @@ body.pl-mode-staff #roomTabs {
   cursor: default !important;
 }
 
-.pl-cross-sell-banner {
-  max-width: 640px;
-  width: 100%;
-  margin: 4px auto 12px auto;
-  padding: 10px 14px;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(239, 68, 68, 0.08));
-  border: 1px dashed rgba(245, 158, 11, 0.4);
-  border-radius: 12px;
-  text-align: center;
+.pl-step-mode-4 #crossSellBanner {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  width: 100% !important;
+  max-width: 820px !important;
+  margin: 4px auto 10px auto !important;
+  padding: 16px 20px !important;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.06), rgba(239, 68, 68, 0.06)) !important;
+  border: 1.5px dashed rgba(245, 158, 11, 0.35) !important;
+  border-radius: 16px !important;
+  box-sizing: border-box !important;
+}
+
+.pl-step-mode-4 .pl-cross-sell-slider {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+  gap: 16px !important;
+  width: 100% !important;
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 8px 4px !important;
+  align-content: start !important;
+}
+
+.pl-step-mode-4 .pl-cross-sell-item {
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px !important;
+  background: var(--pl-bg-panel) !important;
+  border: 1px solid var(--pl-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+}
+
+.pl-step-mode-4 .pl-cross-sell-item img {
+  width: 100% !important;
+  height: 110px !important;
+  object-fit: cover !important;
+  border-radius: 8px !important;
 }
 
 .pl-step-mode-3 .pl-slide {

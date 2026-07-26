@@ -673,13 +673,18 @@ export const UIMixin = {
           ? '🔔 Khách đã chỉnh xong! Nhân viên vui lòng kiểm tra lại bố cục, bấm "Tải Ảnh Layout" để in cho khách và bấm "Next Customer" để đón lượt tiếp theo.'
           : '✨ Xin chúc mừng bạn đã hoàn thành! Vui lòng quét mã QR để tải bộ ảnh về điện thoại nhé.';
 
-        // Force display flex for swiper area and canvas
         const swiperArea = document.getElementById('mainSwiperArea');
         if (swiperArea) swiperArea.style.display = 'flex';
+
+        const mainSwiper = document.getElementById('mainSwiper');
+        if (mainSwiper) mainSwiper.style.display = isStaffMode ? 'flex' : 'none';
+
         if (this.canvas) {
-          this.canvas.style.display = 'block';
-          this.canvas.style.opacity = '1';
-          setTimeout(() => this._renderCanvas(), 500); // force draw after 500ms
+          this.canvas.style.display = isStaffMode ? 'block' : 'none';
+          if (isStaffMode) {
+            this.canvas.style.opacity = '1';
+            setTimeout(() => this._renderCanvas(), 500);
+          }
         }
 
         btnStepPrev.style.display = 'none';
