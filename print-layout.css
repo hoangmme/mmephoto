@@ -1315,7 +1315,7 @@ body.pl-mode-staff #roomTabs {
   width: 100vw !important;
   height: 100vh !important;
   z-index: 999999 !important;
-  background: #000000 !important;
+  background: #000000f7 !important;
   cursor: pointer !important;
   user-select: none !important;
   -webkit-user-select: none !important;
@@ -1324,7 +1324,7 @@ body.pl-mode-staff #roomTabs {
 .pl-screensaver-overlay img {
   width: 100% !important;
   height: 100% !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
   display: block !important;
   pointer-events: none !important;
 }
