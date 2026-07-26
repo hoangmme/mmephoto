@@ -427,7 +427,7 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
         } else {
           // Auto-preload missing image and re-render canvas when ready
           const roomData = this.activeRoom && this.rooms[this.activeRoom];
-          const currentImages = roomData && roomData.images ? roomData.images : [];
+          const currentImages = (this.images && this.images.length > 0) ? this.images : (roomData && roomData.images ? roomData.images : []);
           const imgObj = currentImages.find(i => i.id === slotData.imageId);
           if (imgObj) {
             const srcUrl = imgObj.objectUrl || imgObj.url;

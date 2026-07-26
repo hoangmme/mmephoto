@@ -286,12 +286,16 @@ _updateActiveSession(room, onlyBadge = false) {
               this.selectedPhotos.clear();
             }
           } else {
-            // Màn Khách: Chỉ nạp ban đầu nếu slots chưa có dữ liệu, không bao giờ ghi đè dữ liệu Khách đang chỉnh sửa cục bộ
-            if (!this.slots || this.slots.length === 0) {
-              if (active.slots && active.slots.length > 0) {
+            // Màn Khách: Nạp slots từ Server nếu local chưa chọn ảnh HOẶC khi ở Bước 4 (Hoàn tất)
+            const localHasImages = this.slots && this.slots.some(s => s && s.imageId);
+            const serverHasSlots = active.slots && active.slots.length > 0 && active.slots.some(s => s && s.imageId);
+
+            if (!localHasImages || (active.step === 4 && serverHasSlots)) {
+              if (serverHasSlots) {
                 this.slots = JSON.parse(JSON.stringify(active.slots));
               }
             }
+
             if (!this.selectedPhotos || this.selectedPhotos.size === 0) {
               if (active.selectedImages && active.selectedImages.length > 0) {
                 this.selectedPhotos = new Set(active.selectedImages);
