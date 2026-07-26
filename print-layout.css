@@ -559,6 +559,18 @@ body.pl-mode-staff #roomTabs {
   display: block;
 }
 
+.pl-step-mode-3 #printCanvas {
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
+.pl-step-mode-3 .pl-slide-check-btn,
+.pl-step-mode-3 .pl-slide-badge,
+.pl-step-mode-4 .pl-slide-check-btn,
+.pl-step-mode-4 .pl-slide-badge {
+  display: none !important;
+}
+
 .pl-canvas-info {
   margin-top: 10px;
   font-size: 11px;

@@ -419,6 +419,20 @@ export const UIMixin = {
 
   _toggleTemplateSelection(k) {
     if (!ALL_TEMPLATES[k]) return;
+    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+
+    if (step === 3) {
+      const currentT = ALL_TEMPLATES[this.currentTemplate];
+      const paperSize = currentT ? (currentT.paper_size || (currentT.canvas_width > 2000 ? 'A4' : 'A5')) : 'A5';
+      if (paperSize === 'A4') {
+        if (k !== this.currentTemplate) return;
+      } else {
+        if (this.selectedTemplates && !this.selectedTemplates.includes(k)) return;
+      }
+      this._selectSlide(k);
+      return;
+    }
+
     const targetTemplate = ALL_TEMPLATES[k];
     const paperSize = targetTemplate.paper_size || (targetTemplate.canvas_width > 2000 ? 'A4' : 'A5');
     const maxAllowed = (paperSize === 'A4') ? 1 : 2;
@@ -702,6 +716,25 @@ export const UIMixin = {
       }
     }
 
+    // Control swiper arrow buttons visibility
+    const btnSwiperPrev = document.getElementById('btnSwiperPrev');
+    const btnSwiperNext = document.getElementById('btnSwiperNext');
+    if (btnSwiperPrev && btnSwiperNext) {
+      if (step === 1) {
+        btnSwiperPrev.style.display = 'flex';
+        btnSwiperNext.style.display = 'flex';
+      } else if (step === 3) {
+        const currentT = ALL_TEMPLATES[this.currentTemplate];
+        const paperSize = currentT ? (currentT.paper_size || (currentT.canvas_width > 2000 ? 'A4' : 'A5')) : 'A5';
+        const hasMultipleA5 = (paperSize === 'A5' && this.selectedTemplates && this.selectedTemplates.length > 1);
+        btnSwiperPrev.style.display = hasMultipleA5 ? 'flex' : 'none';
+        btnSwiperNext.style.display = hasMultipleA5 ? 'flex' : 'none';
+      } else {
+        btnSwiperPrev.style.display = 'none';
+        btnSwiperNext.style.display = 'none';
+      }
+    }
+
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
 
@@ -723,7 +756,11 @@ export const UIMixin = {
         btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
         if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 3) {
-        instructionText.textContent = '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
+        const currentT = ALL_TEMPLATES[this.currentTemplate];
+        const paperSize = currentT ? (currentT.paper_size || (currentT.canvas_width > 2000 ? 'A4' : 'A5')) : 'A5';
+        instructionText.textContent = (paperSize === 'A5' && this.selectedTemplates && this.selectedTemplates.length > 1)
+          ? '👉 Bước 3: Dùng ngón tay chạm/xoay/phóng to ảnh trên khung. Bấm nút mũi tên ↔ để chuyển sang Khung A5 thứ 2.'
+          : '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = isStaffMode ? '✅ Hoàn Tất (Gửi cho User)' : '✅ Hoàn Tất (Gửi cho Nhân Viên)';
