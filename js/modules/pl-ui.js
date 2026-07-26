@@ -631,6 +631,15 @@ export const UIMixin = {
       paperNote.style.display = (step === 1) ? 'block' : 'none';
     }
 
+    const crossSell = document.getElementById('crossSellBanner');
+    if (crossSell) {
+      crossSell.style.display = (step === 4) ? 'block' : 'none';
+    }
+
+    if (qrOverlay) {
+      qrOverlay.style.display = (step === 4 && !isStaffMode) ? 'flex' : 'none';
+    }
+
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
 
@@ -641,7 +650,6 @@ export const UIMixin = {
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Chọn Ảnh <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-        if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 2) {
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
         const tmpl = ALL_TEMPLATES[this.currentTemplate];
@@ -650,21 +658,19 @@ export const UIMixin = {
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-        if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 3) {
         instructionText.textContent = '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = isStaffMode ? '✅ Hoàn Tất (Gửi cho User)' : '✅ Hoàn Tất (Gửi cho Nhân Viên)';
-        if (qrOverlay) qrOverlay.style.display = 'none';
       } else if (step === 4) {
         instructionText.textContent = isStaffMode
           ? '🔔 Khách đã chỉnh xong! Nhân viên vui lòng kiểm tra lại bố cục, bấm "Tải Ảnh Layout" để in cho khách và bấm "Next Customer" để đón lượt tiếp theo.'
-          : '✨ Xin chúc mừng bạn đã hoàn thành! Vui lòng đợi nhân viên kiểm tra và in ảnh cho bạn nhé.';
+          : '✨ Xin chúc mừng bạn đã hoàn thành! Vui lòng quét mã QR để tải bộ ảnh về điện thoại nhé.';
 
-        // Force display block for swiper area and canvas
+        // Force display flex for swiper area and canvas
         const swiperArea = document.getElementById('mainSwiperArea');
-        if (swiperArea) swiperArea.style.display = 'block';
+        if (swiperArea) swiperArea.style.display = 'flex';
         if (this.canvas) {
           this.canvas.style.display = 'block';
           this.canvas.style.opacity = '1';
@@ -673,7 +679,6 @@ export const UIMixin = {
 
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'none';
-        if (qrOverlay) qrOverlay.style.display = isStaffMode ? 'none' : 'block';
       }
     }
 

@@ -192,14 +192,6 @@
           <div class="pl-loading">Đang tải ảnh...</div>
         </div>
 
-        <!-- QR CODE OVERLAY -->
-        <div id="qrOverlay" class="pl-qr-overlay" style="display:none;">
-          <a id="qrLink" href="#" target="_blank" title="Nhấn để mở link">
-            <img id="qrImage" width="120" height="120" />
-          </a>
-          <div class="pl-qr-title">Quét để tải ảnh</div>
-        </div>
-
         <div class="pl-panel-footer">
           <a href="https://mme.vn" target="_blank">Powered by <strong>MME Digital</strong></a>
         </div>
@@ -207,6 +199,34 @@
 
       <!-- Center: Main Template Swiper & Canvas -->
       <div class="pl-main-swiper-area" id="mainSwiperArea">
+
+        <!-- 1. TOP: QR CODE OVERLAY (Màn hoàn tất - Bỏ click) -->
+        <div id="qrOverlay" class="pl-qr-overlay" style="display:none; text-align:center; margin: 0 auto 12px auto; pointer-events:none; user-select:none;">
+          <div style="font-weight:700; font-size:15px; color:var(--pl-accent, #4f3219); margin-bottom:6px;">📱 QUÉT MÃ QR ĐỂ TẢI BỘ ẢNH VỀ MÁY</div>
+          <img id="qrImage" width="130" height="130" style="pointer-events:none; user-select:none; border-radius:8px; border:2px solid var(--pl-border); padding:4px; background:#fff;" />
+          <div class="pl-qr-title" style="font-size:12px; color:var(--pl-text-muted); margin-top:4px;">Dùng camera điện thoại để mở link tải bộ ảnh</div>
+        </div>
+
+        <!-- 2. MIDDLE: BANNER GIỚI THIỆU SẢN PHẨM BÁN KÈM -->
+        <div id="crossSellBanner" class="pl-cross-sell-banner" style="display:none;">
+          <div style="font-weight:700; font-size:14px; color:#d97706; margin-bottom:8px;">🎁 SẢN PHẨM MUA KÈM ƯU ĐÃI CHO BỘ ẢNH NÀY</div>
+          <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--pl-text);">
+            <div style="background:var(--pl-bg-panel); padding:8px 14px; border-radius:8px; border:1px solid var(--pl-border); display:flex; align-items:center; gap:6px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+              <span>🖼️ Khung Gỗ Để Bàn</span>
+              <strong style="color:#ef4444;">+39k</strong>
+            </div>
+            <div style="background:var(--pl-bg-panel); padding:8px 14px; border-radius:8px; border:1px solid var(--pl-border); display:flex; align-items:center; gap:6px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+              <span>🔑 Móc Khóa In Hình</span>
+              <strong style="color:#ef4444;">+25k</strong>
+            </div>
+            <div style="background:var(--pl-bg-panel); padding:8px 14px; border-radius:8px; border:1px solid var(--pl-border); display:flex; align-items:center; gap:6px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+              <span>✨ Khung Mica Trong Suốt</span>
+              <strong style="color:#ef4444;">+59k</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. BOTTOM: MAIN SWIPER & CANVAS CỦA KHÁCH -->
         <button id="btnSwiperPrev" class="pl-swiper-arrow prev" title="Khung trước">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
@@ -240,7 +260,7 @@
 
   <!-- Core Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=113"></script>
+  <script type="module" src="js/print-layout.js?v=114"></script>
 
   <!-- LOGIN OVERLAY -->
   <div id="loginOverlay"

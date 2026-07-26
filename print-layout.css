@@ -795,10 +795,43 @@ body.pl-mode-staff #roomTabs {
   background: #ffffff;
 }
 
+/* ── Step 4: Finish Layout (QR Top -> Banner Middle -> Customer Canvas Bottom) ── */
 .pl-step-mode-4 #panelLeft {
+  display: none !important;
+}
+
+.pl-step-mode-4 #mainSwiperArea {
   display: flex !important;
-  width: 320px;
-  max-width: 42%;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  overflow-y: auto !important;
+  padding: 16px 10px !important;
+  width: 100% !important;
+}
+
+.pl-qr-overlay,
+#qrOverlay {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+.pl-qr-overlay img,
+#qrImage {
+  pointer-events: none !important;
+  user-select: none !important;
+  cursor: default !important;
+}
+
+.pl-cross-sell-banner {
+  max-width: 600px;
+  width: 100%;
+  margin: 8px auto 14px auto;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(239, 68, 68, 0.08));
+  border: 1px dashed rgba(245, 158, 11, 0.4);
+  border-radius: 12px;
+  text-align: center;
 }
 
 .pl-step-mode-3 .pl-slide {
@@ -806,7 +839,7 @@ body.pl-mode-staff #roomTabs {
 }
 
 .pl-step-mode-4 .pl-slide {
-  height: min(calc(100vh - 300px), calc((100vw - 380px) * 1.418));
+  height: min(calc(100vh - 420px), calc((100vw - 40px) * 1.418)) !important;
 }
 
 .pl-step-mode-1 .pl-slide {
