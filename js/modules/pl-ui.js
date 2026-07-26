@@ -243,6 +243,10 @@ export const UIMixin = {
     if (!this.mainSwiper) return;
     this.mainSwiper.innerHTML = '';
 
+    if (!this.selectedTemplates || !Array.isArray(this.selectedTemplates)) {
+      this.selectedTemplates = [this.currentTemplate || Object.keys(ALL_TEMPLATES)[0]];
+    }
+
     Object.keys(ALL_TEMPLATES).forEach(k => {
       const t = ALL_TEMPLATES[k];
       const slide = document.createElement('div');
@@ -275,6 +279,17 @@ export const UIMixin = {
       badge.style.pointerEvents = 'none';
       slide.appendChild(badge);
 
+      // Checkmark selection button on top-right of slide
+      const checkBtn = document.createElement('div');
+      checkBtn.className = 'pl-slide-check-btn';
+      checkBtn.dataset.id = k;
+      checkBtn.innerHTML = `<span>+ Chọn khung</span>`;
+      checkBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this._toggleTemplateSelection(k);
+      });
+      slide.appendChild(checkBtn);
+
       const preview = document.createElement('div');
       preview.className = 'pl-slide-preview';
 
@@ -288,13 +303,13 @@ export const UIMixin = {
       slide.appendChild(preview);
 
       slide.addEventListener('click', () => {
-        if (this.currentTemplate !== k) {
-          this._selectSlide(k);
-        }
+        this._toggleTemplateSelection(k);
       });
 
       this.mainSwiper.appendChild(slide);
     });
+
+    this._updateSwiperCheckBadges();
 
     // Padding to center first/last
     this._updatePadding = () => {
@@ -399,7 +414,77 @@ export const UIMixin = {
 
     // Force select first without scrolling animation
     this._selectSlide(this.currentTemplate, true);
-  }
+    this._updateSwiperCheckBadges();
+  },
+
+  _toggleTemplateSelection(k) {
+    if (!ALL_TEMPLATES[k]) return;
+    const targetTemplate = ALL_TEMPLATES[k];
+    const paperSize = targetTemplate.paper_size || (targetTemplate.canvas_width > 2000 ? 'A4' : 'A5');
+    const maxAllowed = (paperSize === 'A4') ? 1 : 2;
+
+    if (!this.selectedTemplates || !Array.isArray(this.selectedTemplates)) {
+      this.selectedTemplates = [];
+    }
+
+    if (maxAllowed === 1) {
+      this.selectedTemplates = [k];
+    } else {
+      if (this.selectedTemplates.includes(k)) {
+        if (this.selectedTemplates.length > 1) {
+          this.selectedTemplates = this.selectedTemplates.filter(id => id !== k);
+        }
+      } else {
+        if (this.selectedTemplates.length >= 2) {
+          this.selectedTemplates.shift();
+        }
+        this.selectedTemplates.push(k);
+      }
+    }
+
+    this._selectSlide(k);
+    this._updateSwiperCheckBadges();
+  },
+
+  _updateSwiperCheckBadges() {
+    if (!this.mainSwiper) return;
+    if (!this.selectedTemplates) this.selectedTemplates = [this.currentTemplate];
+
+    const currentT = ALL_TEMPLATES[this.currentTemplate];
+    const paperSize = currentT ? (currentT.paper_size || (currentT.canvas_width > 2000 ? 'A4' : 'A5')) : 'A5';
+    const maxAllowed = (paperSize === 'A4') ? 1 : 2;
+
+    Array.from(this.mainSwiper.children).forEach(slide => {
+      const k = slide.dataset.id;
+      const isSel = this.selectedTemplates.includes(k);
+      const checkBtn = slide.querySelector('.pl-slide-check-btn');
+
+      if (isSel) {
+        slide.classList.add('is-selected');
+        if (checkBtn) {
+          checkBtn.classList.add('active');
+          const selIndex = this.selectedTemplates.indexOf(k) + 1;
+          checkBtn.innerHTML = (maxAllowed > 1) ? `✓ Đã chọn (${selIndex}/${maxAllowed})` : `✓ Đã chọn`;
+        }
+      } else {
+        slide.classList.remove('is-selected');
+        if (checkBtn) {
+          checkBtn.classList.remove('active');
+          checkBtn.innerHTML = `+ Chọn khung`;
+        }
+      }
+    });
+
+    const note = document.getElementById('paperInfoNote');
+    if (note) {
+      const selectedNames = this.selectedTemplates.map(id => (ALL_TEMPLATES[id] ? (ALL_TEMPLATES[id].name || id) : id)).join(' + ');
+      if (paperSize === 'A4') {
+        note.innerHTML = `💡 <strong>Khổ A4 (Chọn 1 khung):</strong> Đã chọn: <span style="color:#10b981; font-weight:bold;">${selectedNames}</span>`;
+      } else {
+        note.innerHTML = `💡 <strong>Khổ A5 (Combo chọn 2 khung):</strong> Đã chọn <span style="color:#10b981; font-weight:bold;">${this.selectedTemplates.length}/2 khung</span> (${selectedNames})`;
+      }
+    }
+  },
   ,
 
   _renderTabs() {
