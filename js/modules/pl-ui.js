@@ -128,6 +128,60 @@ export const UIMixin = {
     this._initLogin();
     if (this._initQueueManager) this._initQueueManager();
     this._initLightboxEvents();
+    this._initOverlays();
+  }
+  ,
+
+  _initOverlays() {
+    // 1. IDLE SCREENSAVER OVERLAY (2 mins no interaction -> man-cho.png)
+    const screensaver = document.getElementById('idleScreensaverOverlay');
+    let idleTimeout = null;
+    const IDLE_TIME_MS = 120000; // 2 minutes (120,000ms)
+
+    const resetIdleTimer = () => {
+      if (screensaver && screensaver.style.display !== 'none') {
+        screensaver.style.display = 'none';
+      }
+      if (idleTimeout) clearTimeout(idleTimeout);
+      idleTimeout = setTimeout(() => {
+        if (screensaver && !isStaffMode) {
+          screensaver.style.display = 'block';
+        }
+      }, IDLE_TIME_MS);
+    };
+
+    ['mousemove', 'mousedown', 'touchstart', 'touchmove', 'keydown', 'scroll', 'click'].forEach(evt => {
+      window.addEventListener(evt, resetIdleTimer, { passive: true });
+    });
+
+    if (screensaver) {
+      screensaver.addEventListener('click', () => {
+        screensaver.style.display = 'none';
+        resetIdleTimer();
+      });
+    }
+
+    resetIdleTimer();
+
+    // 2. START SESSION OVERLAY (Click start.png to start 7-min timer)
+    const startOverlay = document.getElementById('startSessionOverlay');
+    if (startOverlay) {
+      startOverlay.addEventListener('click', async () => {
+        startOverlay.style.display = 'none';
+        if (this.activeRoom && this.rooms[this.activeRoom]) {
+          const roomData = this.rooms[this.activeRoom];
+          roomData.sessionStarted = true;
+          const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
+          if (activeSess) {
+            activeSess.sessionStartedAt = Date.now();
+          }
+          if (this.resetSessionTimer) {
+            try { await this.resetSessionTimer(); } catch (e) { }
+          }
+          this._startStepTimer(this.activeRoom, roomData.step || 1);
+        }
+      });
+    }
   }
   ,
 
@@ -643,6 +697,15 @@ export const UIMixin = {
 
     if (qrOverlay) {
       qrOverlay.style.display = (step === 4 && !isStaffMode) ? 'flex' : 'none';
+    }
+
+    const startOverlay = document.getElementById('startSessionOverlay');
+    if (startOverlay) {
+      if (!isStaffMode && roomData && roomData.session && !roomData.sessionStarted && step !== 4) {
+        startOverlay.style.display = 'flex';
+      } else {
+        startOverlay.style.display = 'none';
+      }
     }
 
     // Instruction text & buttons based on step

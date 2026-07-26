@@ -371,7 +371,17 @@
 
   <!-- Core Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=120"></script>
+  <script type="module" src="js/print-layout.js?v=121"></script>
+
+  <!-- IDLE SCREENSAVER OVERLAY (Hiển thị khi không thao tác 2 phút) -->
+  <div id="idleScreensaverOverlay" class="pl-screensaver-overlay" style="display:none;">
+    <img src="images/man-cho.png" alt="Màn hình chờ MME" />
+  </div>
+
+  <!-- START SESSION OVERLAY (Hiển thị khi bắt đầu phiên mới, bấm vào để bắt đầu đếm ngược 7 phút) -->
+  <div id="startSessionOverlay" class="pl-start-overlay" style="display:none;">
+    <img src="images/start.png" alt="Bấm để bắt đầu" />
+  </div>
 
   <!-- LOGIN OVERLAY -->
   <div id="loginOverlay"
