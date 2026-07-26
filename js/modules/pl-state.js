@@ -286,12 +286,10 @@ _updateActiveSession(room, onlyBadge = false) {
               this.selectedPhotos.clear();
             }
           } else {
-            // Màn Khách: Nạp slots từ Server nếu local chưa chọn ảnh HOẶC khi ở Bước 4 (Hoàn tất)
+            // Màn Khách: Chỉ nạp slots từ Server nếu local hoàn toàn rỗng hoặc chưa chọn ảnh nào
             const localHasImages = this.slots && this.slots.some(s => s && s.imageId);
-            const serverHasSlots = active.slots && active.slots.length > 0 && active.slots.some(s => s && s.imageId);
-
-            if (!localHasImages || (active.step === 4 && serverHasSlots)) {
-              if (serverHasSlots) {
+            if (!localHasImages) {
+              if (active.slots && active.slots.length > 0 && active.slots.some(s => s && s.imageId)) {
                 this.slots = JSON.parse(JSON.stringify(active.slots));
               }
             }
@@ -351,15 +349,20 @@ _updateActiveSession(room, onlyBadge = false) {
   }
 ,
 
-_syncState(room) {
+async _syncStateDirect(room) {
     const roomData = this.rooms[room];
     if (!roomData || !this.branch || !roomData.session) return;
-    
-    if (this._syncTimers === undefined) this._syncTimers = {};
-    if (this._syncTimers[room]) clearTimeout(this._syncTimers[room]);
 
-    this._syncTimers[room] = setTimeout(() => {
-      fetch(`/api/sync-state/${encodeURIComponent(this.branch)}/${encodeURIComponent(room)}/${encodeURIComponent(roomData.session)}`, {
+    const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
+    if (activeSess) {
+      activeSess.slots = JSON.parse(JSON.stringify(this.slots || []));
+      activeSess.selectedImages = Array.from(this.selectedPhotos || []);
+      activeSess.currentTemplate = this.currentTemplate;
+      activeSess.step = roomData.step;
+    }
+
+    try {
+      const res = await fetch(`/api/sync-state/${encodeURIComponent(this.branch)}/${encodeURIComponent(room)}/${encodeURIComponent(roomData.session)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -369,20 +372,27 @@ _syncState(room) {
           selectedImages: Array.from(this.selectedPhotos || []),
           slots: this.slots || []
         })
-      })
-    .then(res => res.json())
-    .then(data => {
-      if (data && data.sessionStartedAt) {
-        const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
-        if (activeSess) {
-          activeSess.sessionStartedAt = data.sessionStartedAt;
-          if (!isStaffMode && (roomData.step || 1) < 4) {
-            this._startStepTimer(room, roomData.step || 1);
-          }
-        }
+      });
+      const data = await res.json();
+      if (data && data.sessionStartedAt && activeSess) {
+        activeSess.sessionStartedAt = data.sessionStartedAt;
       }
-    })
-    .catch(err => console.error('Sync error:', err));
+      return data;
+    } catch (err) {
+      console.error('Direct sync error:', err);
+    }
+  }
+,
+
+_syncState(room) {
+    const roomData = this.rooms[room];
+    if (!roomData || !this.branch || !roomData.session) return;
+    
+    if (this._syncTimers === undefined) this._syncTimers = {};
+    if (this._syncTimers[room]) clearTimeout(this._syncTimers[room]);
+
+    this._syncTimers[room] = setTimeout(() => {
+      this._syncStateDirect(room);
     }, 150);
   }
 ,

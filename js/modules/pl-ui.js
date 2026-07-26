@@ -888,9 +888,15 @@ export const UIMixin = {
           if (this._autoFill) this._autoFill();
           this._setStep(this.activeRoom, 3);
         } else if (cur === 3) {
-          this._syncState(this.activeRoom);
+          const roomData = this.rooms[this.activeRoom];
+          if (roomData) roomData.step = 4;
+          if (this._syncStateDirect) {
+            await this._syncStateDirect(this.activeRoom);
+          } else {
+            this._syncState(this.activeRoom);
+          }
           await this._uploadFinalFrame();
-          this._setStep(this.activeRoom, 4);
+          this._setStep(this.activeRoom, 4, true);
         }
       });
     }
