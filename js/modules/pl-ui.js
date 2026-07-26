@@ -377,7 +377,7 @@ export const UIMixin = {
           }
         });
 
-        if (closest && closest.dataset.id !== this.currentTemplate && minDiff < (closest.offsetWidth || 300) * 0.4) {
+        if (closest && closest.dataset.id !== this.currentTemplate) {
           this._selectSlide(closest.dataset.id);
         }
       }, 200);

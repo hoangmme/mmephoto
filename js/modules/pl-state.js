@@ -259,7 +259,9 @@ _updateActiveSession(room, onlyBadge = false) {
       
       if (!onlyBadge && active) {
         if (this.activeRoom === room) {
-          if (active.currentTemplate && ALL_TEMPLATES[active.currentTemplate]) {
+          if (!isStaffMode && (roomData.step || 1) === 1 && this.currentTemplate && ALL_TEMPLATES[this.currentTemplate]) {
+            // Màn Khách ở Bước 1: Giữ nguyên khung Khách đang vuốt chọn, không bị SSE đè ngược
+          } else if (active.currentTemplate && ALL_TEMPLATES[active.currentTemplate]) {
             this.currentTemplate = active.currentTemplate;
           } else if (this.currentTemplate && ALL_TEMPLATES[this.currentTemplate]) {
             active.currentTemplate = this.currentTemplate;
