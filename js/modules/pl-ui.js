@@ -725,6 +725,12 @@ export const UIMixin = {
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
 
+      const swiperArea = document.getElementById('mainSwiperArea');
+      if (swiperArea) swiperArea.style.display = (step === 1 || step === 3 || step === 4) ? 'flex' : 'none';
+      
+      const mainSwiper = document.getElementById('mainSwiper');
+      if (mainSwiper) mainSwiper.style.display = (step === 1 || step === 3) ? 'flex' : 'none';
+
       if (step === 1) {
         instructionText.textContent = isWaitingForPhotos
           ? '👉 Bước 1: Chọn mẫu Khung In trong khi đợi tải full ảnh từ máy ảnh...'
@@ -749,9 +755,6 @@ export const UIMixin = {
         instructionText.textContent = isStaffMode
           ? '🔔 Khách đã chỉnh xong! Nhân viên vui lòng kiểm tra lại bố cục, bấm "Tải Ảnh Layout" để in cho khách và bấm "Next Customer" để đón lượt tiếp theo.'
           : '✨ Xin chúc mừng bạn đã hoàn thành! Vui lòng quét mã QR để tải bộ ảnh về điện thoại nhé.';
-
-        const swiperArea = document.getElementById('mainSwiperArea');
-        if (swiperArea) swiperArea.style.display = 'flex';
 
         const mainSwiper = document.getElementById('mainSwiper');
         if (mainSwiper) mainSwiper.style.display = isStaffMode ? 'flex' : 'none';
