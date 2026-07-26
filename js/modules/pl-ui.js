@@ -748,6 +748,23 @@ export const UIMixin = {
   _selectSlide(id, instant = false) {
     const templateChanged = (this.currentTemplate !== id);
     this.currentTemplate = id;
+
+    // Trim selectedPhotos if changing to a template with fewer slots
+    const targetTmpl = ALL_TEMPLATES[id];
+    if (targetTmpl && targetTmpl.slots && this.selectedPhotos) {
+      const maxAllowed = targetTmpl.slots.length;
+      if (this.selectedPhotos.size > maxAllowed) {
+        const trimmed = Array.from(this.selectedPhotos).slice(0, maxAllowed);
+        this.selectedPhotos = new Set(trimmed);
+        if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].queue) {
+          const activeSess = this.rooms[this.activeRoom].queue.find(s => s.id === this.rooms[this.activeRoom].session);
+          if (activeSess) {
+            activeSess.selectedImages = trimmed;
+          }
+        }
+      }
+    }
+
     if (this.activeRoom && this.rooms[this.activeRoom]) {
       const roomD = this.rooms[this.activeRoom];
       if (roomD.queue) {
@@ -917,7 +934,19 @@ export const UIMixin = {
         } else if (cur === 2) {
           const tmpl = ALL_TEMPLATES[this.currentTemplate];
           const maxSlots = tmpl ? tmpl.slots.length : 0;
-          const selectedCount = this.selectedPhotos ? this.selectedPhotos.size : 0;
+          let selectedCount = this.selectedPhotos ? this.selectedPhotos.size : 0;
+
+          if (maxSlots > 0 && selectedCount > maxSlots) {
+            const trimmed = Array.from(this.selectedPhotos).slice(0, maxSlots);
+            this.selectedPhotos = new Set(trimmed);
+            selectedCount = maxSlots;
+            if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].queue) {
+              const activeSess = this.rooms[this.activeRoom].queue.find(s => s.id === this.rooms[this.activeRoom].session);
+              if (activeSess) {
+                activeSess.selectedImages = trimmed;
+              }
+            }
+          }
 
           if (maxSlots > 0 && selectedCount < maxSlots) {
             if (selectedCount === 0) {
