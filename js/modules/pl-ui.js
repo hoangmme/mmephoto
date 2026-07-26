@@ -969,7 +969,7 @@ export const UIMixin = {
       const x = (e.clientX - rect.left) * scaleX;
       const y = (e.clientY - rect.top) * scaleY;
 
-        // Check if mouse hit Canva rotate handle (tính theo tọa độ thực tế của ảnh)
+        // Check if mouse hit Canva rotate handle (tính theo vị trí lật tự động)
         if (slotDef && slot) {
           let halfH = slotDef.h / 2;
           if (slot.imageId && this._imageCache && this._imageCache[slot.imageId]) {
@@ -979,6 +979,11 @@ export const UIMixin = {
               halfH = cover.drawH / 2;
             }
           }
+
+          const imageCenterY = slotDef.cy + (slot.panY || 0);
+          const isNearBottom = (imageCenterY + halfH + 110 > (this.canvas ? this.canvas.height : 2480) - 40);
+          const handleSign = isNearBottom ? -1 : 1;
+          const handleOffsetY = handleSign * (halfH + 85);
 
           let dx = x - slotDef.cx;
           let dy = y - slotDef.cy;
@@ -993,9 +998,9 @@ export const UIMixin = {
           const imgX = localX * Math.cos(-imgRotRad) - localY * Math.sin(-imgRotRad);
           const imgY = localX * Math.sin(-imgRotRad) + localY * Math.cos(-imgRotRad);
 
-          const distBottom = Math.hypot(imgX, imgY - (halfH + 65));
+          const distHandle = Math.hypot(imgX, imgY - handleOffsetY);
 
-          if (distBottom <= 55) {
+          if (distHandle <= 65) {
             isRotatingSlot = true;
             touchRotateStartTime = Date.now();
             rotateStartAngle = Math.atan2(y - (slotDef.cy + (slot.panY || 0)), x - (slotDef.cx + (slot.panX || 0))) * (180 / Math.PI);
@@ -1091,7 +1096,7 @@ export const UIMixin = {
         const x = (touch.clientX - rect.left) * scaleX;
         const y = (touch.clientY - rect.top) * scaleY;
 
-        // Check hit Canva rotate handle on Touch (tính theo tọa độ thực tế của ảnh)
+        // Check hit Canva rotate handle on Touch (tính theo vị trí lật tự động)
         if (slotDef && slot) {
           let halfH = slotDef.h / 2;
           if (slot.imageId && this._imageCache && this._imageCache[slot.imageId]) {
@@ -1101,6 +1106,11 @@ export const UIMixin = {
               halfH = cover.drawH / 2;
             }
           }
+
+          const imageCenterY = slotDef.cy + (slot.panY || 0);
+          const isNearBottom = (imageCenterY + halfH + 110 > (this.canvas ? this.canvas.height : 2480) - 40);
+          const handleSign = isNearBottom ? -1 : 1;
+          const handleOffsetY = handleSign * (halfH + 85);
 
           let dx = x - slotDef.cx;
           let dy = y - slotDef.cy;
@@ -1115,9 +1125,9 @@ export const UIMixin = {
           const imgX = localX * Math.cos(-imgRotRad) - localY * Math.sin(-imgRotRad);
           const imgY = localX * Math.sin(-imgRotRad) + localY * Math.cos(-imgRotRad);
 
-          const distBottom = Math.hypot(imgX, imgY - (halfH + 65));
+          const distHandle = Math.hypot(imgX, imgY - handleOffsetY);
 
-          if (distBottom <= 65) {
+          if (distHandle <= 70) {
             isRotatingSlot = true;
             touchRotateStartTime = Date.now();
             rotateStartAngle = Math.atan2(y - (slotDef.cy + (slot.panY || 0)), x - (slotDef.cx + (slot.panX || 0))) * (180 / Math.PI);

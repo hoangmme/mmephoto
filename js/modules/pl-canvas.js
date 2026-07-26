@@ -528,10 +528,10 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
 
         // 1. Selection Bounding Box (Bao quanh ảnh đã zoom, pan, rotate)
         ctx.strokeStyle = '#8b5cf6';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 5;
         ctx.strokeRect(-halfW, -halfH, drawW, drawH);
 
-        // 2. 4 Corner Handles (4 Nút mốc màu trắng ở 4 góc ảnh)
+        // 2. 4 Corner Handles (4 Nút mốc trắng lớn ở 4 góc ảnh)
         const corners = [
           { x: -halfW, y: -halfH },
           { x: halfW, y: -halfH },
@@ -541,53 +541,77 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
 
         corners.forEach(c => {
           ctx.beginPath();
-          ctx.arc(c.x, c.y, 14, 0, Math.PI * 2);
+          ctx.arc(c.x, c.y, 18, 0, Math.PI * 2);
           ctx.fillStyle = '#ffffff';
           ctx.fill();
           ctx.strokeStyle = '#8b5cf6';
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 4;
           ctx.stroke();
         });
 
-        // 3. Canva-style Large Rotate Handle below image (Nút xoay tròn Canva lớn)
-        const handleOffsetY = halfH + 65;
+        // 3. Canva-style Large Rotate Handle (Tự động lật lên phía trên nếu ở gần mép dưới canvas để KHÔNG BAO GIỜ bị cắt)
+        const imageCenterY = s.cy + (slotData ? (slotData.panY || 0) : 0);
+        const isNearBottom = (imageCenterY + halfH + 110 > h - 40);
+        const handleSign = isNearBottom ? -1 : 1;
+        const handleOffsetY = handleSign * (halfH + 85);
 
         // Stem line
         ctx.beginPath();
-        ctx.moveTo(0, halfH);
+        ctx.moveTo(0, handleSign * halfH);
         ctx.lineTo(0, handleOffsetY);
         ctx.strokeStyle = '#8b5cf6';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 5;
         ctx.stroke();
 
-        // Outer Circle Background (Đường kính 64px)
+        // Outer Circle Background (Nút tròn đường kính 80px)
         ctx.beginPath();
-        ctx.arc(0, handleOffsetY, 32, 0, Math.PI * 2);
+        ctx.arc(0, handleOffsetY, 40, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
         ctx.strokeStyle = '#8b5cf6';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 5;
         ctx.stroke();
 
         // Rotate Icon 🔄
         ctx.strokeStyle = '#6d28d9';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 5;
         ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.arc(0, handleOffsetY, 16, -Math.PI * 0.75, Math.PI * 0.75);
+        ctx.arc(0, handleOffsetY, 20, -Math.PI * 0.75, Math.PI * 0.75);
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.arc(0, handleOffsetY, 16, Math.PI * 0.25, -Math.PI * 0.25);
+        ctx.arc(0, handleOffsetY, 20, Math.PI * 0.25, -Math.PI * 0.25);
         ctx.stroke();
 
-        // Angle Badge Text (Hiển thị góc xoay ví dụ 90°)
-        const currentDeg = Math.round(((slotData ? (slotData.rotation || 0) : 0) % 360 + 360) % 360);
-        ctx.font = 'bold 22px Inter, sans-serif';
-        ctx.fillStyle = '#8b5cf6';
+        // 4. Large Angle Badge Pill (Badge hiển thị số độ cực to, rõ nét - Font 38px)
+        const currentDeg = Math.round(((slotData ? (slotData.rotation || 0) : 0) % 360 + 360) % 360) + '°';
+        ctx.font = 'bold 38px Inter, system-ui, sans-serif';
+        const textMetrics = ctx.measureText(currentDeg);
+        const badgeW = textMetrics.width + 36;
+        const badgeH = 54;
+        const badgeY = handleOffsetY + (isNearBottom ? -75 : 75);
+
+        // Pill background
+        ctx.save();
+        ctx.fillStyle = 'rgba(139, 92, 246, 0.95)';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, 14);
+        } else {
+          ctx.rect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH);
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        // Badge Text
+        ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(`${currentDeg}°`, 0, handleOffsetY - 40);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(currentDeg, 0, badgeY);
+        ctx.restore();
 
         ctx.restore();
       }
