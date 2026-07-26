@@ -750,13 +750,21 @@ export const UIMixin = {
 
     Array.from(this.mainSwiper.children).forEach(s => {
       s.classList.remove('active');
-      if (s.contains(this.canvas)) {
-        s.removeChild(this.canvas);
-      }
     });
 
     targetSlide.classList.add('active');
-    targetSlide.appendChild(this.canvas);
+
+    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    if (step >= 3) {
+      if (!targetSlide.contains(this.canvas)) {
+        Array.from(this.mainSwiper.children).forEach(s => {
+          if (s !== targetSlide && s.contains(this.canvas)) {
+            s.removeChild(this.canvas);
+          }
+        });
+        targetSlide.appendChild(this.canvas);
+      }
+    }
 
     this._initTemplate();
     this._renderCanvas();
@@ -776,7 +784,7 @@ export const UIMixin = {
       this.isProgrammaticScroll = false;
     }, instant ? 100 : 500);
 
-    if (templateChanged) {
+    if (templateChanged && isStaffMode) {
       this._syncState(this.activeRoom);
     }
   }
