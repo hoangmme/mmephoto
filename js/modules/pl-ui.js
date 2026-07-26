@@ -694,7 +694,7 @@ export const UIMixin = {
 
     const crossSell = document.getElementById('crossSellBanner');
     if (crossSell) {
-      crossSell.style.display = (step === 4) ? 'block' : 'none';
+      crossSell.style.display = (step === 4 && !isStaffMode) ? 'flex' : 'none';
     }
 
     if (qrOverlay) {

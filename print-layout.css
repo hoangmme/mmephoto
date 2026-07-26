@@ -801,21 +801,40 @@ body.pl-mode-staff #roomTabs {
   background: #ffffff;
 }
 
-/* ── Step 4: Finish Layout (QR Top -> Full Upsell Product Grid Bottom) ── */
-.pl-step-mode-4 #panelLeft,
-.pl-step-mode-4 #mainSwiper {
+/* ── Step 4: Finish Layout (Customer View: Products | Staff View: Canvas Preview) ── */
+.pl-mode-user.pl-step-mode-4 #panelLeft,
+.pl-mode-user.pl-step-mode-4 #mainSwiper {
   display: none !important;
 }
 
-.pl-step-mode-4 #mainSwiperArea {
+.pl-mode-staff.pl-step-mode-4 #crossSellBanner,
+.pl-mode-staff.pl-step-mode-4 #qrOverlay,
+.pl-mode-staff #crossSellBanner,
+.pl-mode-staff #qrOverlay {
+  display: none !important;
+}
+
+.pl-mode-staff.pl-step-mode-4 #panelLeft {
+  display: flex !important;
+  width: 320px !important;
+}
+
+.pl-mode-staff.pl-step-mode-4 #mainSwiperArea {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  justify-content: flex-start !important;
-  overflow-y: auto !important;
-  padding: 16px 14px !important;
-  width: 100% !important;
-  height: 100% !important;
+  justify-content: center !important;
+}
+
+.pl-mode-staff.pl-step-mode-4 #mainSwiper {
+  display: flex !important;
+}
+
+.pl-mode-staff.pl-step-mode-4 .pl-slide {
+  height: min(calc(100vh - 280px), calc((100vw - 380px) * 1.418)) !important;
+  width: auto !important;
+  display: block !important;
+  opacity: 1 !important;
 }
 
 .pl-qr-overlay,
@@ -831,7 +850,7 @@ body.pl-mode-staff #roomTabs {
   cursor: default !important;
 }
 
-.pl-step-mode-4 #crossSellBanner {
+.pl-mode-user.pl-step-mode-4 #crossSellBanner {
   display: flex !important;
   flex-direction: column !important;
   flex: 1 !important;
