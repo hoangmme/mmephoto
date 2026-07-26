@@ -1421,7 +1421,7 @@ export const UIMixin = {
       const srcUrl = img.objectUrl || img.url;
       const imgName = img.name || img.id;
 
-      const zoomBtnHtml = (step === 4) ? '' : `
+      const zoomBtnHtml = (step === 3 || step === 4) ? '' : `
         <button class="pl-thumb-zoom-btn" title="Xem phóng to ảnh">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
         </button>
