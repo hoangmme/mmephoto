@@ -1613,11 +1613,17 @@ export const UIMixin = {
           this._syncState(this.activeRoom);
         } else {
           this.selectedImageId = img.id;
-          if (this.selectedSlotIndex >= 0) {
-            this._assignToSlot(this.selectedSlotIndex, img.id);
+          let targetSlotIdx = this.selectedSlotIndex;
+          if (targetSlotIdx < 0 && this.slots && this.slots.length > 0) {
+            targetSlotIdx = 0;
+            this.selectedSlotIndex = 0;
+          }
+          if (targetSlotIdx >= 0) {
+            this._assignToSlot(targetSlotIdx, img.id);
             this.selectedImageId = null;
           }
           this._updateImageListUI();
+          this._renderCanvas();
         }
       });
 

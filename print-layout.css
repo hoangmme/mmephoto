@@ -560,8 +560,13 @@ body.pl-mode-staff #roomTabs {
 }
 
 .pl-step-mode-3 #printCanvas {
-  z-index: 50 !important;
+  z-index: 100 !important;
   pointer-events: auto !important;
+  display: block !important;
+}
+
+.pl-step-mode-3 .pl-slide-preview {
+  pointer-events: none !important;
 }
 
 .pl-step-mode-3 .pl-slide-check-btn,
