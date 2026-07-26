@@ -797,15 +797,14 @@ body.pl-mode-staff #roomTabs {
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: contain !important;
+  background: #ffffff;
+}
+
 /* ── Step 1: Frame Selection (Always visible in Step 1) ── */
 .pl-step-mode-1 #mainSwiperArea,
 .pl-step-mode-1 #mainSwiper {
   display: flex !important;
-}
-
-.pl-step-mode-1 .pl-slide {
-  display: block !important;
-  opacity: 1 !important;
 }
 
 /* ── Step 4: Finish Layout (Customer View: Products | Staff View: Canvas Preview) ── */
