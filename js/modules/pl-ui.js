@@ -133,6 +133,8 @@ export const UIMixin = {
   ,
 
   _initOverlays() {
+    if (isStaffMode) return;
+
     // 1. IDLE SCREENSAVER OVERLAY (2 mins no interaction -> man-cho.png)
     const screensaver = document.getElementById('idleScreensaverOverlay');
     let idleTimeout = null;

@@ -1289,8 +1289,12 @@ body.pl-mode-staff #roomTabs {
   transition: transform 0.2s ease !important;
 }
 
-.pl-start-overlay:active img {
-  transform: scale(0.98) !important;
+/* Hide idle screensaver and start overlays completely in Staff Mode */
+.pl-mode-staff .pl-screensaver-overlay,
+.pl-mode-staff .pl-start-overlay,
+body.pl-mode-staff #idleScreensaverOverlay,
+body.pl-mode-staff #startSessionOverlay {
+  display: none !important;
 }
 
 
