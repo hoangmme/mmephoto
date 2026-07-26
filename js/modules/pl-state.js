@@ -227,6 +227,10 @@ _updateActiveSession(room, onlyBadge = false) {
         if (roomData.session !== active.id) {
           roomData.session = active.id;
           roomData.step = active.step || 1;
+          if (this.activeRoom === room) {
+            this.slots = [];
+            this.selectedPhotos = new Set();
+          }
         } else {
           if (roomData.step === undefined || roomData.step === null) {
             roomData.step = active.step || 1;
