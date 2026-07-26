@@ -803,14 +803,51 @@ body.pl-mode-staff #roomTabs {
 
 /* ── Step 4: Finish Layout (Customer View: Products | Staff View: Canvas Preview) ── */
 .pl-mode-user.pl-step-mode-4 #panelLeft,
-.pl-mode-user.pl-step-mode-4 #mainSwiper {
+.pl-mode-user.pl-step-mode-4 #mainSwiper,
+.pl-mode-user.pl-step-mode-4 #paperInfoNote,
+.pl-mode-user.pl-step-mode-4 #canvasInfo {
   display: none !important;
 }
 
-.pl-mode-staff.pl-step-mode-4 #crossSellBanner,
-.pl-mode-staff.pl-step-mode-4 #qrOverlay,
+.pl-mode-user.pl-step-mode-4 #mainSwiperArea {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 16px 14px !important;
+  overflow-y: auto !important;
+}
+
+.pl-mode-user.pl-step-mode-4 #qrOverlay {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto 12px auto !important;
+}
+
+.pl-mode-user.pl-step-mode-4 #crossSellBanner {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 auto !important;
+  padding: 16px 20px !important;
+  background: var(--pl-bg-panel) !important;
+  border: 1px solid var(--pl-border) !important;
+  border-radius: 16px !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04) !important;
+}
+
+/* Staff / Admin View - Step 4 */
 .pl-mode-staff #crossSellBanner,
-.pl-mode-staff #qrOverlay {
+.pl-mode-staff #qrOverlay,
+.pl-mode-staff.pl-step-mode-4 #crossSellBanner,
+.pl-mode-staff.pl-step-mode-4 #qrOverlay {
   display: none !important;
 }
 

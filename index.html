@@ -18,13 +18,6 @@
       var params = new URLSearchParams(window.location.search);
       var u = (params.get('user') || params.get('role') || params.get('mode') || '').toLowerCase();
       var isStaff = (u === 'staff' || u === 'admin' || params.has('staff'));
-      if (!isStaff && u !== 'user' && u !== 'client' && u !== 'customer') {
-        try { isStaff = (localStorage.getItem('pl_staff_mode') === 'true'); } catch (e) { }
-      }
-      if (u === 'user' || u === 'client' || u === 'customer') {
-        isStaff = false;
-        try { localStorage.removeItem('pl_staff_mode'); } catch (e) { }
-      }
       var cls = isStaff ? 'pl-mode-staff' : 'pl-mode-user';
       document.documentElement.className = cls;
       document.addEventListener('DOMContentLoaded', function () {
@@ -371,7 +364,7 @@
 
   <!-- Core Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=125"></script>
+  <script type="module" src="js/print-layout.js?v=126"></script>
 
   <!-- IDLE SCREENSAVER OVERLAY (Hiển thị khi không thao tác 2 phút) -->
   <div id="idleScreensaverOverlay" class="pl-screensaver-overlay" style="display:none;">
