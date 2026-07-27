@@ -95,7 +95,13 @@ _initSSE(branch) {
             if (data.step !== undefined) sessionObj.step = data.step;
             if (data.sessionStartedAt !== undefined) sessionObj.sessionStartedAt = data.sessionStartedAt;
             if (data.currentTemplate !== undefined) sessionObj.currentTemplate = data.currentTemplate;
-            if (data.slots && data.slots.length > 0) sessionObj.slots = data.slots;
+            if (data.slots && data.slots.length > 0) {
+              const serverHasImages = data.slots.some(s => s.imageId);
+              const localHasImages = sessionObj.slots && sessionObj.slots.some(s => s.imageId);
+              if (serverHasImages || !localHasImages) {
+                sessionObj.slots = data.slots;
+              }
+            }
             if (data.selectedImages) sessionObj.selectedImages = data.selectedImages;
           }
 
@@ -125,7 +131,13 @@ _initSSE(branch) {
                 this.currentTemplate = data.currentTemplate;
                 templateChanged = true;
               }
-              if (data.slots && data.slots.length > 0) this.slots = data.slots;
+              if (data.slots && data.slots.length > 0) {
+                const serverHasImages = data.slots.some(s => s.imageId);
+                const localHasImages = this.slots && this.slots.some(s => s.imageId);
+                if (serverHasImages || !localHasImages) {
+                  this.slots = data.slots;
+                }
+              }
               if (data.selectedImages) this.selectedPhotos = new Set(data.selectedImages);
               
               if (templateChanged) {
@@ -328,10 +340,7 @@ _updateActiveSession(room, onlyBadge = false) {
           }
         }
         
-        // Only set step to 1 if we don't have a saved step from server AND smart recovery didn't bump the step
-        if (roomData.images.length > 0 && !active.step && roomData.step === 1) {
-          this._setStep(room, 1);
-        }
+
       }
     } else if (!onlyBadge) {
       roomData.session = null;

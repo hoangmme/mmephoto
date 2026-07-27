@@ -757,7 +757,7 @@ export const UIMixin = {
           : '✨ Xin chúc mừng bạn đã hoàn thành! Vui lòng quét mã QR để tải bộ ảnh về điện thoại nhé.';
 
         const mainSwiper = document.getElementById('mainSwiper');
-        if (mainSwiper) mainSwiper.style.display = isStaffMode ? 'flex' : 'none';
+        if (mainSwiper) mainSwiper.style.display = 'none';
 
         if (this.canvas) {
           this.canvas.style.display = isStaffMode ? 'block' : 'none';
@@ -1621,9 +1621,12 @@ export const UIMixin = {
             this._assignToSlot(this.selectedSlotIndex, img.id);
             this.selectedImageId = null;
           } else {
-            // No slot selected: find first slot that doesn't have this image
+            // No slot selected: find first EMPTY slot
             if (this.slots) {
-               const idx = this.slots.findIndex(s => s.imageId !== img.id);
+               let idx = this.slots.findIndex(s => !s.imageId);
+               if (idx < 0) {
+                 idx = this.slots.findIndex(s => s.imageId !== img.id);
+               }
                if (idx >= 0) {
                   this._assignToSlot(idx, img.id);
                   this.selectedImageId = null;
