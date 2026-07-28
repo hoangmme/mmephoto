@@ -607,7 +607,7 @@ app.post('/api/reset-session-timer/:branch/:room/:session', (req, res) => {
 
 app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) => {
   const { branch, room, session } = req.params;
-  const { step, currentTemplate, selectedImages, slots, clientId } = req.body;
+  const { step, currentTemplate, selectedTemplates, paperSize, canvasesState, selectedImages, slots, clientId } = req.body;
   
   if (!roomState[branch]) roomState[branch] = {};
   if (!roomState[branch][room]) roomState[branch][room] = { sessions: [], activeSessionId: null };
@@ -630,6 +630,18 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
   }
   if (currentTemplate && currentTemplate !== 'undefined') {
     sessionObj.currentTemplate = currentTemplate;
+  }
+  
+  if (selectedTemplates && Array.isArray(selectedTemplates)) {
+    sessionObj.selectedTemplates = selectedTemplates;
+  }
+  
+  if (paperSize) {
+    sessionObj.paperSize = paperSize;
+  }
+  
+  if (canvasesState && Array.isArray(canvasesState)) {
+    sessionObj.canvasesState = canvasesState;
   }
   
   if (selectedImages && Array.isArray(selectedImages)) {
@@ -656,6 +668,9 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
         step: sessionObj.step,
         sessionStartedAt: sessionObj.sessionStartedAt,
         currentTemplate: sessionObj.currentTemplate,
+        selectedTemplates: sessionObj.selectedTemplates || (sessionObj.currentTemplate ? [sessionObj.currentTemplate] : []),
+        paperSize: sessionObj.paperSize || 'A4',
+        canvasesState: sessionObj.canvasesState || [],
         selectedImages: sessionObj.selectedImages,
         slots: sessionObj.slots,
         images: sessionObj.images

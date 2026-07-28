@@ -89,6 +89,9 @@ _onCanvasClick(e) {
       this.selectedSlotIndex = clickedSlot;
 
       if (!this.slots) this.slots = [];
+      if (this.canvasesState && this.canvasesState[this.activeCanvasIndex || 0]) {
+        this.canvasesState[this.activeCanvasIndex || 0].slots = this.slots;
+      }
       // If an image is selected in sidebar, assign it to the clicked slot (replaces existing photo if any)
       if (this.selectedImageId) {
         this._assignToSlot(clickedSlot, this.selectedImageId);
@@ -103,6 +106,9 @@ _onCanvasClick(e) {
 
   _assignToSlot(slotIndex, imageId, skipSync = false) {
     if (!this.slots) this.slots = [];
+    if (this.canvasesState && this.canvasesState[this.activeCanvasIndex || 0]) {
+      this.canvasesState[this.activeCanvasIndex || 0].slots = this.slots;
+    }
     if (!this.slots[slotIndex]) {
       this.slots[slotIndex] = {
         imageId: null,
@@ -174,6 +180,13 @@ _onCanvasClick(e) {
 
     // Gán trực tiếp danh sách ảnh đã tick (selectedArr) vào từng ô slot theo đúng thứ tự 1..N
     const selectedArr = Array.from(this.selectedPhotos);
+
+    if (!this.slots || this.slots.length !== maxSlots) {
+      this.slots = Array(maxSlots).fill(null).map(() => ({ imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: 0 }));
+      if (this.canvasesState && this.canvasesState[this.activeCanvasIndex || 0]) {
+        this.canvasesState[this.activeCanvasIndex || 0].slots = this.slots;
+      }
+    }
 
     for (let i = 0; i < maxSlots; i++) {
       if (!this.slots[i]) {
@@ -648,21 +661,50 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
   // ══════════════════════════════════════
 ,
 
-async _exportJPG() {
+  async _exportJPG() {
     this._showOverlay(true);
     await new Promise(r => setTimeout(r, 50));
 
     try {
       const exportCanvas = document.createElement('canvas');
-      this._drawToCanvas(exportCanvas, false);
+      const currentIdx = this.activeCanvasIndex;
+      
+      const templatesToExport = this.selectedTemplates && this.selectedTemplates.length > 0 
+        ? this.selectedTemplates 
+        : [this.currentTemplate];
 
-      const dataUrl = exportCanvas.toDataURL('image/jpeg', 0.95);
-      const link = document.createElement('a');
-      link.download = `MME_A5_Print_${Date.now()}.jpg`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      for (let i = 0; i < templatesToExport.length; i++) {
+        this.activeCanvasIndex = i;
+        this.currentTemplate = templatesToExport[i];
+        if (this.canvasesState && this.canvasesState[i]) {
+          this.slots = this.canvasesState[i].slots;
+          this.selectedSlotIndex = -1;
+        }
+        await this._loadTemplateImages(); // make sure images are loaded
+        
+        this._drawToCanvas(exportCanvas, false);
+
+        const dataUrl = exportCanvas.toDataURL('image/jpeg', 0.95);
+        const link = document.createElement('a');
+        link.download = `MME_${this.paperSize || 'Print'}_${Date.now()}_P${i+1}.jpg`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        await new Promise(r => setTimeout(r, 500)); // small delay between downloads
+      }
+      
+      // Restore
+      if (templatesToExport.length > 1) {
+        this.activeCanvasIndex = currentIdx;
+        this.currentTemplate = templatesToExport[currentIdx];
+        if (this.canvasesState && this.canvasesState[currentIdx]) {
+          this.slots = this.canvasesState[currentIdx].slots;
+        }
+        await this._loadTemplateImages();
+      }
+
     } catch (err) {
       console.error('Export JPG failed:', err);
       alert('Xuất JPG thất bại.');
@@ -672,57 +714,120 @@ async _exportJPG() {
   }
 ,
 
-async _uploadFinalFrame() {
+  async _uploadFinalFrame() {
     if (!this.activeRoom || !this.rooms[this.activeRoom] || !this.rooms[this.activeRoom].session) return;
-    return new Promise((resolve) => {
-      try {
-        const exportCanvas = document.createElement('canvas');
+    
+    this._showOverlay(true);
+    
+    try {
+      const exportCanvas = document.createElement('canvas');
+      const currentIdx = this.activeCanvasIndex;
+      const branch = localStorage.getItem('branchId') || 'CN01';
+      const session = this.rooms[this.activeRoom].session;
+      
+      const templatesToExport = this.selectedTemplates && this.selectedTemplates.length > 0 
+        ? this.selectedTemplates 
+        : [this.currentTemplate];
+
+      for (let i = 0; i < templatesToExport.length; i++) {
+        this.activeCanvasIndex = i;
+        this.currentTemplate = templatesToExport[i];
+        if (this.canvasesState && this.canvasesState[i]) {
+          this.slots = this.canvasesState[i].slots;
+          this.selectedSlotIndex = -1;
+        }
+        await this._loadTemplateImages();
         this._drawToCanvas(exportCanvas, false);
-        exportCanvas.toBlob(async (blob) => {
-          if (!blob) return resolve();
-          const branch = localStorage.getItem('branchId') || 'CN01';
-          const session = this.rooms[this.activeRoom].session;
-          const formData = new FormData();
-          formData.append('image', blob, '00_frame.jpg');
-          try {
-            await fetch(`/api/stream-upload/${branch}/${this.activeRoom}/${session}`, {
-              method: 'POST',
-              body: formData
-            });
-          } catch (err) {
-            console.error('Upload final frame failed:', err);
-          }
-          resolve();
-        }, 'image/jpeg', 0.95);
-      } catch (err) {
-        console.error('Upload final frame error:', err);
-        resolve();
+        
+        await new Promise((resolve) => {
+          exportCanvas.toBlob(async (blob) => {
+            if (!blob) return resolve();
+            const formData = new FormData();
+            formData.append('image', blob, `00_frame_P${i+1}.jpg`);
+            try {
+              await fetch(`/api/stream-upload/${branch}/${this.activeRoom}/${session}`, {
+                method: 'POST',
+                body: formData
+              });
+            } catch (err) {
+              console.error('Upload final frame failed:', err);
+            }
+            resolve();
+          }, 'image/jpeg', 0.95);
+        });
       }
-    });
+      
+      // Restore
+      if (templatesToExport.length > 1) {
+        this.activeCanvasIndex = currentIdx;
+        this.currentTemplate = templatesToExport[currentIdx];
+        if (this.canvasesState && this.canvasesState[currentIdx]) {
+          this.slots = this.canvasesState[currentIdx].slots;
+        }
+        await this._loadTemplateImages();
+      }
+    } catch (err) {
+      console.error('Upload final frame error:', err);
+    }
+    
+    this._showOverlay(false);
   }
 ,
 
-async _exportPDF() {
+  async _exportPDF() {
     this._showOverlay(true);
     await new Promise(r => setTimeout(r, 50));
 
     try {
-      const exportCanvas = document.createElement('canvas');
-      this._drawToCanvas(exportCanvas, false);
-
-      const dataUrl = exportCanvas.toDataURL('image/jpeg', 0.95);
-
-      // jsPDF: A5 landscape/portrait
       const { jsPDF } = window.jspdf;
+      let formatStr = 'a5'; // Default
+      if (this.paperSize === 'A4') formatStr = 'a4';
+      
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a5' // 148 x 210 mm
+        format: formatStr 
       });
 
-      // A5 dimensions in mm
-      pdf.addImage(dataUrl, 'JPEG', 0, 0, 148, 210);
-      pdf.save(`MME_A5_Print_${Date.now()}.pdf`);
+      const exportCanvas = document.createElement('canvas');
+      const currentIdx = this.activeCanvasIndex;
+      
+      const templatesToExport = this.selectedTemplates && this.selectedTemplates.length > 0 
+        ? this.selectedTemplates 
+        : [this.currentTemplate];
+
+      for (let i = 0; i < templatesToExport.length; i++) {
+        this.activeCanvasIndex = i;
+        this.currentTemplate = templatesToExport[i];
+        if (this.canvasesState && this.canvasesState[i]) {
+          this.slots = this.canvasesState[i].slots;
+          this.selectedSlotIndex = -1;
+        }
+        await this._loadTemplateImages();
+        
+        this._drawToCanvas(exportCanvas, false);
+        const dataUrl = exportCanvas.toDataURL('image/jpeg', 0.95);
+        
+        if (i > 0) pdf.addPage();
+        
+        const width = formatStr === 'a4' ? 210 : 148;
+        const height = formatStr === 'a4' ? 297 : 210;
+        
+        pdf.addImage(dataUrl, 'JPEG', 0, 0, width, height);
+      }
+      
+      pdf.save(`MME_${this.paperSize || 'Print'}_${Date.now()}.pdf`);
+      
+      // Restore
+      if (templatesToExport.length > 1) {
+        this.activeCanvasIndex = currentIdx;
+        this.currentTemplate = templatesToExport[currentIdx];
+        if (this.canvasesState && this.canvasesState[currentIdx]) {
+          this.slots = this.canvasesState[currentIdx].slots;
+        }
+        await this._loadTemplateImages();
+      }
+
     } catch (err) {
       console.error('Export PDF failed:', err);
       alert('Xuất PDF thất bại. Đảm bảo jsPDF đã được tải.');

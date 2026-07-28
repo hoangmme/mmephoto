@@ -95,6 +95,9 @@ _initSSE(branch) {
             if (data.step !== undefined) sessionObj.step = data.step;
             if (data.sessionStartedAt !== undefined) sessionObj.sessionStartedAt = data.sessionStartedAt;
             if (data.currentTemplate !== undefined) sessionObj.currentTemplate = data.currentTemplate;
+            if (data.selectedTemplates !== undefined) sessionObj.selectedTemplates = data.selectedTemplates;
+            if (data.paperSize !== undefined) sessionObj.paperSize = data.paperSize;
+            if (data.canvasesState !== undefined) sessionObj.canvasesState = data.canvasesState;
             if (data.slots && data.slots.length > 0) {
               const serverHasImages = data.slots.some(s => s.imageId);
               const localHasImages = sessionObj.slots && sessionObj.slots.some(s => s.imageId);
@@ -131,6 +134,15 @@ _initSSE(branch) {
               if (data.currentTemplate !== undefined && this.currentTemplate !== data.currentTemplate && !isUserStep1) {
                 this.currentTemplate = data.currentTemplate;
                 templateChanged = true;
+              }
+              if (data.selectedTemplates !== undefined && !isUserStep1) {
+                this.selectedTemplates = data.selectedTemplates;
+              }
+              if (data.paperSize !== undefined) {
+                this.paperSize = data.paperSize;
+              }
+              if (data.canvasesState !== undefined && !isUserStep1) {
+                this.canvasesState = data.canvasesState;
               }
               if (data.slots && data.slots.length > 0) {
                 const serverHasImages = data.slots.some(s => s.imageId);
@@ -389,6 +401,9 @@ async _syncStateDirect(room) {
           clientId: this.clientId,
           step: roomData.step,
           currentTemplate: this.currentTemplate,
+          selectedTemplates: this.selectedTemplates || [this.currentTemplate],
+          paperSize: this.paperSize || 'A4',
+          canvasesState: this.canvasesState || [],
           selectedImages: Array.from(this.selectedPhotos || []),
           slots: this.slots || []
         })

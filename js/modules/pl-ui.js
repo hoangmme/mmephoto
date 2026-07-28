@@ -1,4 +1,5 @@
 import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=138';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=138';
 
 export const UIMixin = {
   _initLogin() {
@@ -275,164 +276,47 @@ export const UIMixin = {
 
   _initMainSwiper() {
     if (!this.mainSwiper) return;
-    this.mainSwiper.innerHTML = '';
-
-    Object.keys(ALL_TEMPLATES).forEach(k => {
-      const t = ALL_TEMPLATES[k];
-      const slide = document.createElement('div');
-      slide.className = 'pl-slide';
-      slide.dataset.id = k;
-
-      if (k === this.currentTemplate) {
-        slide.classList.add('active');
-      }
-
-      const paperSize = t.paper_size || (t.canvas_width > 2000 ? 'A4' : 'A5');
-      const badgeText = paperSize === 'A4' ? 'Khổ A4 (1 iframe)' : 'Khổ A5 (Combo 2 iframe)';
-
-      const badge = document.createElement('div');
-      badge.className = 'pl-slide-badge';
-      badge.textContent = badgeText;
-      badge.style.position = 'absolute';
-      badge.style.top = '10px';
-      badge.style.left = '50%';
-      badge.style.transform = 'translateX(-50%)';
-      badge.style.background = paperSize === 'A4' ? '#ef4444' : 'var(--pl-accent, #4f3219)';
-      badge.style.color = '#fff';
-      badge.style.fontSize = '11px';
-      badge.style.fontWeight = '600';
-      badge.style.padding = '4px 10px';
-      badge.style.borderRadius = '12px';
-      badge.style.zIndex = '5';
-      badge.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
-      badge.style.whiteSpace = 'nowrap';
-      badge.style.pointerEvents = 'none';
-      slide.appendChild(badge);
-
-      const preview = document.createElement('div');
-      preview.className = 'pl-slide-preview';
-
-      const cvs = document.createElement('canvas');
-      cvs.width = t.canvas_width || A5_WIDTH;
-      cvs.height = t.canvas_height || A5_HEIGHT;
-      // Draw template with default photos
-      this._drawToCanvas(cvs, false, t, true);
-      preview.appendChild(cvs);
-
-      slide.appendChild(preview);
-
-      slide.addEventListener('click', () => {
-        if (this.currentTemplate !== k) {
-          this._selectSlide(k);
-        }
-      });
-
-      this.mainSwiper.appendChild(slide);
-    });
-
-    // Padding to center first/last
-    this._updatePadding = () => {
-      const parentArea = this.mainSwiper.parentElement;
-      if (this.mainSwiper.children.length > 0 && parentArea.offsetWidth > 0) {
-        const firstSlide = this.mainSwiper.children[0];
-        const slideWidth = firstSlide.offsetWidth;
-        if (slideWidth > 0) {
-          const pad = Math.max(0, (parentArea.offsetWidth - slideWidth) / 2);
-          this.mainSwiper.style.paddingLeft = `${pad}px`;
-          this.mainSwiper.style.paddingRight = `${pad}px`;
-          this.mainSwiper.classList.add('loaded');
-
-          // Ensure active slide is centered after padding change
-          if (this.currentTemplate) {
-            requestAnimationFrame(() => {
-              const activeSlide = this.mainSwiper.querySelector(`[data-id="${this.currentTemplate}"]`);
-              if (activeSlide) {
-                this.isProgrammaticScroll = true;
-                activeSlide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-                setTimeout(() => { this.isProgrammaticScroll = false; }, 800);
-              }
-            });
+    
+    // Use the new TemplatePicker component
+    if (!this._templatePicker) {
+      this._templatePicker = new TemplatePicker(
+        this.mainSwiper,
+        ALL_TEMPLATES,
+        (paperSize, selectedTemplates) => {
+          this.paperSize = paperSize;
+          this.selectedTemplates = selectedTemplates;
+          this.currentTemplate = selectedTemplates[0]; // for backward compatibility in some places
+          
+          // Re-init canvasesState based on selection
+          this.canvasesState = this.selectedTemplates.map(t => ({
+            templateId: t,
+            slots: [],
+            selectedSlotIndex: -1
+          }));
+          this.activeCanvasIndex = 0;
+          
+          this._updateActiveSession(this.activeRoom);
+          this._loadTemplateImages();
+          
+          // Auto advance to step 2 if on step 1
+          const activeSess = this._getActiveSession();
+          if (activeSess && (activeSess.step || 1) === 1) {
+            const btnNext = document.getElementById('btnStepNext');
+            if (btnNext) btnNext.click();
           }
         }
-      }
-    };
-
-    const ro = new ResizeObserver(() => this._updatePadding());
-    ro.observe(this.mainSwiper.parentElement);
-
-    // Also run when images inside load
-    this.mainSwiper.querySelectorAll('img').forEach(img => {
-      img.addEventListener('load', () => this._updatePadding());
-    });
-
-    // Auto select on scroll
-    let scrollTimeout;
-    this.mainSwiper.addEventListener('scroll', () => {
-      clearTimeout(scrollTimeout);
-
-      // Update visual scaling
-      const center = this.mainSwiper.scrollLeft + this.mainSwiper.offsetWidth / 2;
-      Array.from(this.mainSwiper.children).forEach(slide => {
-        const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
-        const diff = Math.abs(center - slideCenter);
-
-        // Progress from 0 (at center) to 1 (at edges)
-        const progress = Math.min(1, diff / (slide.offsetWidth * 1.2));
-
-        // Scale goes from 1.0 (center) down to 0.85 (edges)
-        const scale = 1.0 - (progress * 0.15);
-
-        // Opacity goes from 1.0 (center) down to 0.5 (edges)
-        const opacity = 1.0 - (progress * 0.5);
-
-        slide.style.transform = `scale(${scale})`;
-        slide.style.opacity = opacity;
-      });
-
-      if (this.isProgrammaticScroll) return;
-
-      const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
-      if (step > 1) return;
-
-      scrollTimeout = setTimeout(() => {
-        if (this.isProgrammaticScroll) return;
-        const stepNow = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
-        if (stepNow > 1) return;
-
-        const currentCenter = this.mainSwiper.scrollLeft + this.mainSwiper.offsetWidth / 2;
-        let closest = null;
-        let minDiff = Infinity;
-        Array.from(this.mainSwiper.children).forEach(slide => {
-          const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
-          const diff = Math.abs(currentCenter - slideCenter);
-          if (diff < minDiff) {
-            minDiff = diff;
-            closest = slide;
-          }
-        });
-
-        if (closest && closest.dataset.id !== this.currentTemplate) {
-          this._selectSlide(closest.dataset.id);
-        }
-      }, 200);
-    });
-
-    // Add click listener to all slides for direct tap selection
-    Array.from(this.mainSwiper.children).forEach(slide => {
-      slide.addEventListener('click', () => {
-        if (slide.dataset.id !== this.currentTemplate) {
-          this._selectSlide(slide.dataset.id);
-        }
-      });
-    });
-
-    // Set initial
-    if (!ALL_TEMPLATES[this.currentTemplate]) {
-      this.currentTemplate = Object.keys(ALL_TEMPLATES)[0];
+      );
     }
-
-    // Force select first without scrolling animation
-    this._selectSlide(this.currentTemplate, true);
+    
+    // Sync current state to picker
+    if (this.paperSize) this._templatePicker.paperSize = this.paperSize;
+    if (this.selectedTemplates && this.selectedTemplates.length > 0) {
+      this._templatePicker.selectedTemplates = [...this.selectedTemplates];
+    } else if (this.currentTemplate) {
+      this._templatePicker.selectedTemplates = [this.currentTemplate];
+    }
+    
+    this._templatePicker.render();
   }
   ,
 
@@ -618,28 +502,10 @@ export const UIMixin = {
       });
     }
 
-    // Sync swiper to current template without triggering slideChange
-    if (this.mainSwiper && this.currentTemplate) {
-      const activeSlide = Array.from(this.mainSwiper.children).find(s => s.dataset.id === this.currentTemplate);
-      if (activeSlide) {
-        Array.from(this.mainSwiper.children).forEach(s => {
-          s.classList.toggle('active', s === activeSlide);
-          if (s !== activeSlide && s.contains(this.canvas)) {
-            s.removeChild(this.canvas);
-          }
-        });
-        if (!activeSlide.contains(this.canvas)) {
-          activeSlide.appendChild(this.canvas);
-        }
+    // Remove the old swiper slide sync logic since we no longer use it for Step 3.
+    // Instead, if we have multiple selectedTemplates, we'll render pagination tabs above the canvas.
+    this._renderCanvasPagination();
 
-        const parentArea = this.mainSwiper.parentElement;
-        if (parentArea && parentArea.offsetWidth > 0) {
-          this.isProgrammaticScroll = true;
-          activeSlide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-          setTimeout(() => { this.isProgrammaticScroll = false; }, 800);
-        }
-      }
-    }
 
     // Check if waiting for quiet period (full images uploaded)
     const isWaitingForPhotos = !roomData.timerStarted && (step === 1 || step === 2) && roomData.lastImageTime && (Date.now() - roomData.lastImageTime < 30000);
@@ -694,10 +560,13 @@ export const UIMixin = {
     if (instructionText && btnStepPrev && btnStepNext) {
 
       const swiperArea = document.getElementById('mainSwiperArea');
-      if (swiperArea) swiperArea.style.display = (step === 1 || step === 3 || step === 4) ? 'flex' : 'none';
+      if (swiperArea) swiperArea.style.display = (step === 1) ? 'flex' : 'none';
       
       const mainSwiper = document.getElementById('mainSwiper');
-      if (mainSwiper) mainSwiper.style.display = (step === 1 || step === 3) ? 'flex' : 'none';
+      if (mainSwiper) mainSwiper.style.display = (step === 1) ? 'flex' : 'none';
+      
+      const canvasContainer = document.getElementById('canvasContainer');
+      if (canvasContainer) canvasContainer.style.display = (step > 1) ? 'flex' : 'none';
 
       if (step === 1) {
         instructionText.textContent = isWaitingForPhotos
@@ -1511,6 +1380,63 @@ export const UIMixin = {
 
   // ── Render Image List ──
   ,
+
+  _renderCanvasPagination() {
+    const canvasContainer = document.getElementById('canvasContainer');
+    if (!canvasContainer) return;
+    
+    let pagination = document.getElementById('canvasPagination');
+    if (!this.selectedTemplates || this.selectedTemplates.length <= 1) {
+      if (pagination) pagination.style.display = 'none';
+      return;
+    }
+    
+    if (!pagination) {
+      pagination = document.createElement('div');
+      pagination.id = 'canvasPagination';
+      pagination.style.display = 'flex';
+      pagination.style.gap = '10px';
+      pagination.style.marginBottom = '10px';
+      pagination.style.justifyContent = 'center';
+      
+      // insert before canvas
+      canvasContainer.insertBefore(pagination, canvasContainer.firstChild);
+    }
+    
+    pagination.style.display = 'flex';
+    pagination.innerHTML = '';
+    
+    this.selectedTemplates.forEach((t, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'pl-btn';
+      btn.innerText = `Trang ${i + 1}`;
+      btn.style.padding = '8px 20px';
+      btn.style.borderRadius = '20px';
+      btn.style.fontWeight = 'bold';
+      btn.style.border = '2px solid var(--pl-accent)';
+      
+      if (this.activeCanvasIndex === i) {
+        btn.style.background = 'var(--pl-accent)';
+        btn.style.color = '#fff';
+      } else {
+        btn.style.background = 'var(--pl-bg-section)';
+        btn.style.color = 'var(--pl-text)';
+      }
+      
+      btn.onclick = () => {
+        this.activeCanvasIndex = i;
+        this.currentTemplate = this.selectedTemplates[i];
+        if (this.canvasesState && this.canvasesState[i]) {
+          this.slots = this.canvasesState[i].slots;
+          this.selectedSlotIndex = this.canvasesState[i].selectedSlotIndex || -1;
+        }
+        this._updateUIForRoom();
+        this._renderCanvas();
+      };
+      
+      pagination.appendChild(btn);
+    });
+  },
 
   _renderImageList() {
     this.imageList.innerHTML = '';
