@@ -239,14 +239,14 @@ _updateActiveSession(room, onlyBadge = false) {
       if (active) {
         if (roomData.session !== active.id) {
           roomData.session = active.id;
-          roomData.step = active.step || 1;
+          roomData.step = isStaffMode ? 4 : (active.step || 1);
           if (this.activeRoom === room) {
             this.slots = [];
             this.selectedPhotos = new Set();
           }
         } else {
           if (roomData.step === undefined || roomData.step === null) {
-            roomData.step = active.step || 1;
+            roomData.step = isStaffMode ? 4 : (active.step || 1);
           } else {
             active.step = roomData.step;
           }
