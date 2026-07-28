@@ -4,13 +4,22 @@ export const PADDING = 40;
 let staffFromUrl = false;
 
 if (typeof window !== 'undefined' && window.location) {
-  const urlParams = new URLSearchParams(window.location.search);
-  const userParam = (urlParams.get('user') || urlParams.get('role') || urlParams.get('mode') || '').toLowerCase();
-  
-  if (userParam === 'staff' || userParam === 'admin' || urlParams.has('staff')) {
+  // Primary: detect from body/html class (set by user.html / staff.html)
+  const htmlEl = document.documentElement;
+  if (htmlEl && htmlEl.classList.contains('pl-mode-staff')) {
+    staffFromUrl = true;
+  } else if (document.body && document.body.classList.contains('pl-mode-staff')) {
     staffFromUrl = true;
   } else {
-    staffFromUrl = false;
+    // Fallback: detect from URL params (for backward compat with index.html redirect)
+    const urlParams = new URLSearchParams(window.location.search);
+    const userParam = (urlParams.get('user') || urlParams.get('role') || urlParams.get('mode') || '').toLowerCase();
+    
+    if (userParam === 'staff' || userParam === 'admin' || urlParams.has('staff')) {
+      staffFromUrl = true;
+    } else {
+      staffFromUrl = false;
+    }
   }
 }
 
