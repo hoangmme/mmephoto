@@ -1,5 +1,5 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=148';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=148';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=149';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=149';
 
 export const UIMixin = {
   _initLogin() {
@@ -450,6 +450,7 @@ export const UIMixin = {
     const btnStepNext = document.getElementById('btnStepNext');
     const stepFooterInfo = document.getElementById('stepFooterInfo');
     const stepFooter = document.getElementById('stepFooter');
+    const panelLeft = document.getElementById('panelLeft');
 
     if (this.activeRoom && this.rooms[this.activeRoom]) {
       const roomD = this.rooms[this.activeRoom];
@@ -467,6 +468,7 @@ export const UIMixin = {
       if (qrOverlay) qrOverlay.style.display = 'none';
       if (lockOverlay) lockOverlay.style.display = 'none';
       if (mainContainer) mainContainer.className = 'pl-main pl-step-mode-1';
+      if (panelLeft) panelLeft.style.display = 'none';
       if (instructionText) instructionText.textContent = isStaffMode
         ? '👉 Chào Staff! Chưa có phiên chụp nào trong phòng này. Vui lòng bấm "Hàng Chờ" hoặc mở phòng mới.'
         : 'Chưa có phiên chụp nào. Vui lòng chụp ảnh hoặc chạm để chọn sẵn Khung in (Frame) yêu thích trong khi chờ.';
@@ -484,13 +486,12 @@ export const UIMixin = {
     // Update main mode class
     if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
 
-    // Explicitly control panelLeft visibility (CSS can be overridden by SSE race)
-    const panelLeft = document.getElementById('panelLeft');
+    // Explicitly control panelLeft visibility based on step
     if (panelLeft) {
       if (step === 1) {
         panelLeft.style.display = 'none';
       } else {
-        panelLeft.style.removeProperty('display'); // let CSS take over
+        panelLeft.style.removeProperty('display');
       }
     }
 
@@ -579,17 +580,18 @@ export const UIMixin = {
       }
     }
 
+    // Control swiperArea / mainSwiper / canvasContainer visibility (MUST always run)
+    const swiperArea = document.getElementById('mainSwiperArea');
+    if (swiperArea) swiperArea.style.display = (step === 1) ? 'flex' : 'none';
+    
+    const mainSwiper = document.getElementById('mainSwiper');
+    if (mainSwiper) mainSwiper.style.display = (step === 1) ? 'flex' : 'none';
+    
+    const canvasContainer = document.getElementById('canvasContainer');
+    if (canvasContainer) canvasContainer.style.display = (step > 1) ? 'flex' : 'none';
+
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
-
-      const swiperArea = document.getElementById('mainSwiperArea');
-      if (swiperArea) swiperArea.style.display = (step === 1) ? 'flex' : 'none';
-      
-      const mainSwiper = document.getElementById('mainSwiper');
-      if (mainSwiper) mainSwiper.style.display = (step === 1) ? 'flex' : 'none';
-      
-      const canvasContainer = document.getElementById('canvasContainer');
-      if (canvasContainer) canvasContainer.style.display = (step > 1) ? 'flex' : 'none';
 
       if (step === 1) {
         instructionText.textContent = isWaitingForPhotos
