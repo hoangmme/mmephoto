@@ -3,29 +3,214 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MME Color Lab — Redirecting...</title>
-  <script>
-    (function () {
-      var params = new URLSearchParams(window.location.search);
-      var u = (params.get('user') || params.get('role') || params.get('mode') || '').toLowerCase();
-      var isStaff = (u === 'staff' || u === 'admin' || params.has('staff'));
-
-      // Preserve all other query params (batch, etc.) when redirecting
-      var targetPage = isStaff ? 'staff.html' : 'user.html';
-      var newParams = new URLSearchParams(params);
-      // Remove role-detection params since they're no longer needed
-      newParams.delete('user');
-      newParams.delete('role');
-      newParams.delete('mode');
-      newParams.delete('staff');
-
-      var qs = newParams.toString();
-      var target = targetPage + (qs ? '?' + qs : '');
-      window.location.replace(target);
-    })();
-  </script>
+  <title>MME Color Lab — Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="print-layout.css?v=135">
+  <style>
+    body {
+      background: var(--pl-bg);
+      color: var(--pl-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+    }
+    .portal-container {
+      background: var(--pl-bg-panel);
+      padding: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--pl-border);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .portal-logo {
+      height: 60px;
+      margin-bottom: 24px;
+    }
+    .input-field {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--pl-border);
+      background: var(--pl-bg-section);
+      color: var(--pl-text);
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    .btn-portal {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .btn-portal:active {
+      transform: scale(0.98);
+    }
+    .btn-primary {
+      background: var(--pl-accent);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: var(--pl-bg-section);
+      color: var(--pl-text);
+      border: 1px solid var(--pl-border);
+    }
+    .btn-secondary:hover {
+      background: #2a2a2a;
+    }
+    #errorMsg {
+      color: #ef4444;
+      margin-top: 10px;
+      font-size: 14px;
+      display: none;
+    }
+    #loginSection, #actionSection {
+      display: none;
+    }
+    .branch-badge {
+      display: inline-block;
+      background: rgba(217, 119, 6, 0.2);
+      color: #d97706;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+  </style>
 </head>
 <body>
-  <p style="font-family: sans-serif; text-align: center; margin-top: 40px; color: #888;">Đang chuyển hướng...</p>
+
+  <div class="portal-container">
+    <img class="portal-logo" src="https://llphotobooth.vn/uploads/images/logo.webp" alt="LL Photobooth">
+    
+    <!-- LOGIN SECTION -->
+    <div id="loginSection">
+      <h2 style="margin-top: 0; margin-bottom: 24px;">Đăng Nhập</h2>
+      <input type="text" id="loginBranch" class="input-field" placeholder="Mã chi nhánh (VD: CN01)">
+      <input type="password" id="loginPassword" class="input-field" placeholder="Mật khẩu">
+      <button id="btnLogin" class="btn-portal btn-primary">Đăng Nhập</button>
+      <div id="errorMsg">Thông tin đăng nhập không chính xác.</div>
+    </div>
+
+    <!-- ACTION SECTION (After Login) -->
+    <div id="actionSection">
+      <h2 style="margin-top: 0; margin-bottom: 12px;">Đã Đăng Nhập</h2>
+      <div class="branch-badge" id="lblBranch">Chi nhánh: CN01</div>
+
+      <button id="btnGoUser" class="btn-portal btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+        Màn hình cho Khách (iPad)
+      </button>
+
+      <button id="btnGoStaff" class="btn-portal btn-secondary" style="margin-top: 16px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        Màn hình Nhân Viên (Staff)
+      </button>
+
+      <div style="margin-top: 32px; border-top: 1px solid var(--pl-border); padding-top: 16px;">
+        <button id="btnLogout" class="btn-portal" style="background: transparent; color: var(--pl-text-muted); padding: 8px;">Đăng Xuất</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginSection = document.getElementById('loginSection');
+      const actionSection = document.getElementById('actionSection');
+      const lblBranch = document.getElementById('lblBranch');
+      
+      const loginBranch = document.getElementById('loginBranch');
+      const loginPassword = document.getElementById('loginPassword');
+      const btnLogin = document.getElementById('btnLogin');
+      const errorMsg = document.getElementById('errorMsg');
+
+      const btnGoUser = document.getElementById('btnGoUser');
+      const btnGoStaff = document.getElementById('btnGoStaff');
+      const btnLogout = document.getElementById('btnLogout');
+
+      function checkAuth() {
+        const branchId = localStorage.getItem('branchId');
+        if (branchId) {
+          lblBranch.textContent = `Chi nhánh: ${branchId}`;
+          loginSection.style.display = 'none';
+          actionSection.style.display = 'block';
+        } else {
+          loginSection.style.display = 'block';
+          actionSection.style.display = 'none';
+        }
+      }
+
+      async function doLogin() {
+        const branch = loginBranch.value.trim();
+        const pass = loginPassword.value.trim();
+        if (!branch || !pass) return;
+
+        errorMsg.style.display = 'none';
+        btnLogin.disabled = true;
+        btnLogin.textContent = 'Đang xử lý...';
+
+        try {
+          const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ branchId: branch, password: pass })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.isAdmin) {
+              localStorage.setItem('adminAuth', data.auth);
+              window.location.href = '/admin.html?auth=' + encodeURIComponent(data.auth);
+              return;
+            }
+            localStorage.setItem('branchId', data.branchId || branch);
+            localStorage.setItem('branchPass', pass);
+            checkAuth();
+          } else {
+            errorMsg.style.display = 'block';
+          }
+        } catch (err) {
+          console.error(err);
+          errorMsg.style.display = 'block';
+        } finally {
+          btnLogin.disabled = false;
+          btnLogin.textContent = 'Đăng Nhập';
+        }
+      }
+
+      btnLogin.addEventListener('click', doLogin);
+      loginBranch.addEventListener('keyup', (e) => { if (e.key === 'Enter') doLogin(); });
+      loginPassword.addEventListener('keyup', (e) => { if (e.key === 'Enter') doLogin(); });
+
+      btnGoUser.addEventListener('click', () => { window.location.href = 'user.html'; });
+      btnGoStaff.addEventListener('click', () => { window.location.href = 'staff.html'; });
+      btnLogout.addEventListener('click', () => {
+        if(confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+          localStorage.removeItem('branchId');
+          localStorage.removeItem('branchPass');
+          checkAuth();
+        }
+      });
+
+      checkAuth();
+    });
+  </script>
 </body>
 </html>

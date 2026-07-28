@@ -4,47 +4,15 @@ export const UIMixin = {
   _initLogin() {
     const params = new URLSearchParams(window.location.search);
     let branchId = params.get('branch') || params.get('branchId') || localStorage.getItem('branchId');
-    const loginOverlay = document.getElementById('loginOverlay');
     const lockOverlay = document.getElementById('lockOverlay');
 
     if (branchId) {
       localStorage.setItem('branchId', branchId);
-      if (loginOverlay) loginOverlay.style.display = 'none';
       this._initSSE(branchId);
     } else {
-      if (loginOverlay) loginOverlay.style.display = 'flex';
+      window.location.replace('index.html');
+      return;
     }
-
-    const handleLoginSubmit = async () => {
-      const branch = document.getElementById('loginBranch').value.trim();
-      const pass = document.getElementById('loginPassword').value.trim();
-
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ branchId: branch, password: pass })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.isAdmin) {
-          localStorage.setItem('adminAuth', data.auth);
-          window.location.href = '/admin.html?auth=' + encodeURIComponent(data.auth);
-          return;
-        }
-        localStorage.setItem('branchId', data.branchId || branch);
-        localStorage.setItem('branchPass', pass);
-        if (loginOverlay) loginOverlay.style.display = 'none';
-        this._initSSE(data.branchId || branch);
-      } else {
-        const err = document.getElementById('loginError');
-        if (err) err.style.display = 'block';
-      }
-    };
-
-    document.getElementById('btnLoginSubmit')?.addEventListener('click', handleLoginSubmit);
-    document.getElementById('loginBranch')?.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
-    document.getElementById('loginPassword')?.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLoginSubmit(); });
 
     document.getElementById('btnUnlock')?.addEventListener('click', () => {
       if (this.activeRoom && this.rooms[this.activeRoom]) {
