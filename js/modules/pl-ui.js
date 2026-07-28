@@ -1,5 +1,5 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=147';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=147';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=148';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=148';
 
 export const UIMixin = {
   _initLogin() {
@@ -284,7 +284,7 @@ export const UIMixin = {
         (paperSize, selectedTemplates) => {
           this.paperSize = paperSize;
           this.selectedTemplates = selectedTemplates;
-          this.currentTemplate = selectedTemplates[0]; // for backward compatibility in some places
+          this.currentTemplate = selectedTemplates[0];
           
           // Re-init canvasesState based on selection
           this.canvasesState = this.selectedTemplates.map(t => ({
@@ -299,11 +299,10 @@ export const UIMixin = {
           }
           this._loadTemplateImages();
           
-          // Auto advance to step 2 if on step 1
+          // Advance to step 2
           const room = this.activeRoom;
           const roomData = room && this.rooms[room];
-          const currentStep = roomData ? (roomData.step || 1) : 1;
-          if (currentStep === 1 && room && roomData) {
+          if (room && roomData) {
             this._setStep(room, 2);
             this._updateUIForRoom();
             this._renderCanvas();
@@ -484,6 +483,16 @@ export const UIMixin = {
 
     // Update main mode class
     if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
+
+    // Explicitly control panelLeft visibility (CSS can be overridden by SSE race)
+    const panelLeft = document.getElementById('panelLeft');
+    if (panelLeft) {
+      if (step === 1) {
+        panelLeft.style.display = 'none';
+      } else {
+        panelLeft.style.removeProperty('display'); // let CSS take over
+      }
+    }
 
     // (Removed dangerous async failsafe here. _applySelectionToSlots is now reliably called in _setStep)
 

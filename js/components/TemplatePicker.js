@@ -17,13 +17,10 @@ export class TemplatePicker {
 
   toggleTemplate(id) {
     if (this.paperSize === 'A4') {
+      // A4: chỉ chọn 1 frame
       this.selectedTemplates = [id];
-      this.render();
-      if (this.onComplete) {
-        try { this.onComplete(this.paperSize, this.selectedTemplates); }
-        catch(e) { console.error('TemplatePicker onComplete error:', e); }
-      }
     } else {
+      // A5: chọn tối đa 2 frame
       const idx = this.selectedTemplates.indexOf(id);
       if (idx > -1) {
         this.selectedTemplates.splice(idx, 1);
@@ -34,7 +31,16 @@ export class TemplatePicker {
           this.selectedTemplates[1] = id;
         }
       }
-      this.render();
+    }
+    this.render();
+  }
+
+  _confirmSelection() {
+    if (!this.onComplete) return;
+    const requiredCount = this.paperSize === 'A4' ? 1 : 2;
+    if (this.selectedTemplates.length === requiredCount) {
+      try { this.onComplete(this.paperSize, this.selectedTemplates); }
+      catch(e) { console.error('TemplatePicker onComplete error:', e); }
     }
   }
 
@@ -47,7 +53,7 @@ export class TemplatePicker {
     wrapper.style.flexDirection = 'column';
     wrapper.style.height = '100%';
     wrapper.style.width = '100%';
-    wrapper.style.padding = '20px';
+    wrapper.style.padding = '16px';
     wrapper.style.boxSizing = 'border-box';
     wrapper.style.alignItems = 'center';
 
@@ -55,15 +61,16 @@ export class TemplatePicker {
     const tabs = document.createElement('div');
     tabs.style.display = 'flex';
     tabs.style.gap = '15px';
-    tabs.style.marginBottom = '25px';
+    tabs.style.marginBottom = '16px';
+    tabs.style.flexShrink = '0';
 
     ['A4', 'A5'].forEach(size => {
       const btn = document.createElement('button');
-      btn.innerText = `Khổ ${size}`;
-      btn.style.padding = '12px 40px';
+      btn.innerText = `Khổ ${size}` + (size === 'A4' ? ' (1 frame)' : ' (2 frame)');
+      btn.style.padding = '10px 30px';
       btn.style.borderRadius = '30px';
       btn.style.fontWeight = 'bold';
-      btn.style.fontSize = '16px';
+      btn.style.fontSize = '14px';
       btn.style.cursor = 'pointer';
       btn.style.border = '2px solid var(--pl-accent)';
       
@@ -80,13 +87,16 @@ export class TemplatePicker {
     });
     wrapper.appendChild(tabs);
 
-    // Grid
+    // Grid (scrollable)
     const grid = document.createElement('div');
     grid.style.display = 'grid';
     grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
-    grid.style.gap = '20px';
+    grid.style.gap = '14px';
     grid.style.width = '100%';
-    grid.style.maxWidth = '800px';
+    grid.style.maxWidth = '700px';
+    grid.style.flex = '1';
+    grid.style.overflowY = 'auto';
+    grid.style.paddingBottom = '8px';
 
     const filteredKeys = Object.keys(this.templates);
 
@@ -97,20 +107,25 @@ export class TemplatePicker {
       const selIndex = this.selectedTemplates.indexOf(k);
 
       item.style.border = isSelected ? '3px solid var(--pl-accent)' : '2px solid var(--pl-border)';
-      item.style.borderRadius = '16px';
-      item.style.padding = '12px';
+      item.style.borderRadius = '12px';
+      item.style.padding = '8px';
       item.style.cursor = 'pointer';
       item.style.background = isSelected ? 'var(--pl-bg)' : 'var(--pl-bg-section)';
       item.style.textAlign = 'center';
       item.style.position = 'relative';
+      item.style.transition = 'transform 0.15s, box-shadow 0.15s';
+      if (isSelected) {
+        item.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        item.style.transform = 'scale(1.02)';
+      }
 
-      // Thumbnail
+      // Thumbnail - reduced height
       const thumb = document.createElement('div');
       thumb.style.width = '100%';
-      thumb.style.aspectRatio = '2/3';
+      thumb.style.aspectRatio = '3/4';
       thumb.style.background = '#e5e7eb';
-      thumb.style.borderRadius = '8px';
-      thumb.style.marginBottom = '12px';
+      thumb.style.borderRadius = '6px';
+      thumb.style.marginBottom = '8px';
       thumb.style.position = 'relative';
       thumb.style.overflow = 'hidden';
       
@@ -119,8 +134,6 @@ export class TemplatePicker {
         const cW = t.canvas_width || 1748;
         const cH = t.canvas_height || 2480;
         t.slots.forEach(s => {
-          // ALL_TEMPLATES uses center-based coords (cx, cy, w, h)
-          // Convert to top-left (x, y) for positioning
           const slotX = (s.cx !== undefined) ? (s.cx - s.w / 2) : (s.x || 0);
           const slotY = (s.cy !== undefined) ? (s.cy - s.h / 2) : (s.y || 0);
           const slotW = s.w || 0;
@@ -159,30 +172,31 @@ export class TemplatePicker {
       }
       item.appendChild(thumb);
 
-      // Badge
-      if (isSelected && this.paperSize === 'A5') {
+      // Selection badge
+      if (isSelected) {
         const badge = document.createElement('div');
-        badge.innerText = selIndex + 1;
+        badge.innerText = this.paperSize === 'A5' ? (selIndex + 1) : '✓';
         badge.style.position = 'absolute';
-        badge.style.top = '-10px';
-        badge.style.right = '-10px';
+        badge.style.top = '-8px';
+        badge.style.right = '-8px';
         badge.style.background = 'var(--pl-accent)';
         badge.style.color = '#fff';
-        badge.style.width = '30px';
-        badge.style.height = '30px';
+        badge.style.width = '28px';
+        badge.style.height = '28px';
         badge.style.borderRadius = '50%';
         badge.style.display = 'flex';
         badge.style.alignItems = 'center';
         badge.style.justifyContent = 'center';
         badge.style.fontWeight = 'bold';
-        badge.style.fontSize = '16px';
-        badge.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+        badge.style.fontSize = '14px';
+        badge.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+        badge.style.zIndex = '3';
         item.appendChild(badge);
       }
 
       const name = document.createElement('div');
       name.innerText = t.name;
-      name.style.fontSize = '14px';
+      name.style.fontSize = '13px';
       name.style.fontWeight = 'bold';
       item.appendChild(name);
 
@@ -192,28 +206,30 @@ export class TemplatePicker {
 
     wrapper.appendChild(grid);
 
-    // Confirm button for A5
-    if (this.paperSize === 'A5') {
-      const btnConfirm = document.createElement('button');
-      btnConfirm.innerText = `Xác nhận (${this.selectedTemplates.length}/2)`;
-      btnConfirm.style.marginTop = '30px';
-      btnConfirm.style.padding = '14px 40px';
-      btnConfirm.style.borderRadius = '8px';
-      btnConfirm.style.fontSize = '16px';
-      btnConfirm.style.fontWeight = 'bold';
-      btnConfirm.style.border = 'none';
-      btnConfirm.style.background = this.selectedTemplates.length === 2 ? 'var(--pl-accent)' : '#ccc';
-      btnConfirm.style.color = '#fff';
-      btnConfirm.style.cursor = this.selectedTemplates.length === 2 ? 'pointer' : 'not-allowed';
-      
-      btnConfirm.onclick = () => {
-        if (this.selectedTemplates.length === 2 && this.onComplete) {
-          this.onComplete(this.paperSize, this.selectedTemplates);
-        }
-      };
-      
-      wrapper.appendChild(btnConfirm);
-    }
+    // Confirm button - for BOTH A4 and A5
+    const requiredCount = this.paperSize === 'A4' ? 1 : 2;
+    const isReady = this.selectedTemplates.length === requiredCount;
+    
+    const btnConfirm = document.createElement('button');
+    btnConfirm.innerText = this.paperSize === 'A4'
+      ? (isReady ? '✅ Xác nhận Frame đã chọn' : 'Chọn 1 Frame để tiếp tục')
+      : `Xác nhận (${this.selectedTemplates.length}/${requiredCount} frame)`;
+    btnConfirm.style.marginTop = '12px';
+    btnConfirm.style.padding = '14px 40px';
+    btnConfirm.style.borderRadius = '8px';
+    btnConfirm.style.fontSize = '16px';
+    btnConfirm.style.fontWeight = 'bold';
+    btnConfirm.style.border = 'none';
+    btnConfirm.style.background = isReady ? 'var(--pl-accent)' : '#ccc';
+    btnConfirm.style.color = '#fff';
+    btnConfirm.style.cursor = isReady ? 'pointer' : 'not-allowed';
+    btnConfirm.style.flexShrink = '0';
+    btnConfirm.style.width = '100%';
+    btnConfirm.style.maxWidth = '400px';
+    
+    btnConfirm.onclick = () => this._confirmSelection();
+    
+    wrapper.appendChild(btnConfirm);
 
     this.container.appendChild(wrapper);
   }
