@@ -127,7 +127,8 @@ _initSSE(branch) {
             // Only update globals if this room is the currently viewed tab
             if (this.activeRoom === room) {
               let templateChanged = false;
-              if (data.currentTemplate !== undefined && this.currentTemplate !== data.currentTemplate) {
+              const isUserStep1 = !isStaffMode && (this.rooms[room].step || 1) === 1;
+              if (data.currentTemplate !== undefined && this.currentTemplate !== data.currentTemplate && !isUserStep1) {
                 this.currentTemplate = data.currentTemplate;
                 templateChanged = true;
               }
