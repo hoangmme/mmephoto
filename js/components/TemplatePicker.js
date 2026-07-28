@@ -18,7 +18,11 @@ export class TemplatePicker {
   toggleTemplate(id) {
     if (this.paperSize === 'A4') {
       this.selectedTemplates = [id];
-      if (this.onComplete) this.onComplete(this.paperSize, this.selectedTemplates);
+      this.render();
+      if (this.onComplete) {
+        try { this.onComplete(this.paperSize, this.selectedTemplates); }
+        catch(e) { console.error('TemplatePicker onComplete error:', e); }
+      }
     } else {
       const idx = this.selectedTemplates.indexOf(id);
       if (idx > -1) {

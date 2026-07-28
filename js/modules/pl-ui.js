@@ -1,5 +1,5 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=144';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=144';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=145';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=145';
 
 export const UIMixin = {
   _initLogin() {
@@ -294,16 +294,19 @@ export const UIMixin = {
           }));
           this.activeCanvasIndex = 0;
           
-          this._updateActiveSession(this.activeRoom);
+          if (this.activeRoom && this.rooms[this.activeRoom]) {
+            this._updateActiveSession(this.activeRoom);
+          }
           this._loadTemplateImages();
           
           // Auto advance to step 2 if on step 1
           const room = this.activeRoom;
           const roomData = room && this.rooms[room];
           const currentStep = roomData ? (roomData.step || 1) : 1;
-          if (currentStep === 1) {
-            const btnNext = document.getElementById('btnStepNext');
-            if (btnNext) btnNext.click();
+          if (currentStep === 1 && room && roomData) {
+            this._setStep(room, 2);
+            this._updateUIForRoom();
+            this._renderCanvas();
           }
         }
       );
