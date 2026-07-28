@@ -1,5 +1,5 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=140';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=140';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=141';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=141';
 
 export const UIMixin = {
   _initLogin() {
@@ -503,6 +503,17 @@ export const UIMixin = {
       });
     }
 
+    // Sync template picker to current global state
+    if (this._templatePicker) {
+      if (this.paperSize) this._templatePicker.paperSize = this.paperSize;
+      if (this.selectedTemplates && this.selectedTemplates.length > 0) {
+        this._templatePicker.selectedTemplates = [...this.selectedTemplates];
+      } else if (this.currentTemplate) {
+        this._templatePicker.selectedTemplates = [this.currentTemplate];
+      }
+      this._templatePicker.render();
+    }
+    
     // Remove the old swiper slide sync logic since we no longer use it for Step 3.
     // Instead, if we have multiple selectedTemplates, we'll render pagination tabs above the canvas.
     this._renderCanvasPagination();
