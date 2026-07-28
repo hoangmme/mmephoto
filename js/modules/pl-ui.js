@@ -1,5 +1,5 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=141';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=141';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=142';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=142';
 
 export const UIMixin = {
   _initLogin() {
@@ -242,8 +242,7 @@ export const UIMixin = {
         if (this.selectedPhotos.has(imgObj.id)) {
           this.selectedPhotos.delete(imgObj.id);
         } else {
-          const template = ALL_TEMPLATES[this.currentTemplate];
-          const maxSlots = template ? template.slots.length : 0;
+          const maxSlots = this._getMaxSlots();
           if (maxSlots > 0 && this.selectedPhotos.size >= maxSlots) {
             alert(`Bạn chỉ được chọn tối đa ${maxSlots} ảnh cho khung này.`);
             return;
@@ -589,8 +588,7 @@ export const UIMixin = {
         btnStepNext.innerHTML = 'Tiếp theo: Chọn Ảnh <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
       } else if (step === 2) {
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
-        const tmpl = ALL_TEMPLATES[this.currentTemplate];
-        const maxSlots = tmpl ? tmpl.slots.length : (this.slots ? this.slots.length : 0);
+        const maxSlots = this._getMaxSlots() || (this.slots ? this.slots.length : 0);
         instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
@@ -666,6 +664,18 @@ export const UIMixin = {
   }
   ,
 
+  _getMaxSlots() {
+    if (this.selectedTemplates && this.selectedTemplates.length > 0) {
+      return this.selectedTemplates.reduce((sum, tId) => {
+        const tmpl = ALL_TEMPLATES[tId];
+        return sum + (tmpl ? tmpl.slots.length : 0);
+      }, 0);
+    }
+    const tmpl = ALL_TEMPLATES[this.currentTemplate];
+    return tmpl ? tmpl.slots.length : 0;
+  }
+  ,
+
   _setStep(room, step, skipSync = false) {
     const roomData = this.rooms[room];
     if (!roomData) return;
@@ -694,9 +704,8 @@ export const UIMixin = {
     this.currentTemplate = id;
 
     // Trim selectedPhotos if changing to a template with fewer slots
-    const targetTmpl = ALL_TEMPLATES[id];
-    if (targetTmpl && targetTmpl.slots && this.selectedPhotos) {
-      const maxAllowed = targetTmpl.slots.length;
+    const maxAllowed = this._getMaxSlots();
+    if (maxAllowed > 0 && this.selectedPhotos) {
       if (this.selectedPhotos.size > maxAllowed) {
         const trimmed = Array.from(this.selectedPhotos).slice(0, maxAllowed);
         this.selectedPhotos = new Set(trimmed);
@@ -886,8 +895,7 @@ export const UIMixin = {
         if (cur === 1) {
           this._setStep(this.activeRoom, 2);
         } else if (cur === 2) {
-          const tmpl = ALL_TEMPLATES[this.currentTemplate];
-          const maxSlots = tmpl ? tmpl.slots.length : 0;
+          const maxSlots = this._getMaxSlots();
           let selectedCount = this.selectedPhotos ? this.selectedPhotos.size : 0;
 
           if (maxSlots > 0 && selectedCount > maxSlots) {
@@ -938,8 +946,7 @@ export const UIMixin = {
           const currentStep = roomData.step || 1;
 
           if (currentStep === 2 && targetStep === 3) {
-            const tmpl = ALL_TEMPLATES[this.currentTemplate];
-            const maxSlots = tmpl ? tmpl.slots.length : 0;
+            const maxSlots = this._getMaxSlots();
             const selectedCount = this.selectedPhotos ? this.selectedPhotos.size : 0;
 
             if (maxSlots > 0 && selectedCount < maxSlots) {
@@ -1149,7 +1156,7 @@ export const UIMixin = {
           let localX = dx * Math.cos(-slotRotRad) - dy * Math.sin(-slotRotRad);
           let localY = dx * Math.sin(-slotRotRad) + dy * Math.cos(-slotRotRad);
 
-          localX -= (slot.panX || 0);
+          localX -= (slot.panY || 0);
           localY -= (slot.panY || 0);
 
           const imgRotRad = ((slot.rotation || 0) * Math.PI) / 180;
@@ -1502,8 +1509,7 @@ export const UIMixin = {
           if (this.selectedPhotos.has(img.id)) {
             this.selectedPhotos.delete(img.id);
           } else {
-            const template = ALL_TEMPLATES[this.currentTemplate];
-            const maxSlots = template ? template.slots.length : 0;
+            const maxSlots = this._getMaxSlots();
             if (maxSlots > 0 && this.selectedPhotos.size >= maxSlots) {
               // Auto-deselect oldest photo to make room for new one (FIFO)
               const firstItem = this.selectedPhotos.values().next().value;
@@ -1560,8 +1566,7 @@ export const UIMixin = {
     if (step === 2) {
       const instructionText = document.getElementById('stepInstructionText');
       if (instructionText) {
-        const tmpl = ALL_TEMPLATES[this.currentTemplate];
-        const maxSlots = tmpl ? tmpl.slots.length : (this.slots ? this.slots.length : 0);
+        const maxSlots = this._getMaxSlots() || (this.slots ? this.slots.length : 0);
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
         instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
       }

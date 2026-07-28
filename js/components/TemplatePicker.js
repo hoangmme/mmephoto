@@ -84,11 +84,7 @@ export class TemplatePicker {
     grid.style.width = '100%';
     grid.style.maxWidth = '800px';
 
-    const filteredKeys = Object.keys(this.templates).filter(k => {
-      const t = this.templates[k];
-      const tSize = t.paper_size || (t.canvas_width > 2000 ? 'A4' : 'A5');
-      return tSize === this.paperSize;
-    });
+    const filteredKeys = Object.keys(this.templates);
 
     filteredKeys.forEach(k => {
       const t = this.templates[k];
@@ -111,14 +107,30 @@ export class TemplatePicker {
       thumb.style.background = '#e5e7eb';
       thumb.style.borderRadius = '8px';
       thumb.style.marginBottom = '12px';
+      thumb.style.position = 'relative';
       thumb.style.overflow = 'hidden';
+      
+      // Default sample image behind the frame
+      const sampleImg = document.createElement('img');
+      sampleImg.src = 'https://images.unsplash.com/photo-1541823709867-1b206113eafd?q=80&w=987&auto=format&fit=crop';
+      sampleImg.style.position = 'absolute';
+      sampleImg.style.top = '0';
+      sampleImg.style.left = '0';
+      sampleImg.style.width = '100%';
+      sampleImg.style.height = '100%';
+      sampleImg.style.objectFit = 'cover';
+      thumb.appendChild(sampleImg);
 
       if (t.frame_url) {
         const img = document.createElement('img');
         img.src = t.frame_url;
+        img.style.position = 'absolute';
+        img.style.top = '0';
+        img.style.left = '0';
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'contain';
+        img.style.zIndex = '2';
         thumb.appendChild(img);
       }
       item.appendChild(thumb);

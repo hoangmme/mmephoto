@@ -178,8 +178,19 @@ _onCanvasClick(e) {
       if (this._updateImageListUI) this._updateImageListUI();
     }
 
-    // Gán trực tiếp danh sách ảnh đã tick (selectedArr) vào từng ô slot theo đúng thứ tự 1..N
+    // Gán trực tiếp danh sách ảnh đã tick (selectedArr) vào từng ô slot
     const selectedArr = Array.from(this.selectedPhotos);
+
+    let offset = 0;
+    if (this.canvasesState && this.activeCanvasIndex > 0) {
+      for (let c = 0; c < this.activeCanvasIndex; c++) {
+        const cTmplId = this.selectedTemplates ? this.selectedTemplates[c] : this.currentTemplate;
+        const cTmpl = ALL_TEMPLATES[cTmplId];
+        if (cTmpl && cTmpl.slots) {
+          offset += cTmpl.slots.length;
+        }
+      }
+    }
 
     if (!this.slots || this.slots.length !== maxSlots) {
       this.slots = Array(maxSlots).fill(null).map(() => ({ imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: 0 }));
@@ -194,11 +205,13 @@ _onCanvasClick(e) {
       }
 
       let targetImgId = null;
-      if (i < selectedArr.length) {
-        targetImgId = selectedArr[i];
+      const globalIndex = offset + i;
+      
+      if (globalIndex < selectedArr.length) {
+        targetImgId = selectedArr[globalIndex];
       } else if (currentImages.length > 0) {
-        // Nếu bộ ảnh chụp ít hơn số ô slot (vd 2 ảnh nhưng khung 6 ô), lặp lại ảnh để lấp đầy 100%
-        const fallbackImg = currentImages[i % currentImages.length];
+        // Nếu bộ ảnh chụp ít hơn tổng số ô slot, lặp lại ảnh
+        const fallbackImg = currentImages[globalIndex % currentImages.length];
         targetImgId = fallbackImg.id;
       }
 
