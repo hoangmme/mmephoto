@@ -42,6 +42,7 @@ export class TemplatePicker {
     wrapper.style.display = 'flex';
     wrapper.style.flexDirection = 'column';
     wrapper.style.height = '100%';
+    wrapper.style.width = '100%';
     wrapper.style.padding = '20px';
     wrapper.style.boxSizing = 'border-box';
     wrapper.style.alignItems = 'center';

@@ -1,5 +1,5 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=139';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=139';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=140';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=140';
 
 export const UIMixin = {
   _initLogin() {
@@ -317,6 +317,7 @@ export const UIMixin = {
     }
     
     this._templatePicker.render();
+    this.mainSwiper.classList.add('loaded'); // Fix opacity: 0 issue
   }
   ,
 
