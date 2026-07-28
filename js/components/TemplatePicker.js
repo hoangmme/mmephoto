@@ -110,16 +110,40 @@ export class TemplatePicker {
       thumb.style.position = 'relative';
       thumb.style.overflow = 'hidden';
       
-      // Default sample image behind the frame
-      const sampleImg = document.createElement('img');
-      sampleImg.src = 'https://images.unsplash.com/photo-1541823709867-1b206113eafd?q=80&w=987&auto=format&fit=crop';
-      sampleImg.style.position = 'absolute';
-      sampleImg.style.top = '0';
-      sampleImg.style.left = '0';
-      sampleImg.style.width = '100%';
-      sampleImg.style.height = '100%';
-      sampleImg.style.objectFit = 'cover';
-      thumb.appendChild(sampleImg);
+      // Render slots with sample images
+      if (t.slots && t.slots.length > 0) {
+        const cW = t.canvas_width || 1748;
+        const cH = t.canvas_height || 2480;
+        t.slots.forEach(s => {
+          const slotDiv = document.createElement('div');
+          slotDiv.style.position = 'absolute';
+          slotDiv.style.left = `${(s.x / cW) * 100}%`;
+          slotDiv.style.top = `${(s.y / cH) * 100}%`;
+          slotDiv.style.width = `${(s.w / cW) * 100}%`;
+          slotDiv.style.height = `${(s.h / cH) * 100}%`;
+          slotDiv.style.overflow = 'hidden';
+          
+          const sampleImg = document.createElement('img');
+          sampleImg.src = 'https://images.unsplash.com/photo-1541823709867-1b206113eafd?q=80&w=987&auto=format&fit=crop';
+          sampleImg.style.width = '100%';
+          sampleImg.style.height = '100%';
+          sampleImg.style.objectFit = 'cover';
+          
+          slotDiv.appendChild(sampleImg);
+          thumb.appendChild(slotDiv);
+        });
+      } else {
+        // Fallback
+        const sampleImg = document.createElement('img');
+        sampleImg.src = 'https://images.unsplash.com/photo-1541823709867-1b206113eafd?q=80&w=987&auto=format&fit=crop';
+        sampleImg.style.position = 'absolute';
+        sampleImg.style.top = '0';
+        sampleImg.style.left = '0';
+        sampleImg.style.width = '100%';
+        sampleImg.style.height = '100%';
+        sampleImg.style.objectFit = 'cover';
+        thumb.appendChild(sampleImg);
+      }
 
       if (t.frame_url) {
         const img = document.createElement('img');
