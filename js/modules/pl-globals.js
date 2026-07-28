@@ -4,9 +4,12 @@ export const PADDING = 40;
 let staffFromUrl = false;
 
 if (typeof window !== 'undefined' && window.location) {
-  // Primary: detect from body/html class (set by user.html / staff.html)
+  const isStaffPath = window.location.pathname.toLowerCase().includes('staff.html');
   const htmlEl = document.documentElement;
-  if (htmlEl && htmlEl.classList.contains('pl-mode-staff')) {
+  
+  if (isStaffPath) {
+    staffFromUrl = true;
+  } else if (htmlEl && htmlEl.classList.contains('pl-mode-staff')) {
     staffFromUrl = true;
   } else if (document.body && document.body.classList.contains('pl-mode-staff')) {
     staffFromUrl = true;
