@@ -1,5 +1,5 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=146';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=146';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=147';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=147';
 
 export const UIMixin = {
   _initLogin() {
