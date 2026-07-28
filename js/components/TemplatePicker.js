@@ -83,7 +83,7 @@ export class TemplatePicker {
     // Grid
     const grid = document.createElement('div');
     grid.style.display = 'grid';
-    grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(180px, 1fr))';
+    grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
     grid.style.gap = '20px';
     grid.style.width = '100%';
     grid.style.maxWidth = '800px';

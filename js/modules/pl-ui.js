@@ -1,5 +1,5 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=145';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=145';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=146';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=146';
 
 export const UIMixin = {
   _initLogin() {
@@ -534,13 +534,11 @@ export const UIMixin = {
       }
     }
 
-    // Control swiper arrow buttons & paper note visibility (Only show in Step 1)
+    // Hide swiper arrow buttons in Step 1 (no longer used with grid layout)
     const btnSwiperPrev = document.getElementById('btnSwiperPrev');
     const btnSwiperNext = document.getElementById('btnSwiperNext');
-    if (btnSwiperPrev && btnSwiperNext) {
-      btnSwiperPrev.style.display = (step === 1) ? 'flex' : 'none';
-      btnSwiperNext.style.display = (step === 1) ? 'flex' : 'none';
-    }
+    if (btnSwiperPrev) btnSwiperPrev.style.display = 'none';
+    if (btnSwiperNext) btnSwiperNext.style.display = 'none';
 
     const paperNote = document.getElementById('paperInfoNote');
     if (paperNote) {
@@ -586,8 +584,8 @@ export const UIMixin = {
 
       if (step === 1) {
         instructionText.textContent = isWaitingForPhotos
-          ? '👉 Bước 1: Chọn mẫu Khung In trong khi đợi tải full ảnh từ máy ảnh...'
-          : '👉 Bước 1: Vuốt sang trái/phải và chạm chọn Mẫu Khung In (Frame) yêu thích của bạn';
+          ? '👉 Bước 1: Chọn Khổ In và Mẫu Khung In trong khi đợi tải full ảnh từ máy ảnh...'
+          : '👉 Bước 1: Chọn Khổ In (A4 hoặc A5) và chạm chọn Mẫu Khung In (Frame) yêu thích của bạn';
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Chọn Ảnh <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
