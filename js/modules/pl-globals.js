@@ -7,7 +7,7 @@ if (typeof window !== 'undefined' && window.location) {
   const isStaffPath = window.location.pathname.toLowerCase().includes('staff.html');
   const htmlEl = document.documentElement;
   
-  if (isStaffPath) {
+  if (window.FORCE_STAFF_MODE || isStaffPath) {
     staffFromUrl = true;
   } else if (htmlEl && htmlEl.classList.contains('pl-mode-staff')) {
     staffFromUrl = true;
