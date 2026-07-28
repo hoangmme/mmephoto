@@ -1,5 +1,5 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=143';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=143';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=144';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=144';
 
 export const UIMixin = {
   _initLogin() {
@@ -298,8 +298,10 @@ export const UIMixin = {
           this._loadTemplateImages();
           
           // Auto advance to step 2 if on step 1
-          const activeSess = this._getActiveSession();
-          if (activeSess && (activeSess.step || 1) === 1) {
+          const room = this.activeRoom;
+          const roomData = room && this.rooms[room];
+          const currentStep = roomData ? (roomData.step || 1) : 1;
+          if (currentStep === 1) {
             const btnNext = document.getElementById('btnStepNext');
             if (btnNext) btnNext.click();
           }

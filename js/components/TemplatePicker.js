@@ -115,12 +115,19 @@ export class TemplatePicker {
         const cW = t.canvas_width || 1748;
         const cH = t.canvas_height || 2480;
         t.slots.forEach(s => {
+          // ALL_TEMPLATES uses center-based coords (cx, cy, w, h)
+          // Convert to top-left (x, y) for positioning
+          const slotX = (s.cx !== undefined) ? (s.cx - s.w / 2) : (s.x || 0);
+          const slotY = (s.cy !== undefined) ? (s.cy - s.h / 2) : (s.y || 0);
+          const slotW = s.w || 0;
+          const slotH = s.h || 0;
+
           const slotDiv = document.createElement('div');
           slotDiv.style.position = 'absolute';
-          slotDiv.style.left = `${(s.x / cW) * 100}%`;
-          slotDiv.style.top = `${(s.y / cH) * 100}%`;
-          slotDiv.style.width = `${(s.w / cW) * 100}%`;
-          slotDiv.style.height = `${(s.h / cH) * 100}%`;
+          slotDiv.style.left = `${(slotX / cW) * 100}%`;
+          slotDiv.style.top = `${(slotY / cH) * 100}%`;
+          slotDiv.style.width = `${(slotW / cW) * 100}%`;
+          slotDiv.style.height = `${(slotH / cH) * 100}%`;
           slotDiv.style.overflow = 'hidden';
           
           const sampleImg = document.createElement('img');
@@ -132,17 +139,6 @@ export class TemplatePicker {
           slotDiv.appendChild(sampleImg);
           thumb.appendChild(slotDiv);
         });
-      } else {
-        // Fallback
-        const sampleImg = document.createElement('img');
-        sampleImg.src = 'https://images.unsplash.com/photo-1541823709867-1b206113eafd?q=80&w=987&auto=format&fit=crop';
-        sampleImg.style.position = 'absolute';
-        sampleImg.style.top = '0';
-        sampleImg.style.left = '0';
-        sampleImg.style.width = '100%';
-        sampleImg.style.height = '100%';
-        sampleImg.style.objectFit = 'cover';
-        thumb.appendChild(sampleImg);
       }
 
       if (t.frame_url) {
