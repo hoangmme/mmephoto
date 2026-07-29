@@ -84,11 +84,14 @@ _onCanvasClick(e) {
 
         // Check hit for Quick Rotate 90° or Reset 0° button if this slot is already active
         if (i === this.selectedSlotIndex) {
-          const btnRotX = s.w / 2 - 40;
-          const btnRotY = -s.h / 2 + 40;
+          const btnRadius = Math.max(60, Math.min(90, Math.round(s.w * 0.12)));
+          const btnOffset = btnRadius + 12;
+
+          const btnRotX = s.w / 2 - btnOffset;
+          const btnRotY = -s.h / 2 + btnOffset;
           const distRot = Math.hypot(localX - btnRotX, localY - btnRotY);
 
-          if (distRot <= 44) {
+          if (distRot <= btnRadius + 20) {
             const sData = this.slots[this.selectedSlotIndex];
             if (sData) {
               sData.rotation = ((sData.rotation || 0) + 90) % 360;
@@ -99,11 +102,11 @@ _onCanvasClick(e) {
             return;
           }
 
-          const btnResetX = -s.w / 2 + 40;
-          const btnResetY = -s.h / 2 + 40;
+          const btnResetX = -s.w / 2 + btnOffset;
+          const btnResetY = -s.h / 2 + btnOffset;
           const distReset = Math.hypot(localX - btnResetX, localY - btnResetY);
 
-          if (distReset <= 44) {
+          if (distReset <= btnRadius + 20) {
             const sData = this.slots[this.selectedSlotIndex];
             if (sData) {
               sData.rotation = 0;
@@ -685,38 +688,41 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
           ctx.stroke();
         });
 
-        // 3. Quick Rotate 90° Button (Ở góc TRÊN BÊN PHẢI của khung ảnh)
-        const btnRotX = slotW / 2 - 40;
-        const btnRotY = -slotH / 2 + 40;
+        // 3. Quick Rotate 90° Button (Ở góc TRÊN BÊN PHẢI ô ảnh - Khổ Canvas 1748x2480)
+        const btnRadius = Math.max(60, Math.min(90, Math.round(slotW * 0.12)));
+        const btnOffset = btnRadius + 12;
+
+        const btnRotX = slotW / 2 - btnOffset;
+        const btnRotY = -slotH / 2 + btnOffset;
         
         ctx.beginPath();
-        ctx.arc(btnRotX, btnRotY, 32, 0, Math.PI * 2);
+        ctx.arc(btnRotX, btnRotY, btnRadius, 0, Math.PI * 2);
         ctx.fillStyle = '#0284c7';
         ctx.fill();
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 8;
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 24px Inter, system-ui, sans-serif';
+        ctx.font = `bold ${Math.round(btnRadius * 0.75)}px Inter, system-ui, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('↻90°', btnRotX, btnRotY);
 
-        // 4. Quick Reset 0° Button (Ở góc TRÊN BÊN TRÁI của khung ảnh)
-        const btnResetX = -slotW / 2 + 40;
-        const btnResetY = -slotH / 2 + 40;
+        // 4. Quick Reset 0° Button (Ở góc TRÊN BÊN TRÁI ô ảnh)
+        const btnResetX = -slotW / 2 + btnOffset;
+        const btnResetY = -slotH / 2 + btnOffset;
         
         ctx.beginPath();
-        ctx.arc(btnResetX, btnResetY, 32, 0, Math.PI * 2);
+        ctx.arc(btnResetX, btnResetY, btnRadius, 0, Math.PI * 2);
         ctx.fillStyle = '#ef4444';
         ctx.fill();
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 8;
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 24px Inter, system-ui, sans-serif';
+        ctx.font = `bold ${Math.round(btnRadius * 0.75)}px Inter, system-ui, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('↺0°', btnResetX, btnResetY);
