@@ -439,12 +439,13 @@ export const UIMixin = {
       }
       this._updateHeaderActions();
     } else {
-      // Steps 1, 2, 3: Working Draft per room (Staff or User)
-      if (this._loadDraftsFromStorage) this._loadDraftsFromStorage();
-      const draftMap = isStaffMode ? this._staffDrafts : this._userDrafts;
-      const currentDraft = (draftMap && this.activeRoom && draftMap[this.activeRoom]) ? draftMap[this.activeRoom] : null;
-
-      if (currentDraft) {
+        // Steps 1, 2, 3: Working Draft per room (Staff or User)
+        if (this._loadDraftsFromStorage) this._loadDraftsFromStorage();
+        const draftMap = isStaffMode ? this._staffDrafts : this._userDrafts;
+        const draftKey = (roomData && roomData.session) ? `${this.activeRoom}_${roomData.session}` : null;
+        const currentDraft = (draftMap && draftKey && draftMap[draftKey]) ? draftMap[draftKey] : null;
+  
+        if (currentDraft) {
         this.selectedTemplates = [...(currentDraft.selectedTemplates || [])];
         this.paperSize = currentDraft.paperSize || this.paperSize;
         this.canvasesState = JSON.parse(JSON.stringify(currentDraft.canvasesState || []));
@@ -678,23 +679,23 @@ export const UIMixin = {
 
   _loadDraftsFromStorage() {
     try {
-      if (!this._staffDrafts) {
-        const staffSaved = localStorage.getItem('mme_staff_drafts');
-        if (staffSaved) this._staffDrafts = JSON.parse(staffSaved);
-      }
-      if (!this._userDrafts) {
-        const userSaved = localStorage.getItem('mme_user_drafts');
-        if (userSaved) this._userDrafts = JSON.parse(userSaved);
-      }
+      const staffVal = localStorage.getItem('mme_staff_drafts');
+      if (staffVal) this._staffDrafts = JSON.parse(staffVal);
+      const userVal = localStorage.getItem('mme_user_drafts');
+      if (userVal) this._userDrafts = JSON.parse(userVal);
     } catch (e) {}
   },
 
   _syncStaffDraftState() {
     if (!this.activeRoom) return;
+    const roomData = this.rooms[this.activeRoom];
+    if (!roomData || !roomData.session) return;
+    const draftKey = `${this.activeRoom}_${roomData.session}`;
+
     this._loadDraftsFromStorage();
     if (isStaffMode) {
       if (!this._staffDrafts) this._staffDrafts = {};
-      this._staffDrafts[this.activeRoom] = {
+      this._staffDrafts[draftKey] = {
         selectedTemplates: [...(this.selectedTemplates || [])],
         paperSize: this.paperSize,
         canvasesState: JSON.parse(JSON.stringify(this.canvasesState || [])),
@@ -702,11 +703,11 @@ export const UIMixin = {
         selectedPhotos: Array.from(this.selectedPhotos || []),
         activeCanvasIndex: (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0
       };
-      this._staffDraftState = this._staffDrafts[this.activeRoom];
+      this._staffDraftState = this._staffDrafts[draftKey];
       try { localStorage.setItem('mme_staff_drafts', JSON.stringify(this._staffDrafts)); } catch (e) {}
     } else {
       if (!this._userDrafts) this._userDrafts = {};
-      this._userDrafts[this.activeRoom] = {
+      this._userDrafts[draftKey] = {
         selectedTemplates: [...(this.selectedTemplates || [])],
         paperSize: this.paperSize,
         canvasesState: JSON.parse(JSON.stringify(this.canvasesState || [])),
@@ -725,11 +726,13 @@ export const UIMixin = {
     if (!roomData.queue || !roomData.session) return;
     const activeSess = roomData.queue.find(s => s.id === roomData.session);
     if (!activeSess) return;
+    
+    const draftKey = `${targetRoom}_${roomData.session}`;
 
     this._loadDraftsFromStorage();
     const currentDraft = isStaffMode
-      ? (this._staffDrafts && this._staffDrafts[targetRoom] ? this._staffDrafts[targetRoom] : null)
-      : (this._userDrafts && this._userDrafts[targetRoom] ? this._userDrafts[targetRoom] : null);
+      ? (this._staffDrafts && this._staffDrafts[draftKey] ? this._staffDrafts[draftKey] : null)
+      : (this._userDrafts && this._userDrafts[draftKey] ? this._userDrafts[draftKey] : null);
 
     if (currentDraft) {
       activeSess.selectedTemplates = [...(currentDraft.selectedTemplates || [])];
@@ -747,10 +750,10 @@ export const UIMixin = {
 
     // Clear committed draft from localStorage
     if (isStaffMode && this._staffDrafts) {
-      delete this._staffDrafts[targetRoom];
+      delete this._staffDrafts[draftKey];
       try { localStorage.setItem('mme_staff_drafts', JSON.stringify(this._staffDrafts)); } catch (e) {}
-    } else if (this._userDrafts) {
-      delete this._userDrafts[targetRoom];
+    } else if (!isStaffMode && this._userDrafts) {
+      delete this._userDrafts[draftKey];
       try { localStorage.setItem('mme_user_drafts', JSON.stringify(this._userDrafts)); } catch (e) {}
     }
 
@@ -1280,6 +1283,7 @@ export const UIMixin = {
           slot.rotation = Math.round(rawRot);
           this._clampPan(this.selectedSlotIndex);
           if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
+          if (this._syncStaffDraftState) this._syncStaffDraftState();
         }
         return;
       }
@@ -1301,6 +1305,7 @@ export const UIMixin = {
             slot.rotation = (slot.rotation + 90) % 360;
             this._clampPan(this.selectedSlotIndex);
             if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
+            if (this._syncStaffDraftState) this._syncStaffDraftState();
           }
         }
       }
@@ -1414,6 +1419,7 @@ export const UIMixin = {
         slot.rotation = Math.round(rawRot);
         this._clampPan(this.selectedSlotIndex);
         if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
+        if (this._syncStaffDraftState) this._syncStaffDraftState();
         e.preventDefault();
         return;
       }
@@ -1437,6 +1443,7 @@ export const UIMixin = {
         slot.zoom = newZoom;
         this._clampPan(this.selectedSlotIndex);
         if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
+        if (this._syncStaffDraftState) this._syncStaffDraftState();
         e.preventDefault();
       }
     }, { passive: false });
@@ -1450,6 +1457,7 @@ export const UIMixin = {
             slot.rotation = (slot.rotation + 90) % 360;
             this._clampPan(this.selectedSlotIndex);
             if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
+            if (this._syncStaffDraftState) this._syncStaffDraftState();
           }
         }
       }
