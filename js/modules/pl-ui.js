@@ -523,9 +523,18 @@ export const UIMixin = {
     // Update main mode class
     if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
 
+    // Force clear slot selection and hide edit controls in Step 4
+    if (step === 4) {
+      this.selectedSlotIndex = -1;
+      if (this.canvasesState) {
+        this.canvasesState.forEach(cs => { if (cs) cs.selectedSlotIndex = -1; });
+      }
+      this._updateHeaderActions();
+    }
+
     // Explicitly control panelLeft visibility based on step
     if (panelLeft) {
-      if (step === 1) {
+      if (step === 1 || step === 4) {
         panelLeft.style.display = 'none';
       } else {
         panelLeft.style.removeProperty('display');
