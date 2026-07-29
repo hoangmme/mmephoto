@@ -962,7 +962,8 @@ export const UIMixin = {
     // Desktop Mouse Drag & Rotate
     canvasEl.addEventListener('mousedown', (e) => {
       setActive();
-      const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+      const roomData = this.activeRoom && this.rooms && this.rooms[this.activeRoom];
+      const step = roomData ? (roomData.step || 3) : (this.currentStep || 3);
       if (step === 1 || step === 4) return;
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];

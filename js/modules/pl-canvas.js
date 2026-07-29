@@ -57,7 +57,8 @@ _loadTemplateImages() {
 ,
 
 _onCanvasClick(e) {
-    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
+    const roomData = this.activeRoom && this.rooms && this.rooms[this.activeRoom];
+    const step = roomData ? (roomData.step || 3) : (this.currentStep || 3);
     if (step === 1 || step === 4) return;
 
     const rect = this.canvas.getBoundingClientRect();
@@ -641,8 +642,10 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
       ctx.drawImage(this.frameImageObj, 0, 0, w, h);
     }
 
+    const currentStep = (this.activeRoom && this.rooms && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 3) : (this.currentStep || 3);
+
     // Draw active slot highlight & Canva controls (layer 4 - Topmost layer)
-    if (isPreview && this.selectedSlotIndex >= 0 && step !== 1 && step !== 4 && !isPreviewSwiper) {
+    if (isPreview && this.selectedSlotIndex >= 0 && currentStep !== 1 && currentStep !== 4 && !isPreviewSwiper) {
       const s = tmpl.slots[this.selectedSlotIndex];
       const slotData = this.slots ? this.slots[this.selectedSlotIndex] : null;
       if (s) {
