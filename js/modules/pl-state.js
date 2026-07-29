@@ -321,20 +321,16 @@ _updateActiveSession(room, onlyBadge = false) {
 
             if (active.selectedTemplates && active.selectedTemplates.length > 0) {
               this.selectedTemplates = active.selectedTemplates;
-            } else if (this.selectedTemplates && this.selectedTemplates.length > 0) {
-              active.selectedTemplates = this.selectedTemplates;
             }
 
             if (active.paperSize) {
               this.paperSize = active.paperSize;
-            } else if (this.paperSize) {
-              active.paperSize = this.paperSize;
             }
 
             if (active.canvasesState && active.canvasesState.length > 0) {
-              this.canvasesState = active.canvasesState;
-            } else if (this.canvasesState && this.canvasesState.length > 0) {
-              active.canvasesState = this.canvasesState;
+              this.canvasesState = JSON.parse(JSON.stringify(active.canvasesState));
+            } else {
+              this.canvasesState = [];
             }
           }
 
@@ -343,7 +339,10 @@ _updateActiveSession(room, onlyBadge = false) {
               // Staff editing: preserve ALL local data, do NOT load from active session
             } else {
               // Staff at Step 4 or first load: load data from active session
-              if (active.slots && active.slots.length > 0) {
+              const activeIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
+              if (this.canvasesState && this.canvasesState[activeIdx]) {
+                this.slots = JSON.parse(JSON.stringify(this.canvasesState[activeIdx].slots || []));
+              } else if (active.slots && active.slots.length > 0) {
                 this.slots = JSON.parse(JSON.stringify(active.slots));
               }
               if (active.selectedImages) {
