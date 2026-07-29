@@ -532,19 +532,41 @@ export const UIMixin = {
     // Update main mode class
     if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
 
-    // Force clear slot selection and hide edit controls in Step 4
-    if (step === 4) {
+    // Explicitly control display of main layout components per step
+    if (step === 1) {
+      if (panelLeft) panelLeft.style.display = 'none';
+      if (mainSwiperArea) mainSwiperArea.style.display = 'flex';
+      if (mainSwiper) mainSwiper.style.display = 'block';
+      if (canvasContainer) canvasContainer.style.display = 'none';
+      if (qrOverlay) qrOverlay.style.display = 'none';
+      if (crossSellBanner) crossSellBanner.style.display = 'none';
+      if (canvasInfo) canvasInfo.style.display = 'block';
+    } else if (step === 2) {
+      if (panelLeft) panelLeft.style.display = 'flex';
+      if (mainSwiperArea) mainSwiperArea.style.display = 'none';
+      if (canvasContainer) canvasContainer.style.display = 'flex';
+      if (qrOverlay) qrOverlay.style.display = 'none';
+      if (crossSellBanner) crossSellBanner.style.display = 'none';
+      if (canvasInfo) canvasInfo.style.display = 'none';
+    } else if (step === 3) {
+      if (panelLeft) panelLeft.style.display = 'flex';
+      if (mainSwiperArea) mainSwiperArea.style.display = 'none';
+      if (canvasContainer) canvasContainer.style.display = 'flex';
+      if (qrOverlay) qrOverlay.style.display = 'none';
+      if (crossSellBanner) crossSellBanner.style.display = 'none';
+      if (canvasInfo) canvasInfo.style.display = 'none';
+    } else if (step === 4) {
       this.selectedSlotIndex = -1;
       if (this.canvasesState) {
         this.canvasesState.forEach(cs => { if (cs) cs.selectedSlotIndex = -1; });
       }
       if (panelLeft) panelLeft.style.display = 'none';
-      if (mainSwiperArea) mainSwiperArea.style.display = 'block';
+      if (mainSwiperArea) mainSwiperArea.style.display = 'flex';
       if (mainSwiper) mainSwiper.style.display = 'none';
+      if (canvasContainer) canvasContainer.style.display = 'flex';
       if (canvasInfo) canvasInfo.style.display = 'none';
-      if (qrOverlay) qrOverlay.style.display = 'block';
-      if (crossSellBanner) crossSellBanner.style.display = 'block';
-      if (canvasContainer) canvasContainer.style.display = 'block';
+      if (qrOverlay) qrOverlay.style.display = 'flex';
+      if (crossSellBanner) crossSellBanner.style.display = 'flex';
 
       // Generate QR Code URL
       const qrImage = document.getElementById('qrImage');
@@ -560,17 +582,6 @@ export const UIMixin = {
       }
 
       this._updateHeaderActions();
-    } else {
-      if (qrOverlay) qrOverlay.style.display = 'none';
-      if (crossSellBanner) crossSellBanner.style.display = 'none';
-      if (canvasInfo) canvasInfo.style.display = 'block';
-      if (panelLeft) {
-        if (step === 1) {
-          panelLeft.style.display = 'none';
-        } else {
-          panelLeft.style.removeProperty('display');
-        }
-      }
     }
 
     // (Removed dangerous async failsafe here. _applySelectionToSlots is now reliably called in _setStep)
