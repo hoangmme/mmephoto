@@ -1159,11 +1159,22 @@ export const UIMixin = {
         });
       }
 
-      // Canvas click → select slot
-      canvasEl.addEventListener('click', (e) => {
+      // Canvas click & touch tap → select slot
+      let slotClickHandled = false;
+      const handleCanvasSlotClick = (e) => {
+        if (slotClickHandled) return;
+        slotClickHandled = true;
+        setTimeout(() => { slotClickHandled = false; }, 250);
         setActive();
         this._onCanvasClick(e);
+      };
+
+      canvasEl.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+          handleCanvasSlotClick(e);
+        }
       });
+      canvasEl.addEventListener('click', handleCanvasSlotClick);
 
     // Desktop Mouse Drag & Rotate
     canvasEl.addEventListener('mousedown', (e) => {

@@ -68,9 +68,20 @@ export class ImageListUI {
         }
       }
 
-      thumb.addEventListener('click', () => {
+      let clickHandled = false;
+      const handleSelect = (e) => {
+        if (clickHandled) return;
+        clickHandled = true;
+        setTimeout(() => { clickHandled = false; }, 300);
         if (this.onThumbnailClick) this.onThumbnailClick(img, thumb);
+      };
+
+      thumb.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+          handleSelect(e);
+        }
       });
+      thumb.addEventListener('click', handleSelect);
 
       this.container.appendChild(thumb);
     });
