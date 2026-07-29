@@ -88,7 +88,7 @@ export const UIMixin = {
     }
 
     this.mainSwiper = document.getElementById('mainSwiper');
-    this.canvas = document.getElementById('printCanvas') || this.canvas;
+    this.canvas = document.getElementById('printCanvas0') || this.canvas;
 
     this._initMainSwiper();
     this._bindEvents();
@@ -620,12 +620,8 @@ export const UIMixin = {
         const mainSwiper = document.getElementById('mainSwiper');
         if (mainSwiper) mainSwiper.style.display = 'none';
 
-        if (this.canvas) {
-          this.canvas.style.display = isStaffMode ? 'block' : 'none';
-          if (isStaffMode) {
-            this.canvas.style.opacity = '1';
-            setTimeout(() => this._renderCanvas(), 500);
-          }
+        if (isStaffMode) {
+          setTimeout(() => this._renderCanvas(), 500);
         }
 
         btnStepPrev.style.display = 'none';

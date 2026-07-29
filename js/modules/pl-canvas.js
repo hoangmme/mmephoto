@@ -406,7 +406,11 @@ _requestRenderCanvas() {
   },
 
 _renderCanvas() {
-    if (!this.selectedTemplates || this.selectedTemplates.length === 0) return;
+    const templatesToRender = (this.selectedTemplates && this.selectedTemplates.length > 0) 
+        ? this.selectedTemplates 
+        : (this.currentTemplate ? [this.currentTemplate] : []);
+        
+    if (templatesToRender.length === 0) return;
     
     // Backup active state to restore later
     const activeIdx = this.activeCanvasIndex || 0;
@@ -415,7 +419,7 @@ _renderCanvas() {
     const backupSlots = this.slots;
     const backupSelectedSlotIndex = this.selectedSlotIndex;
 
-    const maxCanvases = Math.min(this.selectedTemplates.length, 2); // Max 2 canvases for A5
+    const maxCanvases = Math.min(templatesToRender.length, 2); // Max 2 canvases for A5
     
     // Manage visibility of canvas columns based on number of templates
     const col0 = document.getElementById('canvasWrapper0')?.parentElement;
@@ -432,7 +436,7 @@ _renderCanvas() {
 
         // Temporarily set state for rendering this canvas
         this.canvas = c;
-        this.currentTemplate = this.selectedTemplates[i];
+        this.currentTemplate = templatesToRender[i];
         
         if (this.canvasesState && this.canvasesState[i]) {
             this.slots = this.canvasesState[i].slots || [];

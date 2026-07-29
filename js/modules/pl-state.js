@@ -304,6 +304,16 @@ _updateActiveSession(room, onlyBadge = false) {
             active.currentTemplate = this.currentTemplate;
           }
 
+          if (active.selectedTemplates) {
+            this.selectedTemplates = active.selectedTemplates;
+          }
+          if (active.paperSize) {
+            this.paperSize = active.paperSize;
+          }
+          if (active.canvasesState) {
+            this.canvasesState = active.canvasesState;
+          }
+
           if (isStaffMode) {
             if (active.slots && active.slots.length > 0) {
               this.slots = JSON.parse(JSON.stringify(active.slots));
