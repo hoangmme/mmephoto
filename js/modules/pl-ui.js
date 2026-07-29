@@ -477,9 +477,7 @@ export const UIMixin = {
       this._templatePicker.render();
     }
     
-    // Remove the old swiper slide sync logic since we no longer use it for Step 3.
-    // Instead, if we have multiple selectedTemplates, we'll render pagination tabs above the canvas.
-    this._renderCanvasPagination();
+    // Dual-canvas layout handles multi-template rendering automatically
 
 
     // Check if waiting for quiet period (full images uploaded)
