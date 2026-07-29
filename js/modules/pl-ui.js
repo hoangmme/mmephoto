@@ -380,33 +380,34 @@ export const UIMixin = {
     }
 
     const roomData = this.rooms[this.activeRoom];
-    const step = roomData.step || 1;
+    const step = (isStaffMode && this.currentStep) ? this.currentStep : (roomData.step || 1);
     this.images = roomData.images;
     if (this.imageCount) this.imageCount.textContent = `${this.images.length} ảnh`;
     this._renderImageList();
 
-    // Sync Staff Step 4 with active User session data
-    if (isStaffMode && step === 4 && roomData.queue && roomData.session) {
-      const activeSess = roomData.queue.find(s => s.id === roomData.session);
-      if (activeSess) {
-        if (activeSess.selectedTemplates && activeSess.selectedTemplates.length > 0) {
-          this.selectedTemplates = [...activeSess.selectedTemplates];
-          this.currentTemplate = this.selectedTemplates[0];
-        }
-        if (activeSess.paperSize) {
-          this.paperSize = activeSess.paperSize;
-        }
-        if (activeSess.canvasesState && activeSess.canvasesState.length > 0) {
-          this.canvasesState = JSON.parse(JSON.stringify(activeSess.canvasesState));
-        }
-        if (activeSess.slots && activeSess.slots.length > 0) {
-          this.slots = JSON.parse(JSON.stringify(activeSess.slots));
+    // Update main mode class
+    if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
+
+    // Manage Staff Working Draft state
+    if (isStaffMode) {
+      if (step < 4) {
+        if (this._staffDraftState) {
+          // Restore active working draft into current editor memory
+          this.selectedTemplates = [...(this._staffDraftState.selectedTemplates || [])];
+          this.paperSize = this._staffDraftState.paperSize || this.paperSize;
+          this.canvasesState = JSON.parse(JSON.stringify(this._staffDraftState.canvasesState || []));
+          if (this.canvasesState && this.canvasesState[this.activeCanvasIndex || 0]) {
+            this.slots = this.canvasesState[this.activeCanvasIndex || 0].slots || [];
+          }
+          if (this._staffDraftState.selectedPhotos) {
+            this.selectedPhotos = new Set(this._staffDraftState.selectedPhotos);
+          }
+        } else {
+          // Initialize working draft
+          this._syncStaffDraftState();
         }
       }
     }
-
-    // Update main mode class
-    if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
 
     // Force clear slot selection and hide edit controls in Step 4
     if (step === 4) {
@@ -432,17 +433,6 @@ export const UIMixin = {
       }
 
       this._updateHeaderActions();
-    } else if (isStaffMode && this._staffDraftState) {
-      // Returning to Step 1/2/3 -> restore Staff working draft!
-      this.selectedTemplates = [...(this._staffDraftState.selectedTemplates || [])];
-      this.paperSize = this._staffDraftState.paperSize || this.paperSize;
-      this.canvasesState = JSON.parse(JSON.stringify(this._staffDraftState.canvasesState || []));
-      if (this.canvasesState && this.canvasesState[this.activeCanvasIndex || 0]) {
-        this.slots = this.canvasesState[this.activeCanvasIndex || 0].slots || [];
-      }
-      if (this._staffDraftState.selectedPhotos) {
-        this.selectedPhotos = new Set(this._staffDraftState.selectedPhotos);
-      }
     }
 
     // Explicitly control panelLeft visibility based on step
@@ -596,8 +586,18 @@ export const UIMixin = {
     requestAnimationFrame(() => {
       if (this._updatePadding) this._updatePadding();
     });
-  }
-  ,
+  },
+
+  _syncStaffDraftState() {
+    if (!isStaffMode) return;
+    this._staffDraftState = {
+      selectedTemplates: [...(this.selectedTemplates || [])],
+      paperSize: this.paperSize,
+      canvasesState: JSON.parse(JSON.stringify(this.canvasesState || [])),
+      slots: JSON.parse(JSON.stringify(this.slots || [])),
+      selectedPhotos: Array.from(this.selectedPhotos || [])
+    };
+  },
 
   _getMaxSlots() {
     if (this.selectedTemplates && this.selectedTemplates.length > 0) {

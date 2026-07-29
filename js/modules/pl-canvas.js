@@ -119,12 +119,15 @@ _onCanvasClick(e) {
   },
 
   _assignToSlot(slotIndex, imageId, skipSync = false) {
+    const cIdx = this.activeCanvasIndex || 0;
+    if (this.canvasesState && this.canvasesState[cIdx]) {
+      if (!this.canvasesState[cIdx].slots) this.canvasesState[cIdx].slots = [];
+      this.slots = this.canvasesState[cIdx].slots;
+      this.canvasesState[cIdx].selectedSlotIndex = slotIndex;
+    }
     if (!this.slots) this.slots = [];
     this.selectedSlotIndex = slotIndex;
-    if (this.canvasesState && this.canvasesState[this.activeCanvasIndex || 0]) {
-      this.canvasesState[this.activeCanvasIndex || 0].slots = this.slots;
-      this.canvasesState[this.activeCanvasIndex || 0].selectedSlotIndex = slotIndex;
-    }
+
     if (!this.slots[slotIndex]) {
       this.slots[slotIndex] = {
         imageId: null,
@@ -140,6 +143,8 @@ _onCanvasClick(e) {
     this.slots[slotIndex].panY = 0;
     this.slots[slotIndex].rotation = 0;
     this.slots[slotIndex].assignedAt = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+    if (this._syncStaffDraftState) this._syncStaffDraftState();
 
     this._renderCanvas();
     this._renderSlotProps();
