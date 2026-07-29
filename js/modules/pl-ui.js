@@ -422,6 +422,11 @@ export const UIMixin = {
       }
     }
 
+    // Ensure selected photos are auto-filled into canvas slots when viewing Step 3
+    if (step === 3 && this._autoFill) {
+      this._autoFill();
+    }
+
     // Force clear slot selection and hide edit controls in Step 4
     if (step === 4) {
       this.selectedSlotIndex = -1;
@@ -1514,8 +1519,13 @@ export const UIMixin = {
       ? this.currentStep
       : ((this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1);
 
+    let imagesToRender = this.images;
+    if (currentStep === 3 && this.selectedPhotos && this.selectedPhotos.size > 0) {
+      imagesToRender = this.images.filter(img => this.selectedPhotos.has(img.id));
+    }
+
     this._imageListUI.render({
-      images: this.images,
+      images: imagesToRender,
       selectedPhotos: this.selectedPhotos,
       selectedSlotImageId: (this.slots && this.selectedSlotIndex >= 0 && this.slots[this.selectedSlotIndex])
         ? this.slots[this.selectedSlotIndex].imageId
