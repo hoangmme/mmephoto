@@ -615,7 +615,7 @@ export const UIMixin = {
         btnStepNext.innerHTML = 'Tiếp theo: Chọn Ảnh <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
       } else if (step === 2) {
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
-        const maxSlots = this._getMaxSlots() || (this.slots ? this.slots.length : 0);
+        const maxSlots = this._getMaxSlots();
         instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
@@ -922,7 +922,16 @@ export const UIMixin = {
         if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
         const cur = this.rooms[this.activeRoom].step || 1;
         if (cur === 1) {
-          this._setStep(this.activeRoom, 2);
+          if (this._templatePicker) {
+            const confirmed = this._templatePicker._confirmSelection();
+            if (!confirmed) {
+              const req = this.paperSize === 'A4' ? '1' : '2';
+              alert(`Vui lòng chọn đủ ${req} mẫu khung in (Frame) để tiếp tục!`);
+              return;
+            }
+          } else {
+            this._setStep(this.activeRoom, 2);
+          }
         } else if (cur === 2) {
           const maxSlots = this._getMaxSlots();
           let selectedCount = this.selectedPhotos ? this.selectedPhotos.size : 0;
@@ -973,6 +982,17 @@ export const UIMixin = {
 
           const roomData = this.rooms[this.activeRoom];
           const currentStep = roomData.step || 1;
+
+          if (currentStep === 1 && targetStep > 1) {
+            if (this._templatePicker) {
+              const confirmed = this._templatePicker._confirmSelection();
+              if (!confirmed) {
+                const req = this.paperSize === 'A4' ? '1' : '2';
+                alert(`Vui lòng chọn đủ ${req} mẫu khung in (Frame) để tiếp tục!`);
+                return;
+              }
+            }
+          }
 
           if (currentStep === 2 && targetStep === 3) {
             const maxSlots = this._getMaxSlots();
