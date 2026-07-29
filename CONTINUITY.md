@@ -15,8 +15,16 @@ Create a high-performance, real-time sync Photobooth management platform. Provid
   - Synchronizes active session, selected templates, paper size, slot allocations, and current step between User iPad and Staff Panel.
 - **Normalized Coordinate Math in Canvas Rendering**:
   - All slot adjustments (`zoom`, `panX`, `panY`, `rotation`) use relative ratios (0.0 to 1.0) calculated against template bounding boxes, rendering identical results across preview UI and 300DPI print outputs (A5: 1748x2480px).
-- **Staff Step 4 Review Isolation**:
-  - In Step 4, edit controls (`↻ Xoay 90°`, `↺ Reset 0°`, corner handles) are completely hidden for a clean read-only print preview.
+- **Step 4 Shared Component & Draft vs. Committed Session Architecture**:
+  - **Step 4 (Shared Component)**: Displays the committed official session (Read-Only Preview + QR Download + Cross-Sell Products) shared by both User and Staff.
+  - **User Flow**:
+    - Edits in Steps 1, 2, 3 update local User Draft.
+    - User Draft is committed to Official Session ONLY when User clicks "Hoàn Tất (Gửi cho Staff)" to enter Step 4.
+  - **Staff Flow & Per-Room Draft Isolation**:
+    - Edits in Steps 1, 2, 3 in Staff mode update Per-Room Staff Draft (`_staffDrafts[roomKey]`).
+    - Switching room tabs (Room 1 ↔ Room 2 ↔ Room 3) preserves each room's isolated Staff Draft.
+    - Staff clicking Step 4 renders a Read-Only Preview of the committed session WITHOUT committing Staff Draft.
+    - ONLY when Staff explicitly clicks "Gửi cho User" (or "Hoàn tất" in Step 3) is Staff Draft committed to the Official Session Component (Step 4) and broadcast to User.
 
 ---
 

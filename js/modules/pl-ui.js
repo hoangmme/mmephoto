@@ -404,26 +404,58 @@ export const UIMixin = {
       }
     }
 
-    // Restore active room session state (canvasesState, selectedTemplates, paperSize, selectedPhotos)
-    if (roomData && roomData.queue && roomData.session) {
-      const activeSess = roomData.queue.find(s => s.id === roomData.session);
-      if (activeSess) {
-        if (activeSess.selectedTemplates && activeSess.selectedTemplates.length > 0) {
-          this.selectedTemplates = [...activeSess.selectedTemplates];
-          this.currentTemplate = this.selectedTemplates[0];
-        }
-        if (activeSess.paperSize) {
-          this.paperSize = activeSess.paperSize;
-        }
-        if (activeSess.canvasesState && activeSess.canvasesState.length > 0) {
+    // Per-room Working Draft vs. Official Committed Session Restore
+    if (step === 4) {
+      // Step 4: Shared Read-Only Official Session Component
+      this.selectedSlotIndex = -1;
+      if (roomData && roomData.queue && roomData.session) {
+        const activeSess = roomData.queue.find(s => s.id === roomData.session);
+        if (activeSess && activeSess.canvasesState) {
+          this.selectedTemplates = activeSess.selectedTemplates ? [...activeSess.selectedTemplates] : this.selectedTemplates;
+          this.paperSize = activeSess.paperSize || this.paperSize;
           this.canvasesState = JSON.parse(JSON.stringify(activeSess.canvasesState));
+          const s4ActiveIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
+          if (this.canvasesState && this.canvasesState[s4ActiveIdx]) {
+            this.slots = this.canvasesState[s4ActiveIdx].slots || [];
+          }
+          if (activeSess.selectedImages) {
+            this.selectedPhotos = new Set(activeSess.selectedImages);
+          }
         }
-        if (activeSess.selectedImages) {
-          this.selectedPhotos = new Set(activeSess.selectedImages);
-        }
+      }
+      this._updateHeaderActions();
+    } else {
+      // Steps 1, 2, 3: Working Draft per room (Staff or User)
+      const draftMap = isStaffMode ? this._staffDrafts : this._userDrafts;
+      const currentDraft = (draftMap && this.activeRoom && draftMap[this.activeRoom]) ? draftMap[this.activeRoom] : null;
+
+      if (currentDraft) {
+        this.selectedTemplates = [...(currentDraft.selectedTemplates || [])];
+        this.paperSize = currentDraft.paperSize || this.paperSize;
+        this.canvasesState = JSON.parse(JSON.stringify(currentDraft.canvasesState || []));
+        this.selectedPhotos = new Set(currentDraft.selectedPhotos || []);
         const activeIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
         if (this.canvasesState && this.canvasesState[activeIdx]) {
           this.slots = this.canvasesState[activeIdx].slots || [];
+        }
+      } else if (roomData && roomData.queue && roomData.session) {
+        // First load initialization from active session if draft doesn't exist yet
+        const activeSess = roomData.queue.find(s => s.id === roomData.session);
+        if (activeSess) {
+          if (activeSess.selectedTemplates && activeSess.selectedTemplates.length > 0) {
+            this.selectedTemplates = [...activeSess.selectedTemplates];
+            this.currentTemplate = this.selectedTemplates[0];
+          }
+          if (activeSess.paperSize) this.paperSize = activeSess.paperSize;
+          if (activeSess.canvasesState && activeSess.canvasesState.length > 0) {
+            this.canvasesState = JSON.parse(JSON.stringify(activeSess.canvasesState));
+          }
+          if (activeSess.selectedImages) this.selectedPhotos = new Set(activeSess.selectedImages);
+          const activeIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
+          if (this.canvasesState && this.canvasesState[activeIdx]) {
+            this.slots = this.canvasesState[activeIdx].slots || [];
+          }
+          this._syncStaffDraftState();
         }
       }
     }
@@ -606,14 +638,56 @@ export const UIMixin = {
   },
 
   _syncStaffDraftState() {
-    if (!isStaffMode) return;
-    this._staffDraftState = {
-      selectedTemplates: [...(this.selectedTemplates || [])],
-      paperSize: this.paperSize,
-      canvasesState: JSON.parse(JSON.stringify(this.canvasesState || [])),
-      slots: JSON.parse(JSON.stringify(this.slots || [])),
-      selectedPhotos: Array.from(this.selectedPhotos || [])
-    };
+    if (!this.activeRoom) return;
+    if (isStaffMode) {
+      if (!this._staffDrafts) this._staffDrafts = {};
+      this._staffDrafts[this.activeRoom] = {
+        selectedTemplates: [...(this.selectedTemplates || [])],
+        paperSize: this.paperSize,
+        canvasesState: JSON.parse(JSON.stringify(this.canvasesState || [])),
+        slots: JSON.parse(JSON.stringify(this.slots || [])),
+        selectedPhotos: Array.from(this.selectedPhotos || [])
+      };
+      this._staffDraftState = this._staffDrafts[this.activeRoom];
+    } else {
+      if (!this._userDrafts) this._userDrafts = {};
+      this._userDrafts[this.activeRoom] = {
+        selectedTemplates: [...(this.selectedTemplates || [])],
+        paperSize: this.paperSize,
+        canvasesState: JSON.parse(JSON.stringify(this.canvasesState || [])),
+        slots: JSON.parse(JSON.stringify(this.slots || [])),
+        selectedPhotos: Array.from(this.selectedPhotos || [])
+      };
+    }
+  },
+
+  _commitDraftToOfficialSession(roomKey) {
+    const targetRoom = roomKey || this.activeRoom;
+    if (!targetRoom || !this.rooms || !this.rooms[targetRoom]) return;
+    const roomData = this.rooms[targetRoom];
+    if (!roomData.queue || !roomData.session) return;
+    const activeSess = roomData.queue.find(s => s.id === roomData.session);
+    if (!activeSess) return;
+
+    const currentDraft = isStaffMode
+      ? (this._staffDrafts && this._staffDrafts[targetRoom] ? this._staffDrafts[targetRoom] : null)
+      : (this._userDrafts && this._userDrafts[targetRoom] ? this._userDrafts[targetRoom] : null);
+
+    if (currentDraft) {
+      activeSess.selectedTemplates = [...(currentDraft.selectedTemplates || [])];
+      activeSess.paperSize = currentDraft.paperSize;
+      activeSess.canvasesState = JSON.parse(JSON.stringify(currentDraft.canvasesState || []));
+      activeSess.slots = JSON.parse(JSON.stringify(currentDraft.slots || []));
+      activeSess.selectedImages = Array.from(currentDraft.selectedPhotos || []);
+    } else {
+      activeSess.selectedTemplates = [...(this.selectedTemplates || [])];
+      activeSess.paperSize = this.paperSize;
+      activeSess.canvasesState = JSON.parse(JSON.stringify(this.canvasesState || []));
+      activeSess.slots = JSON.parse(JSON.stringify(this.slots || []));
+      activeSess.selectedImages = Array.from(this.selectedPhotos || []);
+    }
+
+    if (this._syncStateDirect) this._syncStateDirect(targetRoom);
   },
 
   _renderStep4BottomPanel() {
@@ -903,20 +977,8 @@ export const UIMixin = {
           const roomData = this.rooms[this.activeRoom];
           if (roomData) {
             roomData.step = 4;
-            this._staffEditingOverride = false; // Staff finishes editing, commit changes to User
-
-            // Commit Staff's newly edited layout into activeSess
-            if (roomData.queue && roomData.session) {
-              const activeSess = roomData.queue.find(s => s.id === roomData.session);
-              if (activeSess) {
-                activeSess.selectedTemplates = [...(this.selectedTemplates || [])];
-                activeSess.paperSize = this.paperSize;
-                activeSess.canvasesState = JSON.parse(JSON.stringify(this.canvasesState || []));
-                activeSess.slots = JSON.parse(JSON.stringify(this.slots || []));
-                activeSess.selectedImages = Array.from(this.selectedPhotos || []);
-                activeSess.step = 4;
-              }
-            }
+            this._staffEditingOverride = false; // Staff finishes editing, commit changes to official session component
+            this._commitDraftToOfficialSession(this.activeRoom);
           }
           if (this._syncStateDirect) {
             await this._syncStateDirect(this.activeRoom);
