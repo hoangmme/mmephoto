@@ -722,10 +722,21 @@ body.pl-mode-staff #roomTabs {
   display: none !important;
 }
 
-.pl-step-mode-3 .pl-slide:not(.active),
-.pl-step-mode-4 .pl-slide:not(.active) {
+.pl-step-mode-3 #mainSwiper .pl-slide:not(.active),
+.pl-step-mode-4 #mainSwiper .pl-slide:not(.active) {
   display: none !important;
 }
+
+#canvasContainer .pl-slide {
+  display: block !important;
+  opacity: 1 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
 .pl-step-mode-3 .pl-swiper-container,
 .pl-step-mode-4 .pl-swiper-container {
   overflow: hidden;
