@@ -865,14 +865,6 @@ export const UIMixin = {
             }
           }
 
-          if (maxSlots > 0 && selectedCount < maxSlots) {
-            if (selectedCount === 0) {
-              alert(`Khung in cần ${maxSlots} ảnh (bạn chưa chọn ảnh nào). Hệ thống sẽ tự động chọn ${maxSlots} ảnh đầu tiên giúp bạn nhé!`);
-            } else {
-              alert(`Khung in cần ${maxSlots} ảnh (bạn mới chọn ${selectedCount} ảnh). Hệ thống sẽ tự động chọn thêm các ảnh còn thiếu giúp bạn nhé!`);
-            }
-          }
-
           if (this._autoFill) this._autoFill();
           this._setStep(this.activeRoom, 3);
         } else if (cur === 3) {
@@ -912,16 +904,6 @@ export const UIMixin = {
           }
 
           if (currentStep === 2 && targetStep === 3) {
-            const maxSlots = this._getMaxSlots();
-            const selectedCount = this.selectedPhotos ? this.selectedPhotos.size : 0;
-
-            if (maxSlots > 0 && selectedCount < maxSlots) {
-              if (selectedCount === 0) {
-                alert(`Khung in cần ${maxSlots} ảnh (bạn chưa chọn ảnh nào). Hệ thống sẽ tự động chọn ${maxSlots} ảnh đầu tiên giúp bạn nhé!`);
-              } else {
-                alert(`Khung in cần ${maxSlots} ảnh (bạn mới chọn ${selectedCount} ảnh). Hệ thống sẽ tự động chọn thêm các ảnh còn thiếu giúp bạn nhé!`);
-              }
-            }
             if (this._autoFill) this._autoFill();
           }
 

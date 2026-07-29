@@ -378,7 +378,8 @@ _renderSlotProps() {
         </div>
       </div>
       <div class="pl-prop-actions">
-        <button class="pl-prop-btn" id="btnRotateSlot">↻ Xoay ảnh</button>
+        <button class="pl-prop-btn" id="btnRotateSlot">↻ Xoay 90°</button>
+        <button class="pl-prop-btn" id="btnResetRotation">↺ Reset Xoay (0°)</button>
         <button class="pl-prop-btn" id="btnResetCrop">↺ Reset Crop</button>
         <button class="pl-prop-btn danger" id="btnRemoveSlot">✕ Xóa ảnh khỏi slot</button>
       </div>
@@ -393,8 +394,22 @@ _renderSlotProps() {
 
     document.getElementById('btnRotateSlot').addEventListener('click', () => {
       const sData = this.slots[this.selectedSlotIndex];
-      sData.rotation = ((sData.rotation || 0) + 90) % 360;
-      this._renderCanvas();
+      if (sData) {
+        sData.rotation = ((sData.rotation || 0) + 90) % 360;
+        this._clampPan(this.selectedSlotIndex);
+        this._renderCanvas();
+        this._renderSlotProps();
+      }
+    });
+
+    document.getElementById('btnResetRotation').addEventListener('click', () => {
+      const sData = this.slots[this.selectedSlotIndex];
+      if (sData) {
+        sData.rotation = 0;
+        this._clampPan(this.selectedSlotIndex);
+        this._renderCanvas();
+        this._renderSlotProps();
+      }
     });
 
     document.getElementById('btnResetCrop').addEventListener('click', () => {
