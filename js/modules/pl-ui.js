@@ -534,11 +534,6 @@ export const UIMixin = {
       qrOverlay.style.display = (step === 4 && !isStaffMode) ? 'flex' : 'none';
     }
 
-    const step4BottomBar = document.getElementById('step4BottomBar');
-    if (step4BottomBar) {
-      step4BottomBar.style.display = (step === 4) ? 'flex' : 'none';
-    }
-
     const startOverlay = document.getElementById('startSessionOverlay');
     if (startOverlay) {
       if (!isStaffMode && roomData && roomData.session && !roomData.sessionStarted && step !== 4) {
@@ -623,52 +618,38 @@ export const UIMixin = {
     const panelLeft = document.getElementById('panelLeft');
     if (!panelLeft) return;
 
-    let step4Bottom = document.getElementById('step4BottomContainer');
-    if (!step4Bottom) {
-      step4Bottom = document.createElement('div');
-      step4Bottom.id = 'step4BottomContainer';
-      step4Bottom.className = 'pl-step4-bottom-container';
-    }
+    // Hide standard panel children
+    const panelHeader = panelLeft.querySelector('.pl-panel-header');
+    const imageList = document.getElementById('imageList');
+    const panelFooter = document.getElementById('panelLeftFooter');
+    if (panelHeader) panelHeader.style.display = 'none';
+    if (imageList) imageList.style.display = 'none';
+    if (panelFooter) panelFooter.style.display = 'none';
 
+    // Show QR and CrossSell in panelLeft
     const qrOverlay = document.getElementById('qrOverlay');
     const crossSellBanner = document.getElementById('crossSellBanner');
-
-    step4Bottom.innerHTML = '';
-    if (qrOverlay) {
-      qrOverlay.style.display = 'flex';
-      step4Bottom.appendChild(qrOverlay);
-    }
-    if (crossSellBanner) {
-      crossSellBanner.style.display = 'flex';
-      step4Bottom.appendChild(crossSellBanner);
-    }
-
-    if (panelLeft.firstElementChild !== step4Bottom) {
-      panelLeft.innerHTML = '';
-      panelLeft.appendChild(step4Bottom);
-    }
+    if (qrOverlay) qrOverlay.style.display = 'flex';
+    if (crossSellBanner) crossSellBanner.style.display = 'flex';
   },
 
   _restoreStandardPanelLeft() {
     const panelLeft = document.getElementById('panelLeft');
     if (!panelLeft) return;
 
-    if (document.getElementById('step4BottomContainer')) {
-      panelLeft.innerHTML = `
-        <div class="pl-panel-header">
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <h3>Thư viện ảnh</h3>
-            <span class="pl-image-count" id="imageCount">0 ảnh</span>
-          </div>
-        </div>
-        <div class="pl-image-list" id="imageList"></div>
-        <div class="pl-panel-footer" id="panelLeftFooter"></div>
-      `;
-      this.imageList = document.getElementById('imageList');
-      this.imageCount = document.getElementById('imageCount');
-      if (this._imageListUI) this._imageListUI = null;
-      this._renderImageList();
-    }
+    // Restore standard panel children
+    const panelHeader = panelLeft.querySelector('.pl-panel-header');
+    const imageList = document.getElementById('imageList');
+    const panelFooter = document.getElementById('panelLeftFooter');
+    if (panelHeader) panelHeader.style.display = '';
+    if (imageList) imageList.style.display = '';
+    if (panelFooter) panelFooter.style.display = '';
+
+    // Hide QR and CrossSell
+    const qrOverlay = document.getElementById('qrOverlay');
+    const crossSellBanner = document.getElementById('crossSellBanner');
+    if (qrOverlay) qrOverlay.style.display = 'none';
+    if (crossSellBanner) crossSellBanner.style.display = 'none';
   },
 
   _getMaxSlots() {

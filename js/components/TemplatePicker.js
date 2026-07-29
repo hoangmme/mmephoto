@@ -124,6 +124,7 @@ export class TemplatePicker {
       item.style.background = isSelected ? 'var(--pl-bg)' : 'var(--pl-bg-section)';
       item.style.textAlign = 'center';
       item.style.position = 'relative';
+      item.style.overflow = 'hidden';
       item.style.transition = 'transform 0.15s, box-shadow 0.15s';
       if (isSelected) {
         item.style.boxShadow = '0 4px 12px rgba(79, 50, 25, 0.2)';
@@ -196,26 +197,26 @@ export class TemplatePicker {
         thumb.appendChild(img);
       }
 
-      // Selection badge - neatly inside top right corner of thumb
+      // Selection badge - inside top right corner of card
       if (isSelected) {
         const badge = document.createElement('div');
         badge.innerText = this.paperSize === 'A5' ? (selIndex + 1) : '✓';
         badge.style.position = 'absolute';
-        badge.style.top = '4px';
-        badge.style.right = '4px';
+        badge.style.top = '12px';
+        badge.style.right = '12px';
         badge.style.background = 'var(--pl-accent, #4f3219)';
         badge.style.color = '#fff';
-        badge.style.width = '20px';
-        badge.style.height = '20px';
+        badge.style.width = '24px';
+        badge.style.height = '24px';
         badge.style.borderRadius = '50%';
         badge.style.display = 'flex';
         badge.style.alignItems = 'center';
         badge.style.justifyContent = 'center';
         badge.style.fontWeight = 'bold';
-        badge.style.fontSize = '12px';
+        badge.style.fontSize = '13px';
         badge.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
         badge.style.zIndex = '10';
-        thumb.appendChild(badge);
+        item.appendChild(badge);
       }
       
       item.appendChild(thumb);
