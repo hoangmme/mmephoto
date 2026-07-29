@@ -500,7 +500,12 @@ export const UIMixin = {
 
     const roomData = this.rooms[this.activeRoom];
     const step = roomData.step || 1;
-    this.images = roomData.images;
+    this.images = roomData.images || [];
+    if (roomData.selectedImageIds && roomData.selectedImageIds.length > 0) {
+      this.selectedPhotos = new Set(roomData.selectedImageIds);
+    } else if (!this.selectedPhotos || this.selectedPhotos.size === 0) {
+      this.selectedPhotos = new Set(this.images.map(img => img.id));
+    }
     if (this.imageCount) this.imageCount.textContent = `${this.images.length} ảnh`;
     this._renderImageList();
 
@@ -1486,14 +1491,11 @@ export const UIMixin = {
     const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
 
-    let imagesToRender = this.images;
-    if (step === 3) {
-      // At Step 3, show ALL selected photos so users can swap them (even if not currently in a slot)
-      if (this.selectedPhotos && this.selectedPhotos.size > 0) {
-        imagesToRender = this.images.filter(img => this.selectedPhotos.has(img.id));
-      } else {
-        // Fallback: if no selection was made, show all images
-        imagesToRender = this.images;
+    let imagesToRender = this.images || [];
+    if (step === 3 && this.selectedPhotos && this.selectedPhotos.size > 0) {
+      const filtered = this.images.filter(img => this.selectedPhotos.has(img.id));
+      if (filtered.length > 0) {
+        imagesToRender = filtered;
       }
     }
 
