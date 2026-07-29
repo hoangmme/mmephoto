@@ -51,6 +51,12 @@ export class TemplatePicker {
   }
 
   render() {
+    let scrollPos = 0;
+    const oldGrid = this.container.querySelector('.pl-template-grid');
+    if (oldGrid) {
+      scrollPos = oldGrid.scrollTop;
+    }
+
     this.container.innerHTML = '';
     
     const wrapper = document.createElement('div');
@@ -97,6 +103,7 @@ export class TemplatePicker {
 
     // Grid (scrollable)
     const grid = document.createElement('div');
+    grid.className = 'pl-template-grid';
     grid.style.display = 'flex';
     grid.style.flexWrap = 'wrap';
     grid.style.gap = '14px';
@@ -243,5 +250,12 @@ export class TemplatePicker {
 
     wrapper.appendChild(grid);
     this.container.appendChild(wrapper);
+
+    if (scrollPos > 0) {
+      // Restore scroll position after DOM insertion
+      setTimeout(() => {
+        grid.scrollTop = scrollPos;
+      }, 0);
+    }
   }
 }
