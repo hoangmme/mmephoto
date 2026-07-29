@@ -456,7 +456,11 @@ export const UIMixin = {
     }
 
     const mainContainer = document.getElementById('mainContainer') || document.querySelector('.pl-main');
-    const timerEl = document.getElementById('countdownTimer');
+    const mainSwiperArea = document.getElementById('mainSwiperArea');
+    const mainSwiper = this.mainSwiper || document.getElementById('mainSwiper');
+    const canvasContainer = document.getElementById('canvasContainer');
+    const canvasInfo = document.getElementById('canvasInfo');
+    const crossSellBanner = document.getElementById('crossSellBanner');
     const qrOverlay = document.getElementById('qrOverlay');
     const lockOverlay = document.getElementById('lockOverlay');
     const stepBanner = document.getElementById('stepBanner');
