@@ -20,16 +20,15 @@ export class TemplatePicker {
       // A4: chỉ chọn 1 frame
       this.selectedTemplates = [id];
     } else {
-      // A5: chọn tối đa 2 frame
-      if (this.selectedTemplates.length < 2) {
-        this.selectedTemplates.push(id);
+      // A5: chọn tối đa 2 frame (dùng FIFO nếu đã chọn 2 khung)
+      const idx = this.selectedTemplates.indexOf(id);
+      if (idx > -1) {
+        this.selectedTemplates.splice(idx, 1);
       } else {
-        const idx = this.selectedTemplates.indexOf(id);
-        if (idx > -1) {
-          this.selectedTemplates.splice(idx, 1);
-        } else {
-          this.selectedTemplates[1] = id;
+        if (this.selectedTemplates.length >= 2) {
+          this.selectedTemplates.shift();
         }
+        this.selectedTemplates.push(id);
       }
     }
     this.render();

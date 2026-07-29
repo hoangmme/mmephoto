@@ -53,7 +53,7 @@ _initSSE(branch) {
         } else if (data.type === 'new_image') {
         const room = data.room;
         if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false };
-        if (data.imageUrl && data.imageUrl.includes('00_frame.jpg')) return;
+        if (data.imageUrl && data.imageUrl.includes('00_frame')) return;
         
         // Find if session is in queue
         let sessionObj = this.rooms[room].queue.find(s => s.id === data.session);
@@ -364,10 +364,11 @@ _updateActiveSession(room, onlyBadge = false) {
           }
         }
         
-        roomData.images = (active.images || [])
-          .filter(url => !url.includes('00_frame.jpg'))
-          .map(url => {
-          const id = 'img_' + url.replace(/[^a-zA-Z0-9]/g, '_');
+        const uniqueUrls = Array.from(new Set(active.images || []))
+          .filter(url => url && !url.includes('00_frame'));
+        
+        roomData.images = uniqueUrls.map((url, idx) => {
+          const id = 'img_' + idx + '_' + url.replace(/[^a-zA-Z0-9]/g, '_');
           this._preloadImage(id, url).then(() => {
             if (this.activeRoom === room) this._renderCanvas();
           });
