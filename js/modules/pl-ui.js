@@ -415,7 +415,7 @@ export const UIMixin = {
         this.canvasesState.forEach(cs => { if (cs) cs.selectedSlotIndex = -1; });
       }
 
-      // If Staff is viewing Step 4 without having clicked "✅ Hoàn Tất (Gửi cho User)", load committed activeSess state (show ảnh cũ)
+      // If Staff is viewing Step 4 preview, render committed activeSess state for preview
       if (isStaffMode && roomData && roomData.queue && roomData.session) {
         const activeSess = roomData.queue.find(s => s.id === roomData.session);
         if (activeSess && activeSess.canvasesState) {
@@ -432,6 +432,17 @@ export const UIMixin = {
       }
 
       this._updateHeaderActions();
+    } else if (isStaffMode && this._staffDraftState) {
+      // Returning to Step 1/2/3 -> restore Staff working draft!
+      this.selectedTemplates = [...(this._staffDraftState.selectedTemplates || [])];
+      this.paperSize = this._staffDraftState.paperSize || this.paperSize;
+      this.canvasesState = JSON.parse(JSON.stringify(this._staffDraftState.canvasesState || []));
+      if (this.canvasesState && this.canvasesState[this.activeCanvasIndex || 0]) {
+        this.slots = this.canvasesState[this.activeCanvasIndex || 0].slots || [];
+      }
+      if (this._staffDraftState.selectedPhotos) {
+        this.selectedPhotos = new Set(this._staffDraftState.selectedPhotos);
+      }
     }
 
     // Explicitly control panelLeft visibility based on step
@@ -773,7 +784,7 @@ export const UIMixin = {
     if (btnStepNext) {
       btnStepNext.addEventListener('click', async () => {
         if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
-        const cur = this.rooms[this.activeRoom].step || 1;
+        const cur = (isStaffMode && this.currentStep) ? this.currentStep : (this.rooms[this.activeRoom].step || 1);
         if (cur === 1) {
           if (this._templatePicker) {
             const confirmed = this._templatePicker._confirmSelection();
