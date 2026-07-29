@@ -712,46 +712,52 @@ body.pl-mode-staff #roomTabs {
   display: none !important;
 }
 
-.pl-step-mode-1 #mainSwiperArea,
-.pl-step-mode-1 #mainSwiper {
-  display: flex !important;
-}
-
-.pl-step-mode-1 #canvasContainer {
+.pl-step-mode-2 .pl-actions,
+.pl-step-mode-3 .pl-actions,
+.pl-step-mode-4 .pl-actions,
+.pl-step-mode-2 .pl-panel-footer,
+.pl-step-mode-3 .pl-panel-footer,
+.pl-step-mode-4 .pl-panel-footer,
+.pl-step-mode-3 .pl-panel-header {
   display: none !important;
 }
 
-/* ── Step 2: Choose Photo (Left: Gallery Sidebar | Right: Canvas Preview) ── */
-.pl-step-mode-2 #panelLeft {
-  display: flex !important;
-  width: 320px !important;
-  max-width: 320px !important;
-  flex-shrink: 0 !important;
-  height: 100% !important;
+.pl-step-mode-3 #mainSwiper .pl-slide:not(.active),
+.pl-step-mode-4 #mainSwiper .pl-slide:not(.active) {
+  display: none !important;
 }
 
+#canvasContainer .pl-slide {
+  display: block !important;
+  opacity: 1 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.pl-step-mode-3 .pl-swiper-container,
+.pl-step-mode-4 .pl-swiper-container {
+  overflow: hidden;
+  justify-content: center;
+}
+
+.pl-step-mode-2 #panelLeft {
+  display: flex !important;
+  width: 100%;
+  max-width: 100%;
+}
 .pl-step-mode-2 #mainSwiperArea {
   display: none !important;
 }
-
-.pl-step-mode-2 #canvasContainer {
-  display: flex !important;
-  flex: 1 !important;
-  width: 100% !important;
-  min-height: 0 !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
 .pl-step-mode-2 .pl-image-list {
-  display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
-  gap: 10px !important;
-  padding: 12px !important;
-  overflow-y: auto !important;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+  padding: 20px;
 }
 
-/* ── Step 3: Arrange (Top: Canvas Preview | Bottom: Photo Strip) ── */
+/* ── Step 3: Move Photo List to Bottom ── */
 .pl-main.pl-step-mode-3 {
   flex-direction: column !important;
 }
@@ -760,7 +766,8 @@ body.pl-mode-staff #roomTabs {
   display: none !important;
 }
 
-.pl-step-mode-3 #canvasContainer {
+.pl-step-mode-3 #canvasContainer,
+.pl-step-mode-4 #canvasContainer {
   display: flex !important;
   flex: 1 !important;
   width: 100% !important;
@@ -830,16 +837,26 @@ body.pl-mode-staff #roomTabs {
   border-radius: 6px;
 }
 
+/* ── Step 1: Frame Selection (Always visible in Step 1) ── */
+.pl-step-mode-1 #mainSwiperArea,
+.pl-step-mode-1 #mainSwiper {
+  display: flex !important;
+}
 
-/* ── Step 4: Finish Layout (Identical 100% for both User and Staff) ── */
-.pl-step-mode-4 #panelLeft,
-.pl-step-mode-4 #mainSwiper,
-.pl-step-mode-4 #paperInfoNote,
-.pl-step-mode-4 #canvasInfo {
+/* ── Step 4: Finish Layout (Customer View: Products | Staff View: Canvas Preview) ── */
+.pl-step-mode-4:not(.pl-mode-staff) #panelLeft,
+.pl-step-mode-4:not(.pl-mode-staff) #mainSwiper,
+.pl-step-mode-4:not(.pl-mode-staff) #paperInfoNote,
+.pl-step-mode-4:not(.pl-mode-staff) #canvasInfo,
+.pl-mode-user .pl-step-mode-4 #panelLeft,
+.pl-mode-user .pl-step-mode-4 #mainSwiper,
+.pl-mode-user .pl-step-mode-4 #paperInfoNote,
+.pl-mode-user .pl-step-mode-4 #canvasInfo {
   display: none !important;
 }
 
-.pl-step-mode-4 #mainSwiperArea {
+.pl-step-mode-4:not(.pl-mode-staff) #mainSwiperArea,
+.pl-mode-user .pl-step-mode-4 #mainSwiperArea {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -851,7 +868,8 @@ body.pl-mode-staff #roomTabs {
   overflow-y: auto !important;
 }
 
-.pl-step-mode-4 #qrOverlay {
+.pl-step-mode-4:not(.pl-mode-staff) #qrOverlay,
+.pl-mode-user .pl-step-mode-4 #qrOverlay {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -860,7 +878,8 @@ body.pl-mode-staff #roomTabs {
   flex-shrink: 0 !important;
 }
 
-.pl-step-mode-4 #crossSellBanner {
+.pl-step-mode-4:not(.pl-mode-staff) #crossSellBanner,
+.pl-mode-user .pl-step-mode-4 #crossSellBanner {
   display: flex !important;
   flex-direction: column !important;
   flex: 1 !important;
@@ -873,6 +892,32 @@ body.pl-mode-staff #roomTabs {
   border-radius: 16px !important;
   box-sizing: border-box !important;
   box-shadow: 0 4px 20px rgba(0,0,0,0.04) !important;
+}
+
+/* Staff / Admin View - Step 4 */
+.pl-mode-staff #crossSellBanner,
+.pl-mode-staff #qrOverlay,
+.pl-mode-staff .pl-step-mode-4 #crossSellBanner,
+.pl-mode-staff .pl-step-mode-4 #qrOverlay {
+  display: none !important;
+}
+
+.pl-mode-staff .pl-step-mode-4 #panelLeft {
+  display: flex !important;
+  width: 320px !important;
+}
+
+.pl-mode-staff .pl-step-mode-4 #mainSwiperArea {
+  display: none !important;
+}
+
+.pl-mode-staff .pl-step-mode-4 #mainSwiper {
+  display: none !important;
+}
+
+.pl-mode-staff .pl-step-mode-4 .pl-slide {
+  height: min(calc(100vh - 280px), calc((100vw - 380px) * 1.418)) !important;
+  width: auto !important;
 }
 
 .pl-qr-overlay,

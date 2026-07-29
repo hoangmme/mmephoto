@@ -530,18 +530,8 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
        bgImg.onload = () => { ctx.drawImage(bgImg, 0, 0, w, h); };
        bgImg.src = tmpl.background_image;
        if (bgImg.complete && bgImg.naturalWidth > 0) ctx.drawImage(bgImg, 0, 0, w, h);
-    } else if (tmpl.background_image) {
-       if (!this.templateBgCache) this.templateBgCache = {};
-       let bgImg = this.templateBgCache[tmpl.background_image];
-       if (!bgImg) {
-         bgImg = new Image();
-         bgImg.onload = () => { this._renderCanvas(); };
-         bgImg.src = tmpl.background_image;
-         this.templateBgCache[tmpl.background_image] = bgImg;
-       }
-       if (bgImg.complete && bgImg.naturalWidth > 0) {
-         ctx.drawImage(bgImg, 0, 0, w, h);
-       }
+    } else if (this.bgImageObj && !overrideTemplate) {
+       ctx.drawImage(this.bgImageObj, 0, 0, w, h);
     }
 
     // Draw slots (layer 2)

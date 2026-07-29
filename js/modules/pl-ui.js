@@ -456,11 +456,7 @@ export const UIMixin = {
     }
 
     const mainContainer = document.getElementById('mainContainer') || document.querySelector('.pl-main');
-    const mainSwiperArea = document.getElementById('mainSwiperArea');
-    const mainSwiper = this.mainSwiper || document.getElementById('mainSwiper');
-    const canvasContainer = document.getElementById('canvasContainer');
-    const canvasInfo = document.getElementById('canvasInfo');
-    const crossSellBanner = document.getElementById('crossSellBanner');
+    const timerEl = document.getElementById('countdownTimer');
     const qrOverlay = document.getElementById('qrOverlay');
     const lockOverlay = document.getElementById('lockOverlay');
     const stepBanner = document.getElementById('stepBanner');
@@ -500,12 +496,7 @@ export const UIMixin = {
 
     const roomData = this.rooms[this.activeRoom];
     const step = roomData.step || 1;
-    this.images = roomData.images || [];
-    if (roomData.selectedImageIds && roomData.selectedImageIds.length > 0) {
-      this.selectedPhotos = new Set(roomData.selectedImageIds);
-    } else if (!this.selectedPhotos || this.selectedPhotos.size === 0) {
-      this.selectedPhotos = new Set(this.images.map(img => img.id));
-    }
+    this.images = roomData.images;
     if (this.imageCount) this.imageCount.textContent = `${this.images.length} ảnh`;
     this._renderImageList();
 
@@ -532,56 +523,22 @@ export const UIMixin = {
     // Update main mode class
     if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
 
-    // Explicitly control display of main layout components per step
-    if (step === 1) {
-      if (panelLeft) panelLeft.style.display = 'none';
-      if (mainSwiperArea) mainSwiperArea.style.display = 'flex';
-      if (mainSwiper) mainSwiper.style.display = 'block';
-      if (canvasContainer) canvasContainer.style.display = 'none';
-      if (qrOverlay) qrOverlay.style.display = 'none';
-      if (crossSellBanner) crossSellBanner.style.display = 'none';
-      if (canvasInfo) canvasInfo.style.display = 'block';
-    } else if (step === 2) {
-      if (panelLeft) panelLeft.style.display = 'flex';
-      if (mainSwiperArea) mainSwiperArea.style.display = 'none';
-      if (canvasContainer) canvasContainer.style.display = 'flex';
-      if (qrOverlay) qrOverlay.style.display = 'none';
-      if (crossSellBanner) crossSellBanner.style.display = 'none';
-      if (canvasInfo) canvasInfo.style.display = 'none';
-    } else if (step === 3) {
-      if (panelLeft) panelLeft.style.display = 'flex';
-      if (mainSwiperArea) mainSwiperArea.style.display = 'none';
-      if (canvasContainer) canvasContainer.style.display = 'flex';
-      if (qrOverlay) qrOverlay.style.display = 'none';
-      if (crossSellBanner) crossSellBanner.style.display = 'none';
-      if (canvasInfo) canvasInfo.style.display = 'none';
-    } else if (step === 4) {
+    // Force clear slot selection and hide edit controls in Step 4
+    if (step === 4) {
       this.selectedSlotIndex = -1;
       if (this.canvasesState) {
         this.canvasesState.forEach(cs => { if (cs) cs.selectedSlotIndex = -1; });
       }
-      if (panelLeft) panelLeft.style.display = 'none';
-      if (mainSwiperArea) mainSwiperArea.style.display = 'flex';
-      if (mainSwiper) mainSwiper.style.display = 'none';
-      if (canvasContainer) canvasContainer.style.display = 'flex';
-      if (canvasInfo) canvasInfo.style.display = 'none';
-      if (qrOverlay) qrOverlay.style.display = 'flex';
-      if (crossSellBanner) crossSellBanner.style.display = 'flex';
-
-      // Generate QR Code URL
-      const qrImage = document.getElementById('qrImage');
-      if (qrImage && roomData.session) {
-        const qrUrl = `https://photo.llphotobooth.vn/download?session=${roomData.session}`;
-        if (window.QRCode) {
-          window.QRCode.toDataURL(qrUrl, { width: 260, margin: 1 }, (err, url) => {
-            if (!err && url) qrImage.src = url;
-          });
-        } else {
-          qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(qrUrl)}`;
-        }
-      }
-
       this._updateHeaderActions();
+    }
+
+    // Explicitly control panelLeft visibility based on step
+    if (panelLeft) {
+      if (step === 1 || step === 4) {
+        panelLeft.style.display = 'none';
+      } else {
+        panelLeft.style.removeProperty('display');
+      }
     }
 
     // (Removed dangerous async failsafe here. _applySelectionToSlots is now reliably called in _setStep)
@@ -640,16 +597,18 @@ export const UIMixin = {
       paperNote.style.display = (step === 1) ? 'block' : 'none';
     }
 
+    const canvasInfo = document.getElementById('canvasInfo');
     if (canvasInfo) {
       canvasInfo.style.display = (step === 1) ? 'block' : 'none';
     }
 
-    if (crossSellBanner) {
-      crossSellBanner.style.display = (step === 4) ? 'flex' : 'none';
+    const crossSell = document.getElementById('crossSellBanner');
+    if (crossSell) {
+      crossSell.style.display = (step === 4 && !isStaffMode) ? 'flex' : 'none';
     }
 
     if (qrOverlay) {
-      qrOverlay.style.display = (step === 4) ? 'flex' : 'none';
+      qrOverlay.style.display = (step === 4 && !isStaffMode) ? 'flex' : 'none';
     }
 
     const startOverlay = document.getElementById('startSessionOverlay');
@@ -662,6 +621,16 @@ export const UIMixin = {
         startOverlay.style.display = 'none';
       }
     }
+
+    // Control swiperArea / mainSwiper / canvasContainer visibility (MUST always run)
+    const swiperArea = document.getElementById('mainSwiperArea');
+    if (swiperArea) swiperArea.style.display = (step === 1) ? 'flex' : 'none';
+    
+    const mainSwiper = document.getElementById('mainSwiper');
+    if (mainSwiper) mainSwiper.style.display = (step === 1) ? 'flex' : 'none';
+    
+    const canvasContainer = document.getElementById('canvasContainer');
+    if (canvasContainer) canvasContainer.style.display = (step === 3 || (isStaffMode && step === 4)) ? 'flex' : 'none';
 
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
@@ -890,7 +859,8 @@ export const UIMixin = {
     if (btnStepPrev) {
       btnStepPrev.addEventListener('click', () => {
         if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
-        const cur = this.rooms[this.activeRoom].step || this.currentStep || 1;
+        const cur = this.rooms[this.activeRoom].step || 1;
+        if (cur === 4 && !this._state.isStaffMode()) return; // Locked at step 4
         if (cur > 1) {
           this._setStep(this.activeRoom, cur - 1);
         }
@@ -971,8 +941,16 @@ export const UIMixin = {
             if (this._autoFill) this._autoFill();
           }
 
-          if (targetStep >= 1 && targetStep <= 4) {
-            this._setStep(this.activeRoom, targetStep, isStaffMode);
+          if (!isStaffMode) {
+            if (currentStep === 4) return; // User cannot leave step 4
+            if (targetStep === 4) return; // User must use Next button to reach step 4
+            
+            this._setStep(this.activeRoom, targetStep, false);
+          } else {
+            if (targetStep >= 1 && targetStep <= 4) {
+              // Staff clicking step banner items only previews locally for Staff (skipSync = true)
+              this._setStep(this.activeRoom, targetStep, true);
+            }
           }
         });
       });
@@ -1502,11 +1480,14 @@ export const UIMixin = {
     const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
 
-    let imagesToRender = this.images || [];
-    if (step === 3 && this.selectedPhotos && this.selectedPhotos.size > 0) {
-      const filtered = this.images.filter(img => this.selectedPhotos.has(img.id));
-      if (filtered.length > 0) {
-        imagesToRender = filtered;
+    let imagesToRender = this.images;
+    if (step === 3) {
+      // At Step 3, show ALL selected photos so users can swap them (even if not currently in a slot)
+      if (this.selectedPhotos && this.selectedPhotos.size > 0) {
+        imagesToRender = this.images.filter(img => this.selectedPhotos.has(img.id));
+      } else {
+        // Fallback: if no selection was made, show all images
+        imagesToRender = this.images;
       }
     }
 
@@ -1658,9 +1639,9 @@ export const UIMixin = {
   },
 
   _updateHeaderActions() {
-    const roomData = this.rooms && this.rooms[this.activeRoom];
-    const roomStep = roomData ? (roomData.step || 1) : 1;
-    const currentStep = (this.currentStep === 4 || roomStep === 4) ? 4 : (this.currentStep || roomStep || 1);
+    const currentStep = (this.activeRoom && this.rooms && this.rooms[this.activeRoom])
+      ? (this.rooms[this.activeRoom].step || 1)
+      : (this.currentStep || 1);
 
     [0, 1].forEach(cIdx => {
       const actionsEl = document.getElementById('canvasActions' + cIdx);
