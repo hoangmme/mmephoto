@@ -735,17 +735,34 @@ body.pl-mode-staff #roomTabs {
   display: none !important;
 }
 .pl-step-mode-2 .pl-image-list {
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
   padding: 20px;
 }
 
-/* ── Step 3: Move Photo List to Bottom ── */
-.pl-main.pl-step-mode-3 {
+@media (min-width: 820px) {
+  .pl-step-mode-2 .pl-image-list {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* ── Step 3 & 4: Move Photo List to Bottom & Dual Canvas Top ── */
+.pl-main.pl-step-mode-3,
+.pl-main.pl-step-mode-4 {
   flex-direction: column !important;
 }
 
-.pl-step-mode-3 #mainSwiperArea {
+#canvasContainer {
+  margin-top: 12px !important;
+  padding-top: 12px !important;
+}
+
+.pl-multi-canvas-wrapper {
+  margin-top: 4px !important;
+}
+
+.pl-step-mode-3 #mainSwiperArea,
+.pl-step-mode-4 #mainSwiperArea {
   display: none !important;
 }
 
@@ -874,10 +891,62 @@ body.pl-mode-staff #roomTabs {
   box-shadow: 0 4px 20px rgba(0,0,0,0.04) !important;
 }
 
-/* Step 4 Read-Only View (Unified with User View) */
+/* Step 4 Read-Only View (Unified with User View & Dual-Canvas Top) */
+.pl-step-mode-4 #canvasContainer {
+  display: flex !important;
+  flex: 1 !important;
+}
+
 .pl-step-mode-4 .pl-canvas-actions,
 .pl-step-mode-4 [id^="canvasActions"] {
   display: none !important;
+}
+
+.pl-step-mode-4 #panelLeft {
+  display: flex !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  background: var(--pl-bg-section, #faf8f5) !important;
+  border-top: 1px solid var(--pl-border, #e5e7eb) !important;
+}
+
+.pl-step4-bottom-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 10px 16px;
+  box-sizing: border-box;
+}
+
+.pl-step4-bottom-container #qrOverlay {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 190px;
+  flex-shrink: 0;
+  margin: 0 !important;
+  padding: 8px 12px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid var(--pl-border, #e5e7eb);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.pl-step4-bottom-container #crossSellBanner {
+  display: flex !important;
+  flex: 1;
+  flex-direction: column;
+  margin: 0 !important;
+  padding: 8px 12px !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  overflow: hidden;
 }
 
 .pl-qr-overlay,

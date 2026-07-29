@@ -435,12 +435,16 @@ export const UIMixin = {
       this._updateHeaderActions();
     }
 
-    // Explicitly control panelLeft visibility based on step
+    // Control panelLeft visibility and layout based on step
     if (panelLeft) {
-      if (step === 1 || step === 4) {
+      if (step === 1) {
         panelLeft.style.display = 'none';
+      } else if (step === 4) {
+        panelLeft.style.display = 'flex';
+        this._renderStep4BottomPanel();
       } else {
         panelLeft.style.removeProperty('display');
+        this._restoreStandardPanelLeft();
       }
     }
 
@@ -595,6 +599,58 @@ export const UIMixin = {
       slots: JSON.parse(JSON.stringify(this.slots || [])),
       selectedPhotos: Array.from(this.selectedPhotos || [])
     };
+  },
+
+  _renderStep4BottomPanel() {
+    const panelLeft = document.getElementById('panelLeft');
+    if (!panelLeft) return;
+
+    let step4Bottom = document.getElementById('step4BottomContainer');
+    if (!step4Bottom) {
+      step4Bottom = document.createElement('div');
+      step4Bottom.id = 'step4BottomContainer';
+      step4Bottom.className = 'pl-step4-bottom-container';
+    }
+
+    const qrOverlay = document.getElementById('qrOverlay');
+    const crossSellBanner = document.getElementById('crossSellBanner');
+
+    step4Bottom.innerHTML = '';
+    if (qrOverlay) {
+      qrOverlay.style.display = 'flex';
+      step4Bottom.appendChild(qrOverlay);
+    }
+    if (crossSellBanner) {
+      crossSellBanner.style.display = 'flex';
+      step4Bottom.appendChild(crossSellBanner);
+    }
+
+    if (panelLeft.firstElementChild !== step4Bottom) {
+      panelLeft.innerHTML = '';
+      panelLeft.appendChild(step4Bottom);
+    }
+  },
+
+  _restoreStandardPanelLeft() {
+    const panelLeft = document.getElementById('panelLeft');
+    if (!panelLeft) return;
+
+    if (document.getElementById('step4BottomContainer')) {
+      panelLeft.innerHTML = `
+        <div class="pl-panel-header">
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <h3>Thư viện ảnh</h3>
+            <span class="pl-image-count" id="imageCount">0 ảnh</span>
+          </div>
+        </div>
+        <div class="pl-image-list" id="imageList"></div>
+        <div class="pl-panel-footer" id="panelLeftFooter"></div>
+      `;
+      this.imageList = document.getElementById('imageList');
+      this.imageCount = document.getElementById('imageCount');
+      if (this._imageListUI) this._imageListUI = null;
+      this._renderImageList();
+    }
   },
 
   _getMaxSlots() {
