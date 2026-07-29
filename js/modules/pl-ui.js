@@ -248,6 +248,7 @@ export const UIMixin = {
             }
             this._updateActiveSession(this.activeRoom);
           }
+          if (this._syncStaffDraftState) this._syncStaffDraftState();
           this._loadTemplateImages();
           
           // Advance to step 2
@@ -1507,6 +1508,7 @@ export const UIMixin = {
               }
             }
             this._updateImageListUI();
+            if (this._syncStaffDraftState) this._syncStaffDraftState();
             this._syncState(this.activeRoom);
           } else {
             const activeCIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
