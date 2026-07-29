@@ -1108,12 +1108,13 @@ export const UIMixin = {
     }
 
     // Canvas Drag & Canva Rotate Handle support (Mouse & Touch)
-    let isDragging = false, isRotatingSlot = false;
-    let dragStartX, dragStartY, dragSlot;
-    let rotateStartAngle = 0, initialSlotRot = 0, touchRotateStartTime = 0;
-
     const bindCanvasEvents = (canvasEl, cIdx) => {
       if (!canvasEl) return;
+
+      let isDragging = false, isRotatingSlot = false;
+      let dragStartX, dragStartY, dragSlot;
+      let rotateStartAngle = 0, initialSlotRot = 0, touchRotateStartTime = 0;
+
 
       const setActive = () => {
         this.activeCanvasIndex = cIdx;
@@ -1246,8 +1247,8 @@ export const UIMixin = {
         }
 
       isDragging = true;
-      dragStartX = e.offsetX;
-      dragStartY = e.offsetY;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
       dragSlot = this.selectedSlotIndex;
       this.canvas.style.cursor = 'grabbing';
     });
@@ -1285,10 +1286,10 @@ export const UIMixin = {
 
       if (!isDragging) return;
       const scale = this.canvas.width / this.canvas.offsetWidth;
-      const dx = (e.offsetX - dragStartX) * scale;
-      const dy = (e.offsetY - dragStartY) * scale;
-      dragStartX = e.offsetX;
-      dragStartY = e.offsetY;
+      const dx = (e.clientX - dragStartX) * scale;
+      const dy = (e.clientY - dragStartY) * scale;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
       this._panSlot(dragSlot, dx, dy);
     });
 
