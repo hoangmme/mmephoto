@@ -5,15 +5,28 @@
 
 export class ImageListUI {
   constructor(containerId = 'imageList', options = {}) {
-    this.container = document.getElementById(containerId);
-    this.onThumbnailClick = options.onThumbnailClick || null;
+    if (typeof containerId === 'object') {
+      options = containerId;
+      this.container = options.container || document.getElementById('imageList');
+    } else {
+      this.container = document.getElementById(containerId);
+    }
+    this.onThumbnailClick = options.onThumbnailClick || options.onPhotoClick || null;
   }
 
   render(images, options = {}) {
     if (!this.container) return;
+
+    let imgList = images;
+    let opts = options;
+    if (!Array.isArray(images) && images && typeof images === 'object') {
+      imgList = images.images || [];
+      opts = images;
+    }
+
     this.container.innerHTML = '';
 
-    if (!images || images.length === 0) {
+    if (!imgList || imgList.length === 0) {
       this.container.innerHTML = '<div class="pl-loading">Chưa có ảnh nào...</div>';
       return;
     }
@@ -22,11 +35,10 @@ export class ImageListUI {
       step = 1,
       selectedPhotos = new Set(),
       selectedImageId = null,
-      activeSlotImageId = null,
-      usedIds = new Set()
-    } = options;
+      activeSlotImageId = null
+    } = opts;
 
-    images.forEach(img => {
+    imgList.forEach(img => {
       const thumb = document.createElement('div');
       thumb.className = 'pl-thumb';
       thumb.dataset.id = img.id;
@@ -37,7 +49,7 @@ export class ImageListUI {
 
       const label = document.createElement('span');
       label.className = 'pl-thumb-name';
-      label.textContent = img.filename || img.id;
+      label.textContent = img.filename || img.name || img.id;
 
       thumb.appendChild(imgTag);
       thumb.appendChild(label);

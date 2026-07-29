@@ -904,17 +904,15 @@ export const UIMixin = {
       if (!canvasEl) return;
 
       const setActive = () => {
-        if (this.activeCanvasIndex !== cIdx) {
-          this.activeCanvasIndex = cIdx;
-          this.canvas = canvasEl;
-          this.currentTemplate = this.selectedTemplates ? this.selectedTemplates[cIdx] : this.currentTemplate;
-          if (this.canvasesState && this.canvasesState[cIdx]) {
-            this.slots = this.canvasesState[cIdx].slots || [];
-            this.selectedSlotIndex = this.canvasesState[cIdx].selectedSlotIndex || -1;
+        this.activeCanvasIndex = cIdx;
+        this.canvas = canvasEl;
+        this.currentTemplate = (this.selectedTemplates && this.selectedTemplates[cIdx]) ? this.selectedTemplates[cIdx] : this.currentTemplate;
+        if (this.canvasesState && this.canvasesState[cIdx]) {
+          if (!this.canvasesState[cIdx].slots) this.canvasesState[cIdx].slots = [];
+          this.slots = this.canvasesState[cIdx].slots;
+          if (this.canvasesState[cIdx].selectedSlotIndex !== undefined) {
+            this.selectedSlotIndex = this.canvasesState[cIdx].selectedSlotIndex;
           }
-          this._renderCanvas();
-        } else {
-          this.canvas = canvasEl; // ensure `this.canvas` points to the target
         }
       };
 
@@ -1386,135 +1384,99 @@ export const UIMixin = {
       assignedAt: (oldSlots[i] && step > 1) ? oldSlots[i].assignedAt : null
     }));
 
-    // Don't auto-select first slot to avoid accidental overwrites
-    this.selectedSlotIndex = -1;
+    // Don't auto-select first slot to avoid acc  _renderImageList() {
+    if (!this._imageListUI) {
+      this._imageListUI = new ImageListUI({
+        container: this.imageList,
+        onPhotoClick: (img) => {
+          const currentStep = (isStaffMode && this.currentStep)
+            ? this.currentStep
+            : ((this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1);
+          if (currentStep === 4 && !isStaffMode) return;
 
-    // Auto-fill new slots only if we are in Step 3 or 4 (user expects photos to stay)
-    const hasEmptySlots = this.slots.some(s => !s.imageId);
-    if (step >= 3 && hasEmptySlots) {
-      setTimeout(() => {
-        this._autoFill();
-        this._renderCanvas();
-      }, 50);
-    }
-  }
-
-  // ── Render Image List ──
-  ,
-
-  _renderCanvasPagination() {
-    // Disabled in favor of dual-canvas layout
-  },
-
-  _renderImageList() {
-    this.imageList.innerHTML = '';
-    const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
-    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
-
-    let imagesToRender = this.images;
-    if (step === 3) {
-      // At Step 3, show ALL selected photos so users can swap them (even if not currently in a slot)
-      if (this.selectedPhotos && this.selectedPhotos.size > 0) {
-        imagesToRender = this.images.filter(img => this.selectedPhotos.has(img.id));
-      } else {
-        // Fallback: if no selection was made, show all images
-        imagesToRender = this.images;
-      }
-    }
-
-    imagesToRender.forEach((img, idx) => {
-      const thumb = document.createElement('div');
-      thumb.className = 'pl-thumb';
-      thumb.dataset.id = img.id;
-
-      const srcUrl = img.objectUrl || img.url;
-      const imgName = img.name || img.id;
-
-      const zoomBtnHtml = (step === 3 || step === 4) ? '' : `
-        <button class="pl-thumb-zoom-btn" title="Xem phóng to ảnh">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
-        </button>
-      `;
-
-      thumb.innerHTML = `
-        <img src="${srcUrl}" alt="${imgName}">
-        ${zoomBtnHtml}
-        <div class="pl-thumb-info">${imgName}</div>
-      `;
-
-      const zoomBtn = thumb.querySelector('.pl-thumb-zoom-btn');
-      if (zoomBtn) {
-        zoomBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          this._openLightbox(idx, imagesToRender);
-        });
-      }
-
-      thumb.addEventListener('click', () => {
-        const currentStep = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
-        if (currentStep === 4 && !this._state.isStaffMode()) return;
-
-        if (currentStep === 2) {
-          if (this.selectedPhotos.has(img.id)) {
-            this.selectedPhotos.delete(img.id);
-          } else {
-            const maxSlots = this._getMaxSlots();
-            if (maxSlots > 0 && this.selectedPhotos.size >= maxSlots) {
-              // Auto-deselect oldest photo to make room for new one (FIFO)
-              const firstItem = this.selectedPhotos.values().next().value;
-              if (firstItem) {
-                this.selectedPhotos.delete(firstItem);
+          if (currentStep === 2) {
+            if (this.selectedPhotos.has(img.id)) {
+              this.selectedPhotos.delete(img.id);
+            } else {
+              const maxSlots = this._getMaxSlots();
+              if (maxSlots > 0 && this.selectedPhotos.size >= maxSlots) {
+                const firstItem = this.selectedPhotos.values().next().value;
+                if (firstItem) this.selectedPhotos.delete(firstItem);
+              }
+              this.selectedPhotos.add(img.id);
+            }
+            if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].queue) {
+              const activeSess = this.rooms[this.activeRoom].queue.find(s => s.id === this.rooms[this.activeRoom].session);
+              if (activeSess) {
+                activeSess.selectedImages = Array.from(this.selectedPhotos);
               }
             }
-            this.selectedPhotos.add(img.id);
-          }
-          if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].queue) {
-            const activeSess = this.rooms[this.activeRoom].queue.find(s => s.id === this.rooms[this.activeRoom].session);
-            if (activeSess) {
-              activeSess.selectedImages = Array.from(this.selectedPhotos);
-            }
-          }
-          this._updateImageListUI();
-          this._syncState(this.activeRoom);
-        } else {
-          this.selectedImageId = img.id;
-          if (this.selectedSlotIndex >= 0) {
-            // A slot IS selected on canvas -> fill photo into selected slot!
-            this._assignToSlot(this.selectedSlotIndex, img.id);
-            this.selectedImageId = null;
+            this._updateImageListUI();
+            this._syncState(this.activeRoom);
           } else {
-            // No slot selected -> check if photo is already in a slot
-            let foundSlotIdx = -1;
-            let foundCanvasIdx = this.activeCanvasIndex || 0;
+            const activeCIdx = this.activeCanvasIndex || 0;
+            const targetSlot = (this.canvasesState && this.canvasesState[activeCIdx])
+              ? this.canvasesState[activeCIdx].selectedSlotIndex
+              : this.selectedSlotIndex;
 
-            if (this.canvasesState) {
-              this.canvasesState.forEach((cState, cIdx) => {
-                if (cState.slots) {
-                  const idxInState = cState.slots.findIndex(s => s && s.imageId === img.id);
-                  if (idxInState >= 0 && foundSlotIdx < 0) {
-                    foundSlotIdx = idxInState;
-                    foundCanvasIdx = cIdx;
+            if (targetSlot >= 0) {
+              // Slot IS selected on active canvas -> assign photo into that slot!
+              this._assignToSlot(targetSlot, img.id);
+            } else {
+              // No slot selected -> check if photo is already in a slot
+              let foundSlotIdx = -1;
+              let foundCanvasIdx = activeCIdx;
+              if (this.canvasesState) {
+                this.canvasesState.forEach((cState, cIdx) => {
+                  if (cState.slots) {
+                    const idxInState = cState.slots.findIndex(s => s && s.imageId === img.id);
+                    if (idxInState >= 0 && foundSlotIdx < 0) {
+                      foundSlotIdx = idxInState;
+                      foundCanvasIdx = cIdx;
+                    }
                   }
-                }
-              });
-            }
-
-            if (foundSlotIdx >= 0) {
-              this.activeCanvasIndex = foundCanvasIdx;
-              this.canvas = document.getElementById('printCanvas' + foundCanvasIdx) || this.canvas;
-              this.selectedSlotIndex = foundSlotIdx;
-              if (this.canvasesState && this.canvasesState[foundCanvasIdx]) {
-                this.canvasesState[foundCanvasIdx].selectedSlotIndex = foundSlotIdx;
-                this.slots = this.canvasesState[foundCanvasIdx].slots;
+                });
               }
-              this.selectedImageId = null;
-              this._renderCanvas();
-              this._renderSlotProps();
-            } else if (this.slots) {
-              let idx = this.slots.findIndex(s => !s || !s.imageId);
-              if (idx < 0) idx = 0;
-              this._assignToSlot(idx, img.id);
-              this.selectedImageId = null;
+              if (foundSlotIdx >= 0) {
+                this.activeCanvasIndex = foundCanvasIdx;
+                this.canvas = document.getElementById('printCanvas' + foundCanvasIdx) || this.canvas;
+                this.selectedSlotIndex = foundSlotIdx;
+                if (this.canvasesState && this.canvasesState[foundCanvasIdx]) {
+                  this.canvasesState[foundCanvasIdx].selectedSlotIndex = foundSlotIdx;
+                  this.slots = this.canvasesState[foundCanvasIdx].slots;
+                }
+                this._renderCanvas();
+                this._renderSlotProps();
+              } else {
+                // Find first empty slot on active canvas or default to 0
+                let idx = this.slots ? this.slots.findIndex(s => !s || !s.imageId) : 0;
+                if (idx < 0) idx = 0;
+                this._assignToSlot(idx, img.id);
+              }
+            }
+            this._updateImageListUI();
+          }
+        },
+        onZoomClick: (idx, imagesToRender) => {
+          this._openLightbox(idx, imagesToRender);
+        }
+      });
+    }
+
+    const currentStep = (isStaffMode && this.currentStep)
+      ? this.currentStep
+      : ((this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1);
+
+    this._imageListUI.render({
+      images: this.images,
+      selectedPhotos: this.selectedPhotos,
+      selectedSlotImageId: (this.slots && this.selectedSlotIndex >= 0 && this.slots[this.selectedSlotIndex])
+        ? this.slots[this.selectedSlotIndex].imageId
+        : null,
+      selectedImageId: this.selectedImageId,
+      slots: this.slots,
+      step: currentStep
+    });
             }
           }
           this._updateImageListUI();
