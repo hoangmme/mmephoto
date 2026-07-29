@@ -733,9 +733,8 @@ export const UIMixin = {
     }
   },
 
-
   // ── Event Bindings ──
-  ,
+
 
   _bindEvents() {
     const btnLogout = document.getElementById('btnLogout');
