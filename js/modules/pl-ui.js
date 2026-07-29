@@ -293,6 +293,8 @@ export const UIMixin = {
             selectedSlotIndex: -1
           }));
           this.activeCanvasIndex = 0;
+          this.slots = [];
+          this.selectedPhotos.clear();
           
           if (this.activeRoom && this.rooms[this.activeRoom]) {
             this._updateActiveSession(this.activeRoom);
@@ -662,8 +664,8 @@ export const UIMixin = {
     
     // Automatically apply selection to frame when entering step 3 by the user
     if (step === 3 && !isStaffMode) {
-      if (this._applySelectionToSlots) {
-        this._applySelectionToSlots();
+      if (this._autoFill) {
+        this._autoFill();
       }
     }
 

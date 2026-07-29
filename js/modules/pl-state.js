@@ -293,25 +293,27 @@ _updateActiveSession(room, onlyBadge = false) {
       
       if (!onlyBadge && active) {
         if (this.activeRoom === room) {
-          if (!isStaffMode && (roomData.step || 1) === 1 && this.currentTemplate && ALL_TEMPLATES[this.currentTemplate]) {
-            // Màn Khách ở Bước 1: Giữ nguyên khung Khách đang vuốt chọn, không bị SSE đè ngược
-          } else if (active.currentTemplate && ALL_TEMPLATES[active.currentTemplate]) {
-            this.currentTemplate = active.currentTemplate;
-          } else if (this.currentTemplate && ALL_TEMPLATES[this.currentTemplate]) {
-            active.currentTemplate = this.currentTemplate;
+          if (!isStaffMode && (roomData.step || 1) === 1) {
+            // Màn Khách ở Bước 1: Giữ nguyên khung Khách đang chọn, không bị SSE đè ngược
           } else {
-            this.currentTemplate = Object.keys(ALL_TEMPLATES)[0];
-            active.currentTemplate = this.currentTemplate;
-          }
+            if (active.currentTemplate && ALL_TEMPLATES[active.currentTemplate]) {
+              this.currentTemplate = active.currentTemplate;
+            } else if (this.currentTemplate && ALL_TEMPLATES[this.currentTemplate]) {
+              active.currentTemplate = this.currentTemplate;
+            } else {
+              this.currentTemplate = Object.keys(ALL_TEMPLATES)[0];
+              active.currentTemplate = this.currentTemplate;
+            }
 
-          if (active.selectedTemplates) {
-            this.selectedTemplates = active.selectedTemplates;
-          }
-          if (active.paperSize) {
-            this.paperSize = active.paperSize;
-          }
-          if (active.canvasesState) {
-            this.canvasesState = active.canvasesState;
+            if (active.selectedTemplates) {
+              this.selectedTemplates = active.selectedTemplates;
+            }
+            if (active.paperSize) {
+              this.paperSize = active.paperSize;
+            }
+            if (active.canvasesState) {
+              this.canvasesState = active.canvasesState;
+            }
           }
 
           if (isStaffMode) {
