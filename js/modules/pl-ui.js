@@ -500,6 +500,26 @@ export const UIMixin = {
     if (this.imageCount) this.imageCount.textContent = `${this.images.length} ảnh`;
     this._renderImageList();
 
+    // Sync Staff Step 4 with active User session data
+    if (isStaffMode && step === 4 && roomData.queue && roomData.session) {
+      const activeSess = roomData.queue.find(s => s.id === roomData.session);
+      if (activeSess) {
+        if (activeSess.selectedTemplates && activeSess.selectedTemplates.length > 0) {
+          this.selectedTemplates = [...activeSess.selectedTemplates];
+          this.currentTemplate = this.selectedTemplates[0];
+        }
+        if (activeSess.paperSize) {
+          this.paperSize = activeSess.paperSize;
+        }
+        if (activeSess.canvasesState && activeSess.canvasesState.length > 0) {
+          this.canvasesState = JSON.parse(JSON.stringify(activeSess.canvasesState));
+        }
+        if (activeSess.slots && activeSess.slots.length > 0) {
+          this.slots = JSON.parse(JSON.stringify(activeSess.slots));
+        }
+      }
+    }
+
     // Update main mode class
     if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
 
@@ -1610,9 +1630,18 @@ export const UIMixin = {
   },
 
   _updateHeaderActions() {
+    const currentStep = (this.activeRoom && this.rooms && this.rooms[this.activeRoom])
+      ? (this.rooms[this.activeRoom].step || 1)
+      : (this.currentStep || 1);
+
     [0, 1].forEach(cIdx => {
       const actionsEl = document.getElementById('canvasActions' + cIdx);
       if (!actionsEl) return;
+
+      if (currentStep === 4) {
+        actionsEl.style.display = 'none';
+        return;
+      }
 
       const activeSlotIdx = (this.canvasesState && this.canvasesState[cIdx])
         ? this.canvasesState[cIdx].selectedSlotIndex
