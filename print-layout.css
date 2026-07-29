@@ -904,7 +904,7 @@ body:not(.pl-mode-staff) .pl-main.pl-step-mode-4 #crossSellBanner {
 
 .pl-main.pl-step-mode-4 .pl-canvas-actions,
 .pl-main.pl-step-mode-4 [id^="canvasActions"] {
-  display: none;
+  display: none !important;
 }
 
 .pl-main.pl-step-mode-4 #panelLeft {

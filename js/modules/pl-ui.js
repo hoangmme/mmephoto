@@ -422,11 +422,6 @@ export const UIMixin = {
       }
     }
 
-    // Ensure selected photos are auto-filled into canvas slots when viewing Step 3
-    if (step === 3 && this._autoFill) {
-      this._autoFill();
-    }
-
     // Force clear slot selection and hide edit controls in Step 4
     if (step === 4) {
       this.selectedSlotIndex = -1;

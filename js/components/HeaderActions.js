@@ -36,7 +36,8 @@ export class HeaderActions {
       const actionsEl = document.getElementById('canvasActions' + cIdx);
       if (!actionsEl) return;
 
-      if (currentStep === 4) {
+      const step = currentStep || (window.printApp ? window.printApp.currentStep : 1);
+      if (step === 4) {
         actionsEl.style.display = 'none';
         return;
       }
