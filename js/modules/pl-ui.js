@@ -526,12 +526,12 @@ export const UIMixin = {
     }
 
     const crossSell = document.getElementById('crossSellBanner');
-    if (crossSell) {
-      crossSell.style.display = (step === 4) ? 'flex' : 'none';
+    if (crossSell && step !== 4) {
+      crossSell.style.display = 'none';
     }
 
-    if (qrOverlay) {
-      qrOverlay.style.display = (step === 4 && !isStaffMode) ? 'flex' : 'none';
+    if (qrOverlay && step !== 4) {
+      qrOverlay.style.display = 'none';
     }
 
     const startOverlay = document.getElementById('startSessionOverlay');

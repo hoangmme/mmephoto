@@ -903,6 +903,12 @@ body.pl-mode-staff #roomTabs {
 .pl-step-mode-4 #canvasContainer {
   display: flex !important;
   flex: 1 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  padding: 8px 0 !important;
+  min-height: 0 !important;
 }
 
 .pl-step-mode-4 .pl-canvas-actions,
