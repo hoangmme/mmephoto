@@ -507,8 +507,13 @@ export const UIMixin = {
       if (step === 1) {
         panelLeft.style.display = 'none';
       } else if (step === 4) {
-        panelLeft.style.display = 'flex';
-        this._renderStep4BottomPanel();
+        if (!isStaffMode) {
+          panelLeft.style.display = 'none';
+          this._restoreStandardPanelLeft();
+        } else {
+          panelLeft.style.display = 'flex';
+          this._renderStep4BottomPanel();
+        }
       } else {
         panelLeft.style.removeProperty('display');
         this._restoreStandardPanelLeft();
@@ -594,10 +599,26 @@ export const UIMixin = {
       }
     }
 
-    // Control swiperArea / mainSwiper / canvasContainer visibility (Step 3 & Step 4 both display dual-canvas layout!)
-    if (mainSwiperArea) mainSwiperArea.style.display = (step === 1) ? 'flex' : 'none';
-    if (mainSwiper) mainSwiper.style.display = (step === 1) ? 'flex' : 'none';
-    if (canvasContainer) canvasContainer.style.display = (step === 3 || step === 4) ? 'flex' : 'none';
+    // Control swiperArea / mainSwiper / canvasContainer visibility
+    if (step === 4 && !isStaffMode) {
+      if (mainSwiperArea) mainSwiperArea.style.display = 'flex';
+      if (mainSwiper) mainSwiper.style.display = 'none';
+      if (qrOverlay) qrOverlay.style.display = 'flex';
+      if (crossSell) crossSell.style.display = 'flex';
+      if (canvasContainer) {
+        canvasContainer.style.display = 'flex';
+        if (mainSwiperArea && canvasContainer.parentElement !== mainSwiperArea) {
+          mainSwiperArea.appendChild(canvasContainer);
+        }
+      }
+    } else {
+      if (mainSwiperArea && canvasContainer && canvasContainer.parentElement === mainSwiperArea) {
+        mainSwiperArea.after(canvasContainer);
+      }
+      if (mainSwiperArea) mainSwiperArea.style.display = (step === 1) ? 'flex' : 'none';
+      if (mainSwiper) mainSwiper.style.display = (step === 1) ? 'flex' : 'none';
+      if (canvasContainer) canvasContainer.style.display = (step === 3 || step === 4) ? 'flex' : 'none';
+    }
 
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
