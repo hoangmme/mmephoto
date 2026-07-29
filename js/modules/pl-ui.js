@@ -283,6 +283,7 @@ export const UIMixin = {
           this.activeRoom = roomKey;
           if (this.rooms[roomKey]) this.rooms[roomKey].hasNew = false;
           this.activeCanvasIndex = 0;
+          this._updateActiveSession(roomKey, false);
           this._renderTabs();
           this._updateUIForRoom();
           this._renderCanvas();
@@ -359,9 +360,11 @@ export const UIMixin = {
 
     if (this.activeRoom && this.rooms[this.activeRoom]) {
       const roomD = this.rooms[this.activeRoom];
-      if (!roomD.session && roomD.queue && roomD.queue.length > 0) {
-        roomD.session = roomD.activeSessionId || roomD.queue[0].id;
-        roomD.activeSessionId = roomD.session;
+      if (roomD.queue && roomD.queue.length > 0) {
+        if (!roomD.session) {
+          roomD.session = roomD.activeSessionId || roomD.queue[0].id;
+          roomD.activeSessionId = roomD.session;
+        }
         this._updateActiveSession(this.activeRoom, false);
       }
     }
