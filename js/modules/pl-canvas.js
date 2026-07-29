@@ -139,13 +139,21 @@ _onCanvasClick(e) {
 
     if (!this._imageCache) this._imageCache = {};
     
-    // Đảm bảo canvasesState được khởi tạo nếu chưa có
-    if (!this.canvasesState || this.canvasesState.length === 0) {
-       this.canvasesState = (this.selectedTemplates || [this.currentTemplate]).map(t => ({
-          templateId: t,
-          slots: [],
+    const selTmpls = (this.selectedTemplates && this.selectedTemplates.length > 0)
+      ? this.selectedTemplates
+      : (this.currentTemplate ? [this.currentTemplate] : []);
+
+    // Ensure canvasesState matches selectedTemplates in length and templateIds order
+    if (!this.canvasesState || this.canvasesState.length !== selTmpls.length || this.canvasesState.some((c, idx) => c.templateId !== selTmpls[idx])) {
+      this.canvasesState = selTmpls.map(tId => {
+        const tmpl = ALL_TEMPLATES[tId];
+        const numSlots = tmpl && tmpl.slots ? tmpl.slots.length : 0;
+        return {
+          templateId: tId,
+          slots: Array(numSlots).fill(null).map(() => ({ imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: 0 })),
           selectedSlotIndex: -1
-       }));
+        };
+      });
     }
     
     const maxSlotsTotal = this.canvasesState.reduce((sum, cState) => {
@@ -226,6 +234,13 @@ _onCanvasClick(e) {
         this.slots = cState.slots;
       }
     });
+
+    if (roomData && roomData.queue) {
+      const activeSess = roomData.queue.find(s => s.id === roomData.session);
+      if (activeSess) {
+        activeSess.canvasesState = JSON.parse(JSON.stringify(this.canvasesState));
+      }
+    }
   }
 ,
 
