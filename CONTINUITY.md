@@ -31,12 +31,12 @@ Create a high-performance, real-time sync Photobooth management platform. Provid
 ## Status
 - **Done**:
   - Phase 1: Root directory technical debt cleanup (Archived 46 temporary patch scripts into `archive/scripts/`).
+  - Phase 2: Modularized monolithic UI and canvas modules into sub-components (`TemplatePicker.js`, `LightboxComponent.js`, `HeaderActions.js`, `CrossSellBanner.js`, `CanvasRenderer.js`, `CanvasExporter.js`, `RoomTabsComponent.js`, `QueueModalComponent.js`, `StepBannerComponent.js`, `ImageListUI.js`).
   - Active slot highlight & header action bar toggle (`↻ Xoay 90°`, `↺ Reset 0°`).
   - Step 4 Read-Only Preview & Staff download/next controls sync.
   - Cache versioning bumped to `v175`.
 - **Current Focus**:
-  - Phase 2: Modularizing monolithic UI files (`pl-ui.js`, `pl-canvas.js`) into sub-components (`TemplatePicker.js`, `LightboxComponent.js`, `HeaderActions.js`, `CrossSellBanner.js`).
-  - Phase 3: Build tool integration (Vite) for automated bundle hashing.
+  - Phase 3: Build tool integration (Vite) for automated bundle hashing & cache invalidation.
 - **Next**:
   - Refactor mixin pattern to explicit modular ES6 classes with clear dependency contracts.
 

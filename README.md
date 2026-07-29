@@ -82,8 +82,9 @@ node server.js &
 - [x] **Tách TemplatePicker Component**: Tách logic chọn khung mẫu thành component độc lập (`js/components/TemplatePicker.js`).
 - [x] **Tách Lightbox Component**: Tách logic phóng to / xem trước ảnh thành `js/components/LightboxComponent.js`.
 - [x] **Tách HeaderActions Component**: Tách logic các nút thao tác khung (`↻ Xoay 90°`, `↺ Reset 0°`).
-- [ ] **Tách CrossSellBanner Component**: Tách logic danh sách sản phẩm bán kèm mua cùng ảnh.
-- [ ] **Đưa dung lượng file về dưới 500 dòng**: Giảm kích thước `pl-ui.js` (1,745 dòng) và `pl-canvas.js` (850 dòng) tuân thủ 500-line rule.
+- [x] **Tách CrossSellBanner Component**: Tách logic danh sách sản phẩm bán kèm (`js/components/CrossSellBanner.js`).
+- [x] **Tách CanvasRenderer & CanvasExporter**: Tách công cụ vẽ canvas & xuất JPG/PDF (`js/components/CanvasRenderer.js`, `js/components/CanvasExporter.js`).
+- [x] **Tách RoomTabs, QueueModal, StepBanner, ImageListUI**: Tách các UI components độc lập (`js/components/`).
 
 ### 🔵 Giai Đoạn 3: Tích Hợp Build Tool & Tự Động Hóa Cache Invalidation
 - [ ] **Tích hợp Vite / Esbuild**: Cấu hình quy trình đóng gói tự động cho ứng dụng Client.

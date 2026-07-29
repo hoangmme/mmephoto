@@ -2,6 +2,11 @@ import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5
 import { TemplatePicker } from '../components/TemplatePicker.js?v=175';
 import { LightboxComponent } from '../components/LightboxComponent.js?v=175';
 import { HeaderActions } from '../components/HeaderActions.js?v=175';
+import { CrossSellBanner } from '../components/CrossSellBanner.js?v=175';
+import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=175';
+import { QueueModalComponent } from '../components/QueueModalComponent.js?v=175';
+import { StepBannerComponent } from '../components/StepBannerComponent.js?v=175';
+import { ImageListUI } from '../components/ImageListUI.js?v=175';
 
 export const UIMixin = {
   _initLogin() {
@@ -271,75 +276,26 @@ export const UIMixin = {
   ,
 
   _renderTabs() {
-    const rooms = Object.keys(this.rooms);
+    if (!this._roomTabsComponent) {
+      this._roomTabsComponent = new RoomTabsComponent('roomTabs', {
+        onSelectRoom: (roomKey) => {
+          this.activeRoom = roomKey;
+          if (this.rooms[roomKey]) this.rooms[roomKey].hasNew = false;
+          this._renderTabs();
+          this._updateUIForRoom();
+        }
+      });
+    }
 
+    const rooms = Object.keys(this.rooms || {});
     if ((!this.activeRoom || !this.rooms[this.activeRoom]) && rooms.length > 0) {
       const urlParams = new URLSearchParams(window.location.search);
       const roomParam = urlParams.get('room') || urlParams.get('roomId');
-      if (roomParam && this.rooms[roomParam]) {
-        this.activeRoom = roomParam;
-      } else {
-        this.activeRoom = rooms[0];
-      }
+      this.activeRoom = (roomParam && this.rooms[roomParam]) ? roomParam : rooms[0];
       this._updateUIForRoom();
     }
 
-    const tabsContainer = document.getElementById('roomTabs');
-    if (!tabsContainer) return;
-    if (!isStaffMode) {
-      tabsContainer.style.display = 'none';
-      return;
-    } else {
-      tabsContainer.style.display = 'flex';
-    }
-    tabsContainer.innerHTML = '';
-
-    if (rooms.length === 0) return;
-
-    rooms.forEach(room => {
-      const btn = document.createElement('button');
-      btn.innerText = room;
-      btn.style.padding = '8px 12px';
-      btn.style.border = '1px solid var(--pl-border)';
-      btn.style.borderRadius = '6px';
-      btn.style.cursor = 'pointer';
-      btn.style.position = 'relative';
-      btn.style.fontWeight = '600';
-
-      if (room === this.activeRoom) {
-        btn.style.background = 'var(--pl-accent)';
-        btn.style.color = '#fff';
-      } else {
-        btn.style.background = 'var(--pl-bg-section)';
-        btn.style.color = 'var(--pl-text)';
-      }
-
-      const roomD = this.rooms[room];
-      const isReadyStep4 = roomD && roomD.step === 4 && !roomD.finished;
-      if ((roomD.hasNew || isReadyStep4) && room !== this.activeRoom) {
-        const dot = document.createElement('div');
-        dot.style.position = 'absolute';
-        dot.style.top = '-3px';
-        dot.style.right = '-3px';
-        dot.style.width = '12px';
-        dot.style.height = '12px';
-        dot.style.background = '#ef4444';
-        dot.style.borderRadius = '50%';
-        dot.style.border = '2px solid #ffffff';
-        dot.style.boxShadow = '0 0 6px rgba(239, 68, 68, 0.8)';
-        dot.style.animation = 'pl-pulse 1.5s infinite';
-        btn.appendChild(dot);
-      }
-
-      btn.onclick = () => {
-        this.activeRoom = room;
-        this.rooms[room].hasNew = false;
-        this._renderTabs();
-        this._updateUIForRoom();
-      };
-
-      tabsContainer.appendChild(btn);
-    });
+    this._roomTabsComponent.render(this.rooms, this.activeRoom);
   }
   ,
 
