@@ -99,18 +99,23 @@ _onCanvasClick(e) {
     }
 
     if (clickedSlot >= 0) {
+      const activeCIdx = this.activeCanvasIndex || 0;
       this.selectedSlotIndex = clickedSlot;
 
-      if (!this.slots) this.slots = [];
-      if (this.canvasesState && this.canvasesState[this.activeCanvasIndex || 0]) {
-        this.canvasesState[this.activeCanvasIndex || 0].slots = this.slots;
-        this.canvasesState[this.activeCanvasIndex || 0].selectedSlotIndex = clickedSlot;
+      if (this.canvasesState && this.canvasesState[activeCIdx]) {
+        if (!this.canvasesState[activeCIdx].slots) this.canvasesState[activeCIdx].slots = [];
+        this.slots = this.canvasesState[activeCIdx].slots;
+        this.canvasesState[activeCIdx].selectedSlotIndex = clickedSlot;
       }
-      // If an image is selected in sidebar, assign it to the clicked slot (replaces existing photo if any)
+      if (!this.slots) this.slots = [];
+
+      // If an image is selected in sidebar, assign it to the clicked slot
       if (this.selectedImageId) {
         this._assignToSlot(clickedSlot, this.selectedImageId);
         this.selectedImageId = null;
       }
+
+      if (this._syncStaffDraftState) this._syncStaffDraftState();
 
       this._renderCanvas();
       this._renderSlotProps();

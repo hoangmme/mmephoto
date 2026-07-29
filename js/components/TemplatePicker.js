@@ -216,32 +216,6 @@ export class TemplatePicker {
     });
 
     wrapper.appendChild(grid);
-
-    // Confirm button - for BOTH A4 and A5
-    const requiredCount = this.paperSize === 'A4' ? 1 : 2;
-    const isReady = this.selectedTemplates.length === requiredCount;
-    
-    const btnConfirm = document.createElement('button');
-    btnConfirm.innerText = this.paperSize === 'A4'
-      ? (isReady ? '✅ Xác nhận Frame đã chọn' : 'Chọn 1 Frame để tiếp tục')
-      : `Xác nhận (${this.selectedTemplates.length}/${requiredCount} frame)`;
-    btnConfirm.style.marginTop = '12px';
-    btnConfirm.style.padding = '14px 40px';
-    btnConfirm.style.borderRadius = '8px';
-    btnConfirm.style.fontSize = '16px';
-    btnConfirm.style.fontWeight = 'bold';
-    btnConfirm.style.border = 'none';
-    btnConfirm.style.background = isReady ? 'var(--pl-accent)' : '#ccc';
-    btnConfirm.style.color = '#fff';
-    btnConfirm.style.cursor = isReady ? 'pointer' : 'not-allowed';
-    btnConfirm.style.flexShrink = '0';
-    btnConfirm.style.width = '100%';
-    btnConfirm.style.maxWidth = '400px';
-    
-    btnConfirm.onclick = () => this._confirmSelection();
-    
-    wrapper.appendChild(btnConfirm);
-
     this.container.appendChild(wrapper);
   }
 }
