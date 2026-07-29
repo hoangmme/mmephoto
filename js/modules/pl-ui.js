@@ -1384,7 +1384,11 @@ export const UIMixin = {
       assignedAt: (oldSlots[i] && step > 1) ? oldSlots[i].assignedAt : null
     }));
 
-    // Don't auto-select first slot to avoid acc  _renderImageList() {
+    // Don't auto-select first slot to avoid accidental overwrites
+    this.selectedSlotIndex = -1;
+  },
+
+  _renderImageList() {
     if (!this._imageListUI) {
       this._imageListUI = new ImageListUI({
         container: this.imageList,
