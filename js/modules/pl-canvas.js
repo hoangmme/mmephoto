@@ -164,7 +164,20 @@ _loadTemplateImages() {
     this.slots[slotIndex].rotation = 0;
     this.slots[slotIndex].assignedAt = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
+    // Persist canvasesState directly into active room session
+    if (this.activeRoom && this.rooms && this.rooms[this.activeRoom]) {
+      const roomD = this.rooms[this.activeRoom];
+      if (roomD.queue) {
+        const activeSess = roomD.queue.find(s => s.id === roomD.session);
+        if (activeSess) {
+          activeSess.canvasesState = JSON.parse(JSON.stringify(this.canvasesState || []));
+          activeSess.slots = JSON.parse(JSON.stringify(this.slots || []));
+        }
+      }
+    }
+
     if (this._syncStaffDraftState) this._syncStaffDraftState();
+    if (!skipSync && this._syncState) this._syncState(this.activeRoom);
 
     this._renderCanvas();
     this._renderSlotProps();
