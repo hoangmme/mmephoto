@@ -58,6 +58,8 @@ export class TemplatePicker {
     wrapper.style.display = 'flex';
     wrapper.style.flexDirection = 'column';
     wrapper.style.height = '100%';
+    wrapper.style.minHeight = '0';
+    wrapper.style.alignSelf = 'stretch';
     wrapper.style.width = '100%';
     wrapper.style.padding = '16px';
     wrapper.style.boxSizing = 'border-box';
@@ -101,6 +103,7 @@ export class TemplatePicker {
     grid.style.width = '100%';
     grid.style.maxWidth = '700px';
     grid.style.flex = '1';
+    grid.style.minHeight = '0';
     grid.style.overflowY = 'auto';
     grid.style.paddingBottom = '8px';
     grid.style.alignItems = 'flex-start';
