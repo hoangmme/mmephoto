@@ -618,7 +618,7 @@ export const UIMixin = {
     const panelLeft = document.getElementById('panelLeft');
     if (!panelLeft) return;
 
-    // Hide standard panel children
+    // Hide standard panel children (don't destroy them)
     const panelHeader = panelLeft.querySelector('.pl-panel-header');
     const imageList = document.getElementById('imageList');
     const panelFooter = document.getElementById('panelLeftFooter');
@@ -626,11 +626,27 @@ export const UIMixin = {
     if (imageList) imageList.style.display = 'none';
     if (panelFooter) panelFooter.style.display = 'none';
 
-    // Show QR and CrossSell in panelLeft
+    // Create or reuse step4 bottom container
+    let step4Bottom = document.getElementById('step4BottomContainer');
+    if (!step4Bottom) {
+      step4Bottom = document.createElement('div');
+      step4Bottom.id = 'step4BottomContainer';
+      step4Bottom.className = 'pl-step4-bottom-container';
+      panelLeft.appendChild(step4Bottom);
+    }
+
+    // Move QR and CrossSell INTO step4Bottom (they live in mainSwiperArea which is hidden)
     const qrOverlay = document.getElementById('qrOverlay');
     const crossSellBanner = document.getElementById('crossSellBanner');
+    if (qrOverlay && qrOverlay.parentElement !== step4Bottom) {
+      step4Bottom.appendChild(qrOverlay);
+    }
+    if (crossSellBanner && crossSellBanner.parentElement !== step4Bottom) {
+      step4Bottom.appendChild(crossSellBanner);
+    }
     if (qrOverlay) qrOverlay.style.display = 'flex';
     if (crossSellBanner) crossSellBanner.style.display = 'flex';
+    step4Bottom.style.display = 'flex';
   },
 
   _restoreStandardPanelLeft() {
@@ -645,11 +661,23 @@ export const UIMixin = {
     if (imageList) imageList.style.display = '';
     if (panelFooter) panelFooter.style.display = '';
 
-    // Hide QR and CrossSell
+    // Move QR and CrossSell back to mainSwiperArea
+    const mainSwiperArea = document.getElementById('mainSwiperArea');
     const qrOverlay = document.getElementById('qrOverlay');
     const crossSellBanner = document.getElementById('crossSellBanner');
+    const mainSwiper = document.getElementById('mainSwiper');
+    if (mainSwiperArea && qrOverlay && qrOverlay.parentElement?.id === 'step4BottomContainer') {
+      mainSwiperArea.insertBefore(qrOverlay, mainSwiper || mainSwiperArea.firstChild);
+    }
+    if (mainSwiperArea && crossSellBanner && crossSellBanner.parentElement?.id === 'step4BottomContainer') {
+      mainSwiperArea.insertBefore(crossSellBanner, mainSwiper || mainSwiperArea.firstChild);
+    }
     if (qrOverlay) qrOverlay.style.display = 'none';
     if (crossSellBanner) crossSellBanner.style.display = 'none';
+
+    // Hide step4 bottom container
+    const step4Bottom = document.getElementById('step4BottomContainer');
+    if (step4Bottom) step4Bottom.style.display = 'none';
   },
 
   _getMaxSlots() {
