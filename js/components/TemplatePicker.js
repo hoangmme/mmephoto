@@ -96,13 +96,14 @@ export class TemplatePicker {
     // Grid (scrollable)
     const grid = document.createElement('div');
     grid.style.display = 'grid';
-    grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
     grid.style.gap = '14px';
     grid.style.width = '100%';
     grid.style.maxWidth = '700px';
     grid.style.flex = '1';
     grid.style.overflowY = 'auto';
     grid.style.paddingBottom = '8px';
+    grid.style.alignItems = 'flex-start';
 
     const filteredKeys = Object.keys(this.templates).filter(k => {
       const t = this.templates[k];
