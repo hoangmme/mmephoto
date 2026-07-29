@@ -1416,45 +1416,26 @@ export const UIMixin = {
             this._updateImageListUI();
             this._syncState(this.activeRoom);
           } else {
-            const activeCIdx = this.activeCanvasIndex || 0;
-            const targetSlot = (this.canvasesState && this.canvasesState[activeCIdx])
-              ? this.canvasesState[activeCIdx].selectedSlotIndex
-              : this.selectedSlotIndex;
+            const activeCIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
+            if (!this.canvasesState || !this.canvasesState[activeCIdx]) {
+              if (!this.canvasesState) this.canvasesState = [];
+              if (!this.canvasesState[activeCIdx]) this.canvasesState[activeCIdx] = { templateId: this.currentTemplate, slots: [], selectedSlotIndex: -1 };
+            }
+            this.slots = this.canvasesState[activeCIdx].slots || [];
+            
+            let targetSlot = this.canvasesState[activeCIdx].selectedSlotIndex;
+            if (targetSlot === undefined || targetSlot === null || targetSlot < 0) {
+              targetSlot = this.selectedSlotIndex;
+            }
 
             if (targetSlot >= 0) {
               // Slot IS selected on active canvas -> assign photo into that slot!
               this._assignToSlot(targetSlot, img.id);
             } else {
-              // No slot selected -> check if photo is already in a slot
-              let foundSlotIdx = -1;
-              let foundCanvasIdx = activeCIdx;
-              if (this.canvasesState) {
-                this.canvasesState.forEach((cState, cIdx) => {
-                  if (cState.slots) {
-                    const idxInState = cState.slots.findIndex(s => s && s.imageId === img.id);
-                    if (idxInState >= 0 && foundSlotIdx < 0) {
-                      foundSlotIdx = idxInState;
-                      foundCanvasIdx = cIdx;
-                    }
-                  }
-                });
-              }
-              if (foundSlotIdx >= 0) {
-                this.activeCanvasIndex = foundCanvasIdx;
-                this.canvas = document.getElementById('printCanvas' + foundCanvasIdx) || this.canvas;
-                this.selectedSlotIndex = foundSlotIdx;
-                if (this.canvasesState && this.canvasesState[foundCanvasIdx]) {
-                  this.canvasesState[foundCanvasIdx].selectedSlotIndex = foundSlotIdx;
-                  this.slots = this.canvasesState[foundCanvasIdx].slots;
-                }
-                this._renderCanvas();
-                this._renderSlotProps();
-              } else {
-                // Find first empty slot on active canvas or default to 0
-                let idx = this.slots ? this.slots.findIndex(s => !s || !s.imageId) : 0;
-                if (idx < 0) idx = 0;
-                this._assignToSlot(idx, img.id);
-              }
+              // No slot selected -> find first empty slot on ACTIVE canvas (never jump to other canvas)
+              let emptySlotIdx = this.slots.findIndex(s => !s || !s.imageId);
+              if (emptySlotIdx < 0) emptySlotIdx = 0; // fallback to slot 0 of active canvas
+              this._assignToSlot(emptySlotIdx, img.id);
             }
             this._updateImageListUI();
           }

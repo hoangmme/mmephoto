@@ -139,7 +139,7 @@ _loadTemplateImages() {
   },
 
   _assignToSlot(slotIndex, imageId, skipSync = false) {
-    const cIdx = this.activeCanvasIndex || 0;
+    const cIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
     if (this.canvasesState && this.canvasesState[cIdx]) {
       if (!this.canvasesState[cIdx].slots) this.canvasesState[cIdx].slots = [];
       this.slots = this.canvasesState[cIdx].slots;
