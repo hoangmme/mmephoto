@@ -458,7 +458,7 @@ _renderCanvas() {
     // Restore active state
     this.canvas = backupCanvas;
     this.currentTemplate = backupTemplate;
-    this.slots = backupSlots;
+    this.slots = (this.canvasesState && this.canvasesState[activeIdx]) ? this.canvasesState[activeIdx].slots : backupSlots;
     this.selectedSlotIndex = backupSelectedSlotIndex;
   }
 ,

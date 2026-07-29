@@ -305,14 +305,22 @@ _updateActiveSession(room, onlyBadge = false) {
               active.currentTemplate = this.currentTemplate;
             }
 
-            if (active.selectedTemplates) {
+            if (active.selectedTemplates && active.selectedTemplates.length > 0) {
               this.selectedTemplates = active.selectedTemplates;
+            } else if (this.selectedTemplates && this.selectedTemplates.length > 0) {
+              active.selectedTemplates = this.selectedTemplates;
             }
+
             if (active.paperSize) {
               this.paperSize = active.paperSize;
+            } else if (this.paperSize) {
+              active.paperSize = this.paperSize;
             }
-            if (active.canvasesState) {
+
+            if (active.canvasesState && active.canvasesState.length > 0) {
               this.canvasesState = active.canvasesState;
+            } else if (this.canvasesState && this.canvasesState.length > 0) {
+              active.canvasesState = this.canvasesState;
             }
           }
 
@@ -403,6 +411,9 @@ async _syncStateDirect(room) {
       activeSess.slots = JSON.parse(JSON.stringify(this.slots || []));
       activeSess.selectedImages = Array.from(this.selectedPhotos || []);
       activeSess.currentTemplate = this.currentTemplate;
+      activeSess.selectedTemplates = this.selectedTemplates || [this.currentTemplate];
+      activeSess.paperSize = this.paperSize || 'A4';
+      activeSess.canvasesState = this.canvasesState || [];
       activeSess.step = roomData.step;
     }
 

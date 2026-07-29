@@ -752,10 +752,18 @@ body.pl-mode-staff #roomTabs {
 }
 
 .pl-step-mode-3 #mainSwiperArea {
+  display: none !important;
+}
+
+.pl-step-mode-3 #canvasContainer,
+.pl-step-mode-4 #canvasContainer {
+  display: flex !important;
   flex: 1 !important;
   width: 100% !important;
   min-height: 0 !important;
   order: 1 !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .pl-step-mode-3 #panelLeft {
