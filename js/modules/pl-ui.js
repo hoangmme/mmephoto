@@ -621,6 +621,8 @@ export const UIMixin = {
     const roomData = this.rooms[room];
     if (!roomData) return;
     
+    this.currentStep = step; // Always sync currentStep tab viewed
+    
     // Manage _staffEditingOverride flag
     if (isStaffMode) {
       if (step < 4) {

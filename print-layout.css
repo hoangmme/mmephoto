@@ -881,8 +881,10 @@ body.pl-mode-staff #roomTabs {
 }
 
 .pl-qr-overlay,
-#qrOverlay {
-  pointer-events: none !important;
+#qrOverlay,
+#qrImage {
+  pointer-events: auto !important;
+  cursor: pointer !important;
   user-select: none !important;
 }
 
