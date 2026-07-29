@@ -5,6 +5,7 @@ _initSSE(branch) {
     this.branch = branch;
     this.rooms = {};
     this.activeRoom = null;
+    this._staffEditingOverride = false; // Flag: Staff is editing steps 1-3, block server overwrites
     const branchNameEl = document.getElementById('headerBranchName');
     if (branchNameEl) {
       branchNameEl.textContent = `Chi nhánh: ${branch}`;
@@ -129,32 +130,38 @@ _initSSE(branch) {
             
             // Only update globals if this room is the currently viewed tab
             if (this.activeRoom === room) {
+              // Staff editing override: block ALL server overwrites when Staff is editing steps 1-3
+              const blockOverwrite = isStaffMode && this._staffEditingOverride;
+              
               let templateChanged = false;
               const isUserStep1 = !isStaffMode && (this.rooms[room].step || 1) === 1;
-              if (data.currentTemplate !== undefined && this.currentTemplate !== data.currentTemplate && !isUserStep1) {
-                this.currentTemplate = data.currentTemplate;
-                templateChanged = true;
-              }
-              if (data.selectedTemplates !== undefined && !isUserStep1) {
-                this.selectedTemplates = data.selectedTemplates;
-              }
-              if (data.paperSize !== undefined) {
-                this.paperSize = data.paperSize;
-              }
-              if (data.canvasesState !== undefined && !isUserStep1) {
-                this.canvasesState = data.canvasesState;
-              }
-              if (data.slots && data.slots.length > 0) {
-                const serverHasImages = data.slots.some(s => s.imageId);
-                const localHasImages = this.slots && this.slots.some(s => s.imageId);
-                if (serverHasImages || !localHasImages) {
-                  this.slots = data.slots;
-                }
-              }
-              if (data.selectedImages) this.selectedPhotos = new Set(data.selectedImages);
               
-              if (templateChanged) {
-                this._loadTemplateImages();
+              if (!blockOverwrite) {
+                if (data.currentTemplate !== undefined && this.currentTemplate !== data.currentTemplate && !isUserStep1) {
+                  this.currentTemplate = data.currentTemplate;
+                  templateChanged = true;
+                }
+                if (data.selectedTemplates !== undefined && !isUserStep1) {
+                  this.selectedTemplates = data.selectedTemplates;
+                }
+                if (data.paperSize !== undefined) {
+                  this.paperSize = data.paperSize;
+                }
+                if (data.canvasesState !== undefined && !isUserStep1) {
+                  this.canvasesState = data.canvasesState;
+                }
+                if (data.slots && data.slots.length > 0) {
+                  const serverHasImages = data.slots.some(s => s.imageId);
+                  const localHasImages = this.slots && this.slots.some(s => s.imageId);
+                  if (serverHasImages || !localHasImages) {
+                    this.slots = data.slots;
+                  }
+                }
+                if (data.selectedImages) this.selectedPhotos = new Set(data.selectedImages);
+                
+                if (templateChanged) {
+                  this._loadTemplateImages();
+                }
               }
               this._updateUIForRoom();
               this._renderCanvas();
@@ -293,8 +300,12 @@ _updateActiveSession(room, onlyBadge = false) {
       
       if (!onlyBadge && active) {
         if (this.activeRoom === room) {
-          if (!isStaffMode && (roomData.step || 1) === 1) {
-            // Màn Khách ở Bước 1: Giữ nguyên khung Khách đang chọn, không bị SSE đè ngược
+          // Staff editing override: when Staff is editing steps 1-3, do NOT load template/slots from active session
+          const blockOverwrite = isStaffMode && this._staffEditingOverride;
+          const isUserStep1 = !isStaffMode && (roomData.step || 1) === 1;
+          
+          if (blockOverwrite || isUserStep1) {
+            // Staff editing or User at Step 1: preserve local state completely
           } else {
             if (active.currentTemplate && ALL_TEMPLATES[active.currentTemplate]) {
               this.currentTemplate = active.currentTemplate;
@@ -325,26 +336,14 @@ _updateActiveSession(room, onlyBadge = false) {
           }
 
           if (isStaffMode) {
-            const isStaffEditing = (roomData.step || 1) < 4;
-            
-            if (!isStaffEditing) {
+            if (blockOverwrite) {
+              // Staff editing: preserve ALL local data, do NOT load from active session
+            } else {
+              // Staff at Step 4 or first load: load data from active session
               if (active.slots && active.slots.length > 0) {
                 this.slots = JSON.parse(JSON.stringify(active.slots));
               }
               if (active.selectedImages) {
-                this.selectedPhotos = new Set(active.selectedImages);
-              }
-            } else {
-              // Khi Staff đang chỉnh sửa (Step 1, 2, 3): Ưu tiên dữ liệu Staff mới chọn
-              if (this.slots && this.slots.length > 0) {
-                active.slots = JSON.parse(JSON.stringify(this.slots));
-              } else if (active.slots && active.slots.length > 0) {
-                this.slots = JSON.parse(JSON.stringify(active.slots));
-              }
-
-              if (this.selectedPhotos && this.selectedPhotos.size > 0) {
-                active.selectedImages = Array.from(this.selectedPhotos);
-              } else if (active.selectedImages && active.selectedImages.length > 0) {
                 this.selectedPhotos = new Set(active.selectedImages);
               }
             }

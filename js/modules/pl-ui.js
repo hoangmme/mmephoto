@@ -530,8 +530,8 @@ export const UIMixin = {
       });
     }
 
-    // Sync template picker to current global state
-    if (this._templatePicker) {
+    // Sync template picker to current global state (skip if Staff is editing)
+    if (this._templatePicker && !this._staffEditingOverride) {
       if (this.paperSize) this._templatePicker.paperSize = this.paperSize;
       if (this.selectedTemplates && this.selectedTemplates.length > 0) {
         this._templatePicker.selectedTemplates = [...this.selectedTemplates];
@@ -557,11 +557,7 @@ export const UIMixin = {
       }
     }
 
-    // Hide swiper arrow buttons in Step 1 (no longer used with grid layout)
-    const btnSwiperPrev = document.getElementById('btnSwiperPrev');
-    const btnSwiperNext = document.getElementById('btnSwiperNext');
-    if (btnSwiperPrev) btnSwiperPrev.style.display = 'none';
-    if (btnSwiperNext) btnSwiperNext.style.display = 'none';
+
 
     const paperNote = document.getElementById('paperInfoNote');
     if (paperNote) {
@@ -679,6 +675,15 @@ export const UIMixin = {
     const roomData = this.rooms[room];
     if (!roomData) return;
     
+    // Manage _staffEditingOverride flag
+    if (isStaffMode) {
+      if (step < 4) {
+        this._staffEditingOverride = true; // Staff going to step 1/2/3 = editing mode
+      } else {
+        this._staffEditingOverride = false; // Staff completing step 4 = done editing
+      }
+    }
+    
     // Automatically apply selection to frame when entering step 3 by the user
     if (step === 3 && !isStaffMode) {
       if (this._autoFill) {
@@ -727,79 +732,7 @@ export const UIMixin = {
       }
     }
   },
-  
-  _selectSlide(id, instant = false) {
-    const templateChanged = (this.currentTemplate !== id);
-    this.currentTemplate = id;
 
-    // Trim selectedPhotos if changing to a template with fewer slots
-    const maxAllowed = this._getMaxSlots();
-    if (maxAllowed > 0 && this.selectedPhotos) {
-      if (this.selectedPhotos.size > maxAllowed) {
-        const trimmed = Array.from(this.selectedPhotos).slice(0, maxAllowed);
-        this.selectedPhotos = new Set(trimmed);
-        if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].queue) {
-          const activeSess = this.rooms[this.activeRoom].queue.find(s => s.id === this.rooms[this.activeRoom].session);
-          if (activeSess) {
-            activeSess.selectedImages = trimmed;
-          }
-        }
-      }
-    }
-
-    if (this.activeRoom && this.rooms[this.activeRoom]) {
-      const roomD = this.rooms[this.activeRoom];
-      if (roomD.queue) {
-        const activeSess = roomD.queue.find(s => s.id === roomD.session);
-        if (activeSess) {
-          activeSess.currentTemplate = id;
-        }
-      }
-    }
-
-    const targetSlide = Array.from(this.mainSwiper.children).find(s => s.dataset.id === id);
-    if (!targetSlide) return;
-
-    Array.from(this.mainSwiper.children).forEach(s => {
-      s.classList.remove('active');
-    });
-
-    targetSlide.classList.add('active');
-
-    const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
-    if (step >= 3) {
-      if (!targetSlide.contains(this.canvas)) {
-        Array.from(this.mainSwiper.children).forEach(s => {
-          if (s !== targetSlide && s.contains(this.canvas)) {
-            s.removeChild(this.canvas);
-          }
-        });
-        targetSlide.appendChild(this.canvas);
-      }
-    }
-
-    this._initTemplate();
-    this._renderCanvas();
-    this._renderImageList();
-    this._renderSlotProps();
-
-    const pad = (this.mainSwiper.offsetWidth - targetSlide.offsetWidth) / 2;
-
-    this.isProgrammaticScroll = true;
-    this.mainSwiper.scrollTo({
-      left: targetSlide.offsetLeft - pad,
-      behavior: instant ? 'auto' : 'smooth'
-    });
-
-    clearTimeout(this.scrollUnlockTimeout);
-    this.scrollUnlockTimeout = setTimeout(() => {
-      this.isProgrammaticScroll = false;
-    }, instant ? 100 : 500);
-
-    if (templateChanged && isStaffMode) {
-      this._syncState(this.activeRoom);
-    }
-  }
 
   // ── Event Bindings ──
   ,
@@ -836,26 +769,7 @@ export const UIMixin = {
       });
     }
 
-    const btnSwiperPrev = document.getElementById('btnSwiperPrev');
-    const btnSwiperNext = document.getElementById('btnSwiperNext');
-    if (btnSwiperPrev) {
-      btnSwiperPrev.addEventListener('click', () => {
-        const keys = Object.keys(ALL_TEMPLATES);
-        const idx = keys.indexOf(this.currentTemplate);
-        if (idx > 0) {
-          this._selectSlide(keys[idx - 1]);
-        }
-      });
-    }
-    if (btnSwiperNext) {
-      btnSwiperNext.addEventListener('click', () => {
-        const keys = Object.keys(ALL_TEMPLATES);
-        const idx = keys.indexOf(this.currentTemplate);
-        if (idx < keys.length - 1) {
-          this._selectSlide(keys[idx + 1]);
-        }
-      });
-    }
+
 
     document.getElementById('btnSelectAll').addEventListener('click', () => this._selectAll());
     document.getElementById('btnDeselectAll').addEventListener('click', () => this._deselectAll());
