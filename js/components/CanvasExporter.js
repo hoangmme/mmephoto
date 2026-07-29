@@ -100,4 +100,46 @@ export class CanvasExporter {
     }
     appInstance._showOverlay(false);
   }
+
+  static async uploadFinalFrame(appInstance) {
+    if (!appInstance) return;
+    const room = appInstance.activeRoom || 'Room1';
+    const roomData = appInstance.rooms ? appInstance.rooms[room] : null;
+    const session = (roomData && roomData.session) ? roomData.session : null;
+    const branch = localStorage.getItem('branchId') || 'hangkhay';
+    if (!session) return;
+
+    try {
+      const exportCanvas = document.createElement('canvas');
+      const templatesToExport = appInstance.selectedTemplates && appInstance.selectedTemplates.length > 0 
+        ? appInstance.selectedTemplates 
+        : [appInstance.currentTemplate];
+
+      const origIdx = appInstance.activeCanvasIndex;
+      for (let i = 0; i < templatesToExport.length; i++) {
+        appInstance.activeCanvasIndex = i;
+        appInstance.currentTemplate = templatesToExport[i];
+        if (appInstance.canvasesState && appInstance.canvasesState[i]) {
+          appInstance.slots = appInstance.canvasesState[i].slots;
+          appInstance.selectedSlotIndex = -1;
+        }
+        await appInstance._loadTemplateImages();
+        appInstance._drawToCanvas(exportCanvas, false);
+
+        const blob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/jpeg', 0.95));
+        if (blob) {
+          const formData = new FormData();
+          const filename = `00_frame_P${i + 1}.jpg`;
+          formData.append('image', blob, filename);
+          await fetch(`/api/stream-upload/${branch}/${room}/${session}`, {
+            method: 'POST',
+            body: formData
+          });
+        }
+      }
+      appInstance.activeCanvasIndex = origIdx;
+    } catch (err) {
+      console.error('uploadFinalFrame error:', err);
+    }
+  }
 }

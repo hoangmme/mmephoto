@@ -543,6 +543,10 @@ _renderCanvas() {
     await CanvasExporter.exportPDF(this);
   },
 
+  async _uploadFinalFrame() {
+    await CanvasExporter.uploadFinalFrame(this);
+  },
+
   _print() {
     // Render full res first
     const exportCanvas = document.createElement('canvas');
