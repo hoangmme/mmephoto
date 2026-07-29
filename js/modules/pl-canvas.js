@@ -125,6 +125,7 @@ _onCanvasClick(e) {
       if (!this.slots) this.slots = [];
       if (this.canvasesState && this.canvasesState[this.activeCanvasIndex || 0]) {
         this.canvasesState[this.activeCanvasIndex || 0].slots = this.slots;
+        this.canvasesState[this.activeCanvasIndex || 0].selectedSlotIndex = clickedSlot;
       }
       // If an image is selected in sidebar, assign it to the clicked slot (replaces existing photo if any)
       if (this.selectedImageId) {
@@ -140,8 +141,10 @@ _onCanvasClick(e) {
 
   _assignToSlot(slotIndex, imageId, skipSync = false) {
     if (!this.slots) this.slots = [];
+    this.selectedSlotIndex = slotIndex;
     if (this.canvasesState && this.canvasesState[this.activeCanvasIndex || 0]) {
       this.canvasesState[this.activeCanvasIndex || 0].slots = this.slots;
+      this.canvasesState[this.activeCanvasIndex || 0].selectedSlotIndex = slotIndex;
     }
     if (!this.slots[slotIndex]) {
       this.slots[slotIndex] = {
@@ -207,8 +210,8 @@ _onCanvasClick(e) {
 
     if (!this.selectedPhotos) this.selectedPhotos = new Set();
     
-    // Nếu chưa chọn đủ số lượng ảnh cho toàn bộ các khung, tự động tick thêm
-    if (maxSlotsTotal > 0 && this.selectedPhotos.size < maxSlotsTotal) {
+    // Tự động tick chọn ảnh CHỈ KHI NGƯỜI DÙNG CHƯA CHỌN ẢNH NÀO (size = 0)
+    if (this.selectedPhotos.size === 0 && currentImages.length > 0 && maxSlotsTotal > 0) {
       for (let i = 0; i < currentImages.length && this.selectedPhotos.size < maxSlotsTotal; i++) {
         const img = currentImages[i];
         if (img && img.id && !this.selectedPhotos.has(img.id)) {
@@ -229,7 +232,7 @@ _onCanvasClick(e) {
     const selectedArr = Array.from(this.selectedPhotos);
     let globalIndex = 0;
 
-    // Gán ảnh vào từng canvas
+    // Gán ảnh vào từng canvas (không tự lặp lại nếu người dùng đã tự chọn số lượng ảnh mong muốn)
     this.canvasesState.forEach((cState, cIdx) => {
       const cTmpl = ALL_TEMPLATES[cState.templateId];
       if (!cTmpl || !cTmpl.slots) return;
@@ -241,22 +244,17 @@ _onCanvasClick(e) {
       
       for (let i = 0; i < maxSlots; i++) {
         let targetImgId = null;
-        
         if (globalIndex < selectedArr.length) {
           targetImgId = selectedArr[globalIndex];
-        } else if (currentImages.length > 0) {
-          // Fallback: lặp lại ảnh nếu thiếu
-          const fallbackImg = currentImages[globalIndex % currentImages.length];
-          targetImgId = fallbackImg.id;
         }
         
-        if (targetImgId) {
-          if (cState.slots[i].imageId !== targetImgId) {
-            cState.slots[i].imageId = targetImgId;
-            cState.slots[i].zoom = 1.0;
-            cState.slots[i].panX = 0;
-            cState.slots[i].panY = 0;
-            cState.slots[i].rotation = 0;
+        if (cState.slots[i].imageId !== targetImgId) {
+          cState.slots[i].imageId = targetImgId;
+          cState.slots[i].zoom = 1.0;
+          cState.slots[i].panX = 0;
+          cState.slots[i].panY = 0;
+          cState.slots[i].rotation = 0;
+          if (targetImgId) {
             cState.slots[i].assignedAt = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
           }
         }
