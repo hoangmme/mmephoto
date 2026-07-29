@@ -1477,16 +1477,6 @@ export const UIMixin = {
       slots: this.slots,
       step: currentStep
     });
-            }
-          }
-          this._updateImageListUI();
-        }
-      });
-
-      this.imageList.appendChild(thumb);
-    });
-
-    this._updateImageListUI();
   }
   ,
 
