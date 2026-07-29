@@ -524,12 +524,15 @@ _renderCanvas() {
         this._drawToCanvas(c, true);
     }
     
-    // Restore active state
-    this.canvas = backupCanvas;
-    this.currentTemplate = backupTemplate;
+    // Restore active state for active canvas index
+    const activeCanvasEl = document.getElementById('printCanvas' + activeIdx) || backupCanvas;
+    const activeTemplate = (templatesToRender && templatesToRender[activeIdx]) ? templatesToRender[activeIdx] : backupTemplate;
+
+    this.canvas = activeCanvasEl;
+    this.currentTemplate = activeTemplate;
     const finalSel = (this.canvasesState && this.canvasesState[activeIdx]) ? this.canvasesState[activeIdx].selectedSlotIndex : backupSelectedSlotIndex;
     this.selectedSlotIndex = (finalSel !== undefined && finalSel !== null) ? finalSel : -1;
-    this.slots = (this.canvasesState && this.canvasesState[activeIdx]) ? this.canvasesState[activeIdx].slots : backupSlots;
+    this.slots = (this.canvasesState && this.canvasesState[activeIdx]) ? (this.canvasesState[activeIdx].slots || []) : backupSlots;
   },
 
   _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = false) {
