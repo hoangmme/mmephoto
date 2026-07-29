@@ -874,8 +874,7 @@ export const UIMixin = {
     if (btnStepPrev) {
       btnStepPrev.addEventListener('click', () => {
         if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
-        const cur = this.rooms[this.activeRoom].step || 1;
-        if (cur === 4 && !this._state.isStaffMode()) return; // Locked at step 4
+        const cur = this.rooms[this.activeRoom].step || this.currentStep || 1;
         if (cur > 1) {
           this._setStep(this.activeRoom, cur - 1);
         }
@@ -956,16 +955,8 @@ export const UIMixin = {
             if (this._autoFill) this._autoFill();
           }
 
-          if (!isStaffMode) {
-            if (currentStep === 4) return; // User cannot leave step 4
-            if (targetStep === 4) return; // User must use Next button to reach step 4
-            
-            this._setStep(this.activeRoom, targetStep, false);
-          } else {
-            if (targetStep >= 1 && targetStep <= 4) {
-              // Staff clicking step banner items only previews locally for Staff (skipSync = true)
-              this._setStep(this.activeRoom, targetStep, true);
-            }
+          if (targetStep >= 1 && targetStep <= 4) {
+            this._setStep(this.activeRoom, targetStep, isStaffMode);
           }
         });
       });
@@ -1654,9 +1645,9 @@ export const UIMixin = {
   },
 
   _updateHeaderActions() {
-    const currentStep = (this.activeRoom && this.rooms && this.rooms[this.activeRoom])
-      ? (this.rooms[this.activeRoom].step || 1)
-      : (this.currentStep || 1);
+    const roomData = this.rooms && this.rooms[this.activeRoom];
+    const roomStep = roomData ? (roomData.step || 1) : 1;
+    const currentStep = (this.currentStep === 4 || roomStep === 4) ? 4 : (this.currentStep || roomStep || 1);
 
     [0, 1].forEach(cIdx => {
       const actionsEl = document.getElementById('canvasActions' + cIdx);
