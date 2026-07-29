@@ -151,7 +151,7 @@ export class CanvasRenderer {
           if (slotData.imageId && imageCache && imageCache[slotData.imageId]) {
             const cachedImg = imageCache[slotData.imageId];
             if (cachedImg && cachedImg.naturalWidth && cachedImg.naturalHeight) {
-              const cover = this._calcCover(cachedImg.naturalWidth, cachedImg.naturalHeight, s.w, s.h, slotData.zoom || 1.0);
+              const cover = this.calcCover(cachedImg.naturalWidth, cachedImg.naturalHeight, s.w, s.h, slotData.zoom || 1.0);
               slotW = cover.drawW;
               slotH = cover.drawH;
             }
