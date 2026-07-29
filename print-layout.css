@@ -843,20 +843,15 @@ body.pl-mode-staff #roomTabs {
   display: flex !important;
 }
 
-/* ── Step 4: Finish Layout (Customer View: Products | Staff View: Canvas Preview) ── */
-.pl-step-mode-4:not(.pl-mode-staff) #panelLeft,
-.pl-step-mode-4:not(.pl-mode-staff) #mainSwiper,
-.pl-step-mode-4:not(.pl-mode-staff) #paperInfoNote,
-.pl-step-mode-4:not(.pl-mode-staff) #canvasInfo,
-.pl-mode-user .pl-step-mode-4 #panelLeft,
-.pl-mode-user .pl-step-mode-4 #mainSwiper,
-.pl-mode-user .pl-step-mode-4 #paperInfoNote,
-.pl-mode-user .pl-step-mode-4 #canvasInfo {
+/* ── Step 4: Finish Layout (Identical 100% for both User and Staff) ── */
+.pl-step-mode-4 #panelLeft,
+.pl-step-mode-4 #mainSwiper,
+.pl-step-mode-4 #paperInfoNote,
+.pl-step-mode-4 #canvasInfo {
   display: none !important;
 }
 
-.pl-step-mode-4:not(.pl-mode-staff) #mainSwiperArea,
-.pl-mode-user .pl-step-mode-4 #mainSwiperArea {
+.pl-step-mode-4 #mainSwiperArea {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -868,8 +863,7 @@ body.pl-mode-staff #roomTabs {
   overflow-y: auto !important;
 }
 
-.pl-step-mode-4:not(.pl-mode-staff) #qrOverlay,
-.pl-mode-user .pl-step-mode-4 #qrOverlay {
+.pl-step-mode-4 #qrOverlay {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -878,8 +872,7 @@ body.pl-mode-staff #roomTabs {
   flex-shrink: 0 !important;
 }
 
-.pl-step-mode-4:not(.pl-mode-staff) #crossSellBanner,
-.pl-mode-user .pl-step-mode-4 #crossSellBanner {
+.pl-step-mode-4 #crossSellBanner {
   display: flex !important;
   flex-direction: column !important;
   flex: 1 !important;
@@ -892,32 +885,6 @@ body.pl-mode-staff #roomTabs {
   border-radius: 16px !important;
   box-sizing: border-box !important;
   box-shadow: 0 4px 20px rgba(0,0,0,0.04) !important;
-}
-
-/* Staff / Admin View - Step 4 */
-.pl-mode-staff #crossSellBanner,
-.pl-mode-staff #qrOverlay,
-.pl-mode-staff .pl-step-mode-4 #crossSellBanner,
-.pl-mode-staff .pl-step-mode-4 #qrOverlay {
-  display: none !important;
-}
-
-.pl-mode-staff .pl-step-mode-4 #panelLeft {
-  display: flex !important;
-  width: 320px !important;
-}
-
-.pl-mode-staff .pl-step-mode-4 #mainSwiperArea {
-  display: none !important;
-}
-
-.pl-mode-staff .pl-step-mode-4 #mainSwiper {
-  display: none !important;
-}
-
-.pl-mode-staff .pl-step-mode-4 .pl-slide {
-  height: min(calc(100vh - 280px), calc((100vw - 380px) * 1.418)) !important;
-  width: auto !important;
 }
 
 .pl-qr-overlay,
