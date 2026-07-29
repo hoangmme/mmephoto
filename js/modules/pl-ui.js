@@ -1677,12 +1677,12 @@ export const UIMixin = {
 
             if (targetSlot >= 0) {
               // Slot IS selected on active canvas -> assign photo into that slot!
-              this._assignToSlot(targetSlot, img.id);
+              this._assignToSlot(targetSlot, img.id, false, activeCIdx);
             } else {
               // No slot selected -> find first empty slot on ACTIVE canvas (never jump to other canvas)
               let emptySlotIdx = this.slots.findIndex(s => !s || !s.imageId);
               if (emptySlotIdx < 0) emptySlotIdx = 0; // fallback to slot 0 of active canvas
-              this._assignToSlot(emptySlotIdx, img.id);
+              this._assignToSlot(emptySlotIdx, img.id, false, activeCIdx);
             }
             this._updateImageListUI();
           }
