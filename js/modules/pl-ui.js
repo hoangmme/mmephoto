@@ -1056,7 +1056,7 @@ export const UIMixin = {
             this._syncState(this.activeRoom);
           }
           await this._uploadFinalFrame();
-          this._setStep(this.activeRoom, 4, true);
+          this._setStep(this.activeRoom, 4, false);
         }
       });
     }
