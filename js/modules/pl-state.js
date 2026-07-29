@@ -325,21 +325,28 @@ _updateActiveSession(room, onlyBadge = false) {
           }
 
           if (isStaffMode) {
-            if (active.slots && active.slots.length > 0) {
-              this.slots = JSON.parse(JSON.stringify(active.slots));
-            } else {
-              const t = ALL_TEMPLATES[this.currentTemplate] || Object.values(ALL_TEMPLATES)[0];
-              if (t && t.slots) {
-                this.slots = t.slots.map(s => ({ ...s, imageId: null, scale: 1, rotate: 0, x: 0, y: 0 }));
-              } else {
-                this.slots = [];
+            const isStaffEditing = (roomData.step || 1) < 4;
+            
+            if (!isStaffEditing) {
+              if (active.slots && active.slots.length > 0) {
+                this.slots = JSON.parse(JSON.stringify(active.slots));
               }
-            }
-
-            if (active.selectedImages) {
-              this.selectedPhotos = new Set(active.selectedImages);
+              if (active.selectedImages) {
+                this.selectedPhotos = new Set(active.selectedImages);
+              }
             } else {
-              this.selectedPhotos.clear();
+              // Khi Staff đang chỉnh sửa (Step 1, 2, 3): Ưu tiên dữ liệu Staff mới chọn
+              if (this.slots && this.slots.length > 0) {
+                active.slots = JSON.parse(JSON.stringify(this.slots));
+              } else if (active.slots && active.slots.length > 0) {
+                this.slots = JSON.parse(JSON.stringify(active.slots));
+              }
+
+              if (this.selectedPhotos && this.selectedPhotos.size > 0) {
+                active.selectedImages = Array.from(this.selectedPhotos);
+              } else if (active.selectedImages && active.selectedImages.length > 0) {
+                this.selectedPhotos = new Set(active.selectedImages);
+              }
             }
           } else {
             // Màn Khách: Chỉ nạp slots từ Server nếu local hoàn toàn rỗng hoặc chưa chọn ảnh nào

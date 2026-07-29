@@ -305,6 +305,7 @@ export const UIMixin = {
                 active.paperSize = this.paperSize;
                 active.canvasesState = this.canvasesState;
                 active.slots = [];
+                active.selectedImages = [];
               }
             }
             this._updateActiveSession(this.activeRoom);
