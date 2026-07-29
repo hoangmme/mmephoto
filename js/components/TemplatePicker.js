@@ -97,8 +97,8 @@ export class TemplatePicker {
 
     // Grid (scrollable)
     const grid = document.createElement('div');
-    grid.style.display = 'grid';
-    grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    grid.style.display = 'flex';
+    grid.style.flexWrap = 'wrap';
     grid.style.gap = '14px';
     grid.style.width = '100%';
     grid.style.maxWidth = '700px';
@@ -125,6 +125,8 @@ export class TemplatePicker {
       const isSelected = this.selectedTemplates.includes(k);
       const selIndex = this.selectedTemplates.indexOf(k);
 
+      item.style.width = 'calc(50% - 7px)';
+      item.style.boxSizing = 'border-box';
       item.style.border = isSelected ? '3px solid var(--pl-accent)' : '2px solid var(--pl-border)';
       item.style.borderRadius = '12px';
       item.style.padding = '8px';
