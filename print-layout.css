@@ -849,10 +849,16 @@ body.pl-mode-staff #roomTabs {
 
 /* Customer-only: hide panelLeft, show mainSwiperArea */
 body:not(.pl-mode-staff) .pl-main.pl-step-mode-4 #panelLeft,
-body:not(.pl-mode-staff) .pl-main.pl-step-mode-4 #mainSwiper,
 body:not(.pl-mode-staff) .pl-main.pl-step-mode-4 #paperInfoNote,
 body:not(.pl-mode-staff) .pl-main.pl-step-mode-4 #canvasInfo {
   display: none;
+}
+
+body:not(.pl-mode-staff) .pl-main.pl-step-mode-4 #mainSwiper {
+  display: flex !important;
+  width: 100% !important;
+  margin-top: 20px;
+  justify-content: flex-start !important;
 }
 
 body:not(.pl-mode-staff) .pl-main.pl-step-mode-4 #mainSwiperArea {
@@ -1247,8 +1253,7 @@ body:not(.pl-mode-staff) .pl-main.pl-step-mode-4 #crossSellBanner {
     padding: 10px 0;
   }
   .pl-step-mode-1 .pl-slide,
-  .pl-step-mode-2 .pl-slide,
-  .pl-step-mode-4 .pl-slide {
+  .pl-step-mode-2 .pl-slide {
     height: min(calc(100vh - 350px), calc(100vw * 1.418)) !important;
   }
   .pl-step-mode-3 .pl-slide {
