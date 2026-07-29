@@ -898,7 +898,7 @@ body:not(.pl-mode-staff) .pl-main.pl-step-mode-4 #crossSellBanner {
 
 .pl-cross-sell-slider {
   display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
+  grid-template-columns: repeat(4, 1fr) !important;
   gap: 12px !important;
   width: 100% !important;
   box-sizing: border-box !important;
@@ -914,7 +914,6 @@ body:not(.pl-mode-staff) .pl-main.pl-step-mode-4 #canvasContainer {
   display: flex !important;
   width: 100% !important;
   max-width: 900px !important;
-  min-height: 320px !important;
   height: auto !important;
   padding: 10px 0 !important;
   margin: 0 auto 20px auto !important;
@@ -1081,7 +1080,7 @@ body:not(.pl-mode-staff) .pl-main.pl-step-mode-4 #canvasContainer canvas {
 #qrOverlay,
 #qrImage {
   pointer-events: auto;
-  cursor: pointer;
+  cursor: default;
   user-select: none;
 }
 

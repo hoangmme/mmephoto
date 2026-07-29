@@ -578,10 +578,8 @@ _stopTimer(room) {
   _updateQRCode(room, session) {
     const qrOverlay = document.getElementById('qrOverlay');
     if (!qrOverlay) return;
-    qrOverlay.style.display = 'block';
-    qrOverlay.style.cursor = 'pointer';
-    qrOverlay.style.pointerEvents = 'auto';
-
+    qrOverlay.style.cursor = 'default';
+    
     const img = document.getElementById('qrImage');
     const b = localStorage.getItem('branchId') || '';
     const url = `${window.location.origin}/download.html?branch=${b}&room=${room}&session=${session}`;
@@ -591,18 +589,11 @@ _stopTimer(room) {
 
     if (img) {
       img.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=1&data=${encodeURIComponent(url)}`;
-      img.style.cursor = 'pointer';
-      img.style.pointerEvents = 'auto';
-      img.onclick = (e) => {
-        e.stopPropagation();
-        window.open(url, '_blank');
-      };
+      img.style.cursor = 'default';
+      img.onclick = null;
     }
 
-    qrOverlay.onclick = (e) => {
-      e.stopPropagation();
-      window.open(url, '_blank');
-    };
+    qrOverlay.onclick = null;
   }
 ,
 
