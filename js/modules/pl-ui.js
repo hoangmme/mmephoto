@@ -1155,26 +1155,7 @@ export const UIMixin = {
         btnRot.addEventListener('click', (e) => {
           e.stopPropagation();
           setActive();
-          let targetSlot = (this.canvasesState && this.canvasesState[cIdx])
-            ? this.canvasesState[cIdx].selectedSlotIndex
-            : this.selectedSlotIndex;
-
-          if (targetSlot < 0 && this.slots) {
-            targetSlot = this.slots.findIndex(s => s && s.imageId);
-            if (targetSlot < 0) targetSlot = 0;
-          }
-          if (targetSlot >= 0 && this.slots && this.slots[targetSlot]) {
-            this.selectedSlotIndex = targetSlot;
-            if (this.canvasesState && this.canvasesState[cIdx]) {
-              this.canvasesState[cIdx].selectedSlotIndex = targetSlot;
-            }
-            const sData = this.slots[targetSlot];
-            sData.rotation = ((sData.rotation || 0) + 90) % 360;
-            this._clampPan(targetSlot);
-            this._renderCanvas();
-            this._renderSlotProps();
-            this._updateImageListUI();
-          }
+          if (this._rotateActiveSlot) this._rotateActiveSlot(90, cIdx);
         });
       }
 
@@ -1183,26 +1164,7 @@ export const UIMixin = {
         btnReset.addEventListener('click', (e) => {
           e.stopPropagation();
           setActive();
-          let targetSlot = (this.canvasesState && this.canvasesState[cIdx])
-            ? this.canvasesState[cIdx].selectedSlotIndex
-            : this.selectedSlotIndex;
-
-          if (targetSlot < 0 && this.slots) {
-            targetSlot = this.slots.findIndex(s => s && s.imageId);
-            if (targetSlot < 0) targetSlot = 0;
-          }
-          if (targetSlot >= 0 && this.slots && this.slots[targetSlot]) {
-            this.selectedSlotIndex = targetSlot;
-            if (this.canvasesState && this.canvasesState[cIdx]) {
-              this.canvasesState[cIdx].selectedSlotIndex = targetSlot;
-            }
-            const sData = this.slots[targetSlot];
-            sData.rotation = 0;
-            this._clampPan(targetSlot);
-            this._renderCanvas();
-            this._renderSlotProps();
-            this._updateImageListUI();
-          }
+          if (this._resetActiveSlotRotation) this._resetActiveSlotRotation(cIdx);
         });
       }
 
@@ -1290,7 +1252,8 @@ export const UIMixin = {
       this.canvas.style.cursor = 'grabbing';
     });
 
-    canvasEl.addEventListener('mousemove', (e) => {
+    window.addEventListener('mousemove', (e) => {
+      if (!isRotatingSlot && !isDragging) return;
       setActive();
       if (isRotatingSlot && this.selectedSlotIndex >= 0) {
         const slot = this.slots[this.selectedSlotIndex];
@@ -1345,8 +1308,7 @@ export const UIMixin = {
       this.canvas.style.cursor = '';
     };
 
-    canvasEl.addEventListener('mouseup', endMouseDrag);
-    canvasEl.addEventListener('mouseleave', endMouseDrag);
+    window.addEventListener('mouseup', endMouseDrag);
 
     // Touch support (iOS / iPad): Smooth 1-finger Pan & Canva Rotate Handle, 2-finger Pinch Zoom (No Rotation Jitter)
     let touchStartX, touchStartY;
@@ -1760,8 +1722,14 @@ export const UIMixin = {
   _updateHeaderActions() {
     if (!this._headerActions) {
       this._headerActions = new HeaderActions({
-        onRotate: (cIdx) => this._rotateActiveSlot(90, cIdx),
-        onReset: (cIdx) => this._resetActiveSlotRotation(cIdx)
+        onRotate: (cIdx) => {
+          this.activeCanvasIndex = cIdx;
+          this._rotateActiveSlot(90, cIdx);
+        },
+        onReset: (cIdx) => {
+          this.activeCanvasIndex = cIdx;
+          this._resetActiveSlotRotation(cIdx);
+        }
       });
     }
     const currentStep = (isStaffMode && this.currentStep)
@@ -1773,6 +1741,31 @@ export const UIMixin = {
 
   // ── Canvas Click → Select Slot ──
   ,
+
+  _rotateActiveSlot(degrees, cIdx) {
+    if (this.canvasesState && this.canvasesState[cIdx]) {
+      const stateSel = this.canvasesState[cIdx].selectedSlotIndex;
+      if (stateSel >= 0 && this.canvasesState[cIdx].slots[stateSel]) {
+        this.canvasesState[cIdx].slots[stateSel].rotation = (this.canvasesState[cIdx].slots[stateSel].rotation + degrees) % 360;
+        if (this._syncStaffDraftState) this._syncStaffDraftState();
+        if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
+      }
+    }
+  },
+
+  _resetActiveSlotRotation(cIdx) {
+    if (this.canvasesState && this.canvasesState[cIdx]) {
+      const stateSel = this.canvasesState[cIdx].selectedSlotIndex;
+      if (stateSel >= 0 && this.canvasesState[cIdx].slots[stateSel]) {
+        this.canvasesState[cIdx].slots[stateSel].rotation = 0;
+        this.canvasesState[cIdx].slots[stateSel].panX = 0;
+        this.canvasesState[cIdx].slots[stateSel].panY = 0;
+        this.canvasesState[cIdx].slots[stateSel].zoom = 1.0;
+        if (this._syncStaffDraftState) this._syncStaffDraftState();
+        if (this._requestRenderCanvas) this._requestRenderCanvas(); else this._renderCanvas();
+      }
+    }
+  },
 
   async _uploadTestImages(e) {
     const branch = localStorage.getItem('branchId') || 'CN01';
