@@ -404,9 +404,8 @@ export const UIMixin = {
       }
     }
 
-    // Per-room Working Draft vs. Official Committed Session Restore
+    // Step 4: Shared Read-Only Official Session Component (Strictly no auto-fill)
     if (step === 4) {
-      // Step 4: Shared Read-Only Official Session Component
       this.selectedSlotIndex = -1;
       if (roomData && roomData.queue && roomData.session) {
         const activeSess = roomData.queue.find(s => s.id === roomData.session);
@@ -416,39 +415,13 @@ export const UIMixin = {
             this.currentTemplate = this.selectedTemplates[0];
           }
           if (activeSess.paperSize) this.paperSize = activeSess.paperSize;
-          if (activeSess.selectedImages) {
-            this.selectedPhotos = new Set(activeSess.selectedImages);
-          }
-
           if (activeSess.canvasesState && activeSess.canvasesState.length > 0) {
             this.canvasesState = JSON.parse(JSON.stringify(activeSess.canvasesState));
           } else {
-            const selTmpls = (this.selectedTemplates && this.selectedTemplates.length > 0) ? this.selectedTemplates : [this.currentTemplate];
-            this.canvasesState = selTmpls.map(tId => {
-              const tmpl = ALL_TEMPLATES[tId];
-              const numSlots = tmpl && tmpl.slots ? tmpl.slots.length : 0;
-              return {
-                templateId: tId,
-                slots: Array(numSlots).fill(null).map(() => ({ imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: 0 })),
-                selectedSlotIndex: -1
-              };
-            });
+            this.canvasesState = [];
           }
-
-          // Ensure Step 4 slots are auto-populated from selectedImages if any slot is empty
-          const selArr = Array.from(this.selectedPhotos || []);
-          if (selArr.length > 0) {
-            let globalImgIdx = 0;
-            this.canvasesState.forEach(cState => {
-              if (cState && cState.slots) {
-                cState.slots.forEach(slot => {
-                  if (slot && !slot.imageId && globalImgIdx < selArr.length) {
-                    slot.imageId = selArr[globalImgIdx];
-                    globalImgIdx++;
-                  }
-                });
-              }
-            });
+          if (activeSess.selectedImages) {
+            this.selectedPhotos = new Set(activeSess.selectedImages);
           }
 
           const s4ActiveIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;

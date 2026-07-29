@@ -16,7 +16,7 @@ Create a high-performance, real-time sync Photobooth management platform. Provid
 - **Normalized Coordinate Math in Canvas Rendering**:
   - All slot adjustments (`zoom`, `panX`, `panY`, `rotation`) use relative ratios (0.0 to 1.0) calculated against template bounding boxes, rendering identical results across preview UI and 300DPI print outputs (A5: 1748x2480px).
 - **Step 4 Shared Component & Draft vs. Committed Session Architecture**:
-  - **Step 4 (Shared Component)**: Displays the committed official session (Read-Only Preview + QR Download + Cross-Sell Products) shared by both User and Staff.
+  - **Step 4 (Shared Component)**: Displays the committed official session (Read-Only Preview + QR Download + Cross-Sell Products) shared by both User and Staff. Strictly NEVER runs auto-fill.
   - **User Flow**:
     - Edits in Steps 1, 2, 3 update local User Draft.
     - User Draft is committed to Official Session ONLY when User clicks "Hoàn Tất (Gửi cho Staff)" to enter Step 4.
