@@ -426,6 +426,7 @@ export const UIMixin = {
       this._updateHeaderActions();
     } else {
       // Steps 1, 2, 3: Working Draft per room (Staff or User)
+      if (this._loadDraftsFromStorage) this._loadDraftsFromStorage();
       const draftMap = isStaffMode ? this._staffDrafts : this._userDrafts;
       const currentDraft = (draftMap && this.activeRoom && draftMap[this.activeRoom]) ? draftMap[this.activeRoom] : null;
 
@@ -637,8 +638,22 @@ export const UIMixin = {
     });
   },
 
+  _loadDraftsFromStorage() {
+    try {
+      if (!this._staffDrafts) {
+        const staffSaved = localStorage.getItem('mme_staff_drafts');
+        if (staffSaved) this._staffDrafts = JSON.parse(staffSaved);
+      }
+      if (!this._userDrafts) {
+        const userSaved = localStorage.getItem('mme_user_drafts');
+        if (userSaved) this._userDrafts = JSON.parse(userSaved);
+      }
+    } catch (e) {}
+  },
+
   _syncStaffDraftState() {
     if (!this.activeRoom) return;
+    this._loadDraftsFromStorage();
     if (isStaffMode) {
       if (!this._staffDrafts) this._staffDrafts = {};
       this._staffDrafts[this.activeRoom] = {
@@ -649,6 +664,7 @@ export const UIMixin = {
         selectedPhotos: Array.from(this.selectedPhotos || [])
       };
       this._staffDraftState = this._staffDrafts[this.activeRoom];
+      try { localStorage.setItem('mme_staff_drafts', JSON.stringify(this._staffDrafts)); } catch (e) {}
     } else {
       if (!this._userDrafts) this._userDrafts = {};
       this._userDrafts[this.activeRoom] = {
@@ -658,6 +674,7 @@ export const UIMixin = {
         slots: JSON.parse(JSON.stringify(this.slots || [])),
         selectedPhotos: Array.from(this.selectedPhotos || [])
       };
+      try { localStorage.setItem('mme_user_drafts', JSON.stringify(this._userDrafts)); } catch (e) {}
     }
   },
 
@@ -669,6 +686,7 @@ export const UIMixin = {
     const activeSess = roomData.queue.find(s => s.id === roomData.session);
     if (!activeSess) return;
 
+    this._loadDraftsFromStorage();
     const currentDraft = isStaffMode
       ? (this._staffDrafts && this._staffDrafts[targetRoom] ? this._staffDrafts[targetRoom] : null)
       : (this._userDrafts && this._userDrafts[targetRoom] ? this._userDrafts[targetRoom] : null);
@@ -685,6 +703,15 @@ export const UIMixin = {
       activeSess.canvasesState = JSON.parse(JSON.stringify(this.canvasesState || []));
       activeSess.slots = JSON.parse(JSON.stringify(this.slots || []));
       activeSess.selectedImages = Array.from(this.selectedPhotos || []);
+    }
+
+    // Clear committed draft from localStorage
+    if (isStaffMode && this._staffDrafts) {
+      delete this._staffDrafts[targetRoom];
+      try { localStorage.setItem('mme_staff_drafts', JSON.stringify(this._staffDrafts)); } catch (e) {}
+    } else if (this._userDrafts) {
+      delete this._userDrafts[targetRoom];
+      try { localStorage.setItem('mme_user_drafts', JSON.stringify(this._userDrafts)); } catch (e) {}
     }
 
     if (this._syncStateDirect) this._syncStateDirect(targetRoom);
