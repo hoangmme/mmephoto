@@ -126,16 +126,16 @@ export class TemplatePicker {
       item.style.position = 'relative';
       item.style.transition = 'transform 0.15s, box-shadow 0.15s';
       if (isSelected) {
-        item.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        item.style.boxShadow = '0 4px 12px rgba(79, 50, 25, 0.2)';
         item.style.transform = 'scale(1.02)';
       }
 
-      // Thumbnail - reduced height
+      // Thumbnail - clean aspect ratio matching template canvas
       const thumb = document.createElement('div');
       thumb.style.width = '100%';
-      thumb.style.aspectRatio = '3/4';
+      thumb.style.aspectRatio = (t.canvas_width && t.canvas_height) ? `${t.canvas_width} / ${t.canvas_height}` : '1748 / 2480';
       thumb.style.background = '#e5e7eb';
-      thumb.style.borderRadius = '6px';
+      thumb.style.borderRadius = '8px';
       thumb.style.marginBottom = '8px';
       thumb.style.position = 'relative';
       thumb.style.overflow = 'hidden';
@@ -183,25 +183,25 @@ export class TemplatePicker {
       }
       item.appendChild(thumb);
 
-      // Selection badge
+      // Selection badge - neatly inside top right corner of card
       if (isSelected) {
         const badge = document.createElement('div');
         badge.innerText = this.paperSize === 'A5' ? (selIndex + 1) : '✓';
         badge.style.position = 'absolute';
-        badge.style.top = '-8px';
-        badge.style.right = '-8px';
-        badge.style.background = 'var(--pl-accent)';
+        badge.style.top = '6px';
+        badge.style.right = '6px';
+        badge.style.background = 'var(--pl-accent, #4f3219)';
         badge.style.color = '#fff';
-        badge.style.width = '28px';
-        badge.style.height = '28px';
+        badge.style.width = '24px';
+        badge.style.height = '24px';
         badge.style.borderRadius = '50%';
         badge.style.display = 'flex';
         badge.style.alignItems = 'center';
         badge.style.justifyContent = 'center';
         badge.style.fontWeight = 'bold';
-        badge.style.fontSize = '14px';
-        badge.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
-        badge.style.zIndex = '3';
+        badge.style.fontSize = '13px';
+        badge.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+        badge.style.zIndex = '10';
         item.appendChild(badge);
       }
 
