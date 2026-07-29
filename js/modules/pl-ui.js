@@ -449,6 +449,9 @@ export const UIMixin = {
         this.paperSize = currentDraft.paperSize || this.paperSize;
         this.canvasesState = JSON.parse(JSON.stringify(currentDraft.canvasesState || []));
         this.selectedPhotos = new Set(currentDraft.selectedPhotos || []);
+        if (currentDraft.activeCanvasIndex !== undefined && currentDraft.activeCanvasIndex !== null) {
+          this.activeCanvasIndex = currentDraft.activeCanvasIndex;
+        }
         const activeIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
         if (this.canvasesState && this.canvasesState[activeIdx]) {
           this.slots = this.canvasesState[activeIdx].slots || [];
@@ -696,7 +699,8 @@ export const UIMixin = {
         paperSize: this.paperSize,
         canvasesState: JSON.parse(JSON.stringify(this.canvasesState || [])),
         slots: JSON.parse(JSON.stringify(this.slots || [])),
-        selectedPhotos: Array.from(this.selectedPhotos || [])
+        selectedPhotos: Array.from(this.selectedPhotos || []),
+        activeCanvasIndex: (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0
       };
       this._staffDraftState = this._staffDrafts[this.activeRoom];
       try { localStorage.setItem('mme_staff_drafts', JSON.stringify(this._staffDrafts)); } catch (e) {}
@@ -707,7 +711,8 @@ export const UIMixin = {
         paperSize: this.paperSize,
         canvasesState: JSON.parse(JSON.stringify(this.canvasesState || [])),
         slots: JSON.parse(JSON.stringify(this.slots || [])),
-        selectedPhotos: Array.from(this.selectedPhotos || [])
+        selectedPhotos: Array.from(this.selectedPhotos || []),
+        activeCanvasIndex: (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0
       };
       try { localStorage.setItem('mme_user_drafts', JSON.stringify(this._userDrafts)); } catch (e) {}
     }
@@ -1121,7 +1126,28 @@ export const UIMixin = {
             this.selectedSlotIndex = this.canvasesState[cIdx].selectedSlotIndex;
           }
         }
+        if (this._syncStaffDraftState) this._syncStaffDraftState();
       };
+
+      const labelEl = document.getElementById('canvasLabel' + cIdx);
+      if (labelEl) {
+        labelEl.onclick = () => {
+          setActive();
+          this._renderCanvas();
+          this._updateImageListUI();
+        };
+      }
+
+      const wrapperBox = document.getElementById('canvasWrapper' + cIdx);
+      if (wrapperBox) {
+        wrapperBox.onclick = (e) => {
+          if (e.target.tagName !== 'CANVAS') {
+            setActive();
+            this._renderCanvas();
+            this._updateImageListUI();
+          }
+        };
+      }
 
       // Header Action Buttons (Xoay 90° & Reset 0°)
       const btnRot = document.getElementById('btnRotate90_' + cIdx);

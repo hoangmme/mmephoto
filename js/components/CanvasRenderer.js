@@ -140,8 +140,23 @@ export class CanvasRenderer {
         ctx.translate(s.cx, s.cy);
         if (s.rotation) ctx.rotate(s.rotation);
 
-        const slotW = s.w;
-        const slotH = s.h;
+        let slotW = s.w;
+        let slotH = s.h;
+
+        if (slotData) {
+          ctx.translate(slotData.panX || 0, slotData.panY || 0);
+          if (slotData.rotation) {
+            ctx.rotate(slotData.rotation * Math.PI / 180);
+          }
+          if (slotData.imageId && imageCache && imageCache[slotData.imageId]) {
+            const cachedImg = imageCache[slotData.imageId];
+            if (cachedImg && cachedImg.naturalWidth && cachedImg.naturalHeight) {
+              const cover = this._calcCover(cachedImg.naturalWidth, cachedImg.naturalHeight, s.w, s.h, slotData.zoom || 1.0);
+              slotW = cover.drawW;
+              slotH = cover.drawH;
+            }
+          }
+        }
 
         // Glowing Cyan Border
         ctx.strokeStyle = '#0284c7';

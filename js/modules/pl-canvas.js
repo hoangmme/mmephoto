@@ -117,6 +117,10 @@ _loadTemplateImages() {
       }
     }
 
+    if (clickedSlot < 0 && tmpl.slots.length === 1) {
+      clickedSlot = 0;
+    }
+
     if (clickedSlot >= 0) {
       this.selectedSlotIndex = clickedSlot;
 
