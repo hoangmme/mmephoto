@@ -367,8 +367,8 @@ _updateActiveSession(room, onlyBadge = false) {
         const uniqueUrls = Array.from(new Set(active.images || []))
           .filter(url => url && !url.includes('00_frame'));
         
-        roomData.images = uniqueUrls.map((url, idx) => {
-          const id = 'img_' + idx + '_' + url.replace(/[^a-zA-Z0-9]/g, '_');
+        roomData.images = uniqueUrls.map(url => {
+          const id = 'img_' + url.replace(/[^a-zA-Z0-9]/g, '_');
           this._preloadImage(id, url).then(() => {
             if (this.activeRoom === room) this._renderCanvas();
           });
