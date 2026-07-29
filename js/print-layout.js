@@ -4,12 +4,12 @@
 // Independent module for A5 print layout
 // Reads processed images from IndexedDB batch
 
-import { ALL_TEMPLATES, customTemplates, isStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './modules/pl-globals.js?v=160';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './modules/pl-globals.js?v=161';
 
-import { StateMixin } from './modules/pl-state.js?v=160';
-import { UIMixin } from './modules/pl-ui.js?v=160';
-import { CanvasMixin } from './modules/pl-canvas.js?v=160';
-import { QueueMixin } from './modules/pl-queue.js?v=160';
+import { StateMixin } from './modules/pl-state.js?v=161';
+import { UIMixin } from './modules/pl-ui.js?v=161';
+import { CanvasMixin } from './modules/pl-canvas.js?v=161';
+import { QueueMixin } from './modules/pl-queue.js?v=161';
 
 class PrintLayoutApp {
   constructor() {

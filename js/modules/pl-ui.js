@@ -774,9 +774,14 @@ export const UIMixin = {
 
 
 
-    document.getElementById('btnSelectAll').addEventListener('click', () => this._selectAll());
-    document.getElementById('btnDeselectAll').addEventListener('click', () => this._deselectAll());
-    document.getElementById('btnAutoFill').addEventListener('click', () => this._autoFill());
+    const btnSelectAll = document.getElementById('btnSelectAll');
+    if (btnSelectAll) btnSelectAll.addEventListener('click', () => this._selectAll());
+
+    const btnDeselectAll = document.getElementById('btnDeselectAll');
+    if (btnDeselectAll) btnDeselectAll.addEventListener('click', () => this._deselectAll());
+
+    const btnAutoFill = document.getElementById('btnAutoFill');
+    if (btnAutoFill) btnAutoFill.addEventListener('click', () => this._autoFill());
 
     const btnUploadTest = document.getElementById('btnUploadTest');
     const fileUploadTest = document.getElementById('fileUploadTest');
