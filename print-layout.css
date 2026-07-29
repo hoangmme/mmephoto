@@ -872,14 +872,11 @@ body.pl-mode-staff #roomTabs {
 }
 
 .pl-mode-staff .pl-step-mode-4 #mainSwiperArea {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
+  display: none !important;
 }
 
 .pl-mode-staff .pl-step-mode-4 #mainSwiper {
-  display: flex !important;
+  display: none !important;
 }
 
 .pl-mode-staff .pl-step-mode-4 .pl-slide {
