@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="print-layout.css?v=158">
+  <link rel="stylesheet" href="print-layout.css?v=160">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
   <script>
@@ -159,23 +159,25 @@
       <!-- Left Panel: Image List -->
       <aside class="pl-panel pl-panel-left" id="panelLeft" style="display:none">
         <div class="pl-panel-header">
-          <h3>📷 Ảnh đã chụp</h3>
-          <span class="pl-image-count" id="imageCount">0 ảnh</span>
-        </div>
-        <div class="pl-actions">
-          <button class="pl-action-btn" id="btnSelectAll">Chọn tất cả</button>
-          <button class="pl-action-btn" id="btnDeselectAll">Bỏ chọn</button>
-          <button class="pl-action-btn pl-action-primary" id="btnAutoFill">⚡ Auto Fill</button>
-          <button class="pl-action-btn" id="btnUploadTest" title="Tải ảnh test"
-            style="padding:4px 8px; font-weight:bold;">+</button>
-          <input type="file" id="fileUploadTest" multiple accept="image/*" style="display:none;">
-        </div>
-        <div class="pl-image-list" id="imageList">
-          <div class="pl-loading">Đang tải ảnh...</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <h3>Thư viện ảnh</h3>
+            <span class="pl-image-count" id="imageCount">0 ảnh</span>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 8px; width: 100%;">
+            <input type="file" id="testUploadInput" multiple accept="image/*" style="display:none;" />
+            <button class="pl-btn-secondary" id="btnTestUpload" style="flex:1; font-size:12px; padding:6px 10px;">
+              📁 Tải ảnh thủ công (Staff)
+            </button>
+          </div>
         </div>
 
-        <div class="pl-panel-footer">
-          <a href="https://mme.vn" target="_blank">Powered by <strong>MME Digital</strong></a>
+        <div class="pl-image-list" id="imageList">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="pl-panel-footer" id="panelLeftFooter">
+          <!-- Hidden by default -->
         </div>
       </aside>
 
@@ -194,7 +196,7 @@
           <div class="pl-canvas-col">
             <div class="pl-canvas-label" id="canvasLabel0" style="display:none;">
               <span class="pl-canvas-title">Khung 1</span>
-              <div class="pl-canvas-actions">
+              <div class="pl-canvas-actions" id="canvasActions0" style="display:none;">
                 <button class="pl-btn-rotate-90" id="btnRotate90_0">↻ Xoay 90°</button>
                 <button class="pl-btn-reset-0" id="btnReset0_0">↺ Reset 0°</button>
               </div>
@@ -206,7 +208,7 @@
           <div class="pl-canvas-col" id="colCanvas1" style="display:none">
             <div class="pl-canvas-label" id="canvasLabel1" style="display:none;">
               <span class="pl-canvas-title">Khung 2</span>
-              <div class="pl-canvas-actions">
+              <div class="pl-canvas-actions" id="canvasActions1" style="display:none;">
                 <button class="pl-btn-rotate-90" id="btnRotate90_1">↻ Xoay 90°</button>
                 <button class="pl-btn-reset-0" id="btnReset0_1">↺ Reset 0°</button>
               </div>
@@ -230,7 +232,7 @@
 
   <!-- Core Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=159"></script>
+  <script type="module" src="js/print-layout.js?v=160"></script>
 
 
 

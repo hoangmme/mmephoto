@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=160';
 import { TemplatePicker } from '../components/TemplatePicker.js?v=150';
 
 export const UIMixin = {
@@ -959,12 +959,15 @@ export const UIMixin = {
         btnRot.addEventListener('click', (e) => {
           e.stopPropagation();
           setActive();
-          let targetSlot = this.selectedSlotIndex;
+          let targetSlot = (this.canvasesState && this.canvasesState[cIdx])
+            ? this.canvasesState[cIdx].selectedSlotIndex
+            : this.selectedSlotIndex;
+
           if (targetSlot < 0 && this.slots) {
-            targetSlot = this.slots.findIndex(s => s.imageId);
+            targetSlot = this.slots.findIndex(s => s && s.imageId);
             if (targetSlot < 0) targetSlot = 0;
           }
-          if (targetSlot >= 0 && this.slots[targetSlot]) {
+          if (targetSlot >= 0 && this.slots && this.slots[targetSlot]) {
             this.selectedSlotIndex = targetSlot;
             if (this.canvasesState && this.canvasesState[cIdx]) {
               this.canvasesState[cIdx].selectedSlotIndex = targetSlot;
@@ -974,6 +977,7 @@ export const UIMixin = {
             this._clampPan(targetSlot);
             this._renderCanvas();
             this._renderSlotProps();
+            this._updateImageListUI();
           }
         });
       }
@@ -983,12 +987,15 @@ export const UIMixin = {
         btnReset.addEventListener('click', (e) => {
           e.stopPropagation();
           setActive();
-          let targetSlot = this.selectedSlotIndex;
+          let targetSlot = (this.canvasesState && this.canvasesState[cIdx])
+            ? this.canvasesState[cIdx].selectedSlotIndex
+            : this.selectedSlotIndex;
+
           if (targetSlot < 0 && this.slots) {
-            targetSlot = this.slots.findIndex(s => s.imageId);
+            targetSlot = this.slots.findIndex(s => s && s.imageId);
             if (targetSlot < 0) targetSlot = 0;
           }
-          if (targetSlot >= 0 && this.slots[targetSlot]) {
+          if (targetSlot >= 0 && this.slots && this.slots[targetSlot]) {
             this.selectedSlotIndex = targetSlot;
             if (this.canvasesState && this.canvasesState[cIdx]) {
               this.canvasesState[cIdx].selectedSlotIndex = targetSlot;
@@ -998,6 +1005,7 @@ export const UIMixin = {
             this._clampPan(targetSlot);
             this._renderCanvas();
             this._renderSlotProps();
+            this._updateImageListUI();
           }
         });
       }
@@ -1590,6 +1598,25 @@ export const UIMixin = {
           thumb.classList.add('selected');
         }
         if (usedIds.has(imgId)) thumb.classList.add('used');
+      }
+    });
+
+    this._updateHeaderActions();
+  },
+
+  _updateHeaderActions() {
+    [0, 1].forEach(cIdx => {
+      const actionsEl = document.getElementById('canvasActions' + cIdx);
+      if (!actionsEl) return;
+
+      const activeSlotIdx = (this.canvasesState && this.canvasesState[cIdx])
+        ? this.canvasesState[cIdx].selectedSlotIndex
+        : (cIdx === (this.activeCanvasIndex || 0) ? this.selectedSlotIndex : -1);
+
+      if (cIdx === (this.activeCanvasIndex || 0) && activeSlotIdx >= 0) {
+        actionsEl.style.display = 'flex';
+      } else {
+        actionsEl.style.display = 'none';
       }
     });
   }
