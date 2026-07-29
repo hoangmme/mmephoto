@@ -104,7 +104,16 @@ export class TemplatePicker {
     grid.style.overflowY = 'auto';
     grid.style.paddingBottom = '8px';
 
-    const filteredKeys = Object.keys(this.templates);
+    const filteredKeys = Object.keys(this.templates).filter(k => {
+      const t = this.templates[k];
+      if (t.supportedSizes && Array.isArray(t.supportedSizes)) {
+        return t.supportedSizes.includes(this.paperSize);
+      }
+      if (t.paper_size) {
+        return t.paper_size === this.paperSize;
+      }
+      return true;
+    });
 
     filteredKeys.forEach(k => {
       const t = this.templates[k];

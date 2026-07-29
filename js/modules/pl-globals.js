@@ -34,12 +34,14 @@ export function setStaffMode(val) {
 const TEMPLATES = {
   '1photo': {
     name: '1 Photo',
+    supportedSizes: ['A4', 'A5'],
     slots: [
       { x: PADDING, y: PADDING, w: A5_WIDTH - PADDING * 2, h: A5_HEIGHT - PADDING * 2 }
     ]
   },
   '2photos': {
     name: '2 Photos',
+    supportedSizes: ['A4', 'A5'],
     slots: [
       { x: PADDING, y: PADDING, w: A5_WIDTH - PADDING * 2, h: (A5_HEIGHT - PADDING * 3) / 2 },
       { x: PADDING, y: PADDING * 2 + (A5_HEIGHT - PADDING * 3) / 2, w: A5_WIDTH - PADDING * 2, h: (A5_HEIGHT - PADDING * 3) / 2 }
@@ -47,6 +49,7 @@ const TEMPLATES = {
   },
   '4photos': {
     name: '4 Photos',
+    supportedSizes: ['A4', 'A5'],
     slots: [
       { x: PADDING, y: PADDING, w: (A5_WIDTH - PADDING * 3) / 2, h: (A5_HEIGHT - PADDING * 3) / 2 },
       { x: PADDING * 2 + (A5_WIDTH - PADDING * 3) / 2, y: PADDING, w: (A5_WIDTH - PADDING * 3) / 2, h: (A5_HEIGHT - PADDING * 3) / 2 },
