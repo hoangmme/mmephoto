@@ -414,6 +414,23 @@ export const UIMixin = {
       if (this.canvasesState) {
         this.canvasesState.forEach(cs => { if (cs) cs.selectedSlotIndex = -1; });
       }
+
+      // If Staff is viewing Step 4 without having clicked "✅ Hoàn Tất (Gửi cho User)", load committed activeSess state (show ảnh cũ)
+      if (isStaffMode && roomData && roomData.queue && roomData.session) {
+        const activeSess = roomData.queue.find(s => s.id === roomData.session);
+        if (activeSess && activeSess.canvasesState) {
+          this.selectedTemplates = activeSess.selectedTemplates ? [...activeSess.selectedTemplates] : this.selectedTemplates;
+          this.paperSize = activeSess.paperSize || this.paperSize;
+          this.canvasesState = JSON.parse(JSON.stringify(activeSess.canvasesState));
+          if (this.canvasesState && this.canvasesState[this.activeCanvasIndex || 0]) {
+            this.slots = this.canvasesState[this.activeCanvasIndex || 0].slots || [];
+          }
+          if (activeSess.selectedImages) {
+            this.selectedPhotos = new Set(activeSess.selectedImages);
+          }
+        }
+      }
+
       this._updateHeaderActions();
     }
 
@@ -786,9 +803,25 @@ export const UIMixin = {
 
           if (this._autoFill) this._autoFill();
           this._setStep(this.activeRoom, 3);
-        } else if (cur === 3) {
+        } else if (cur === 3 || (isStaffMode && cur < 4)) {
           const roomData = this.rooms[this.activeRoom];
-          if (roomData) roomData.step = 4;
+          if (roomData) {
+            roomData.step = 4;
+            this._staffEditingOverride = false; // Staff finishes editing, commit changes to User
+
+            // Commit Staff's newly edited layout into activeSess
+            if (roomData.queue && roomData.session) {
+              const activeSess = roomData.queue.find(s => s.id === roomData.session);
+              if (activeSess) {
+                activeSess.selectedTemplates = [...(this.selectedTemplates || [])];
+                activeSess.paperSize = this.paperSize;
+                activeSess.canvasesState = JSON.parse(JSON.stringify(this.canvasesState || []));
+                activeSess.slots = JSON.parse(JSON.stringify(this.slots || []));
+                activeSess.selectedImages = Array.from(this.selectedPhotos || []);
+                activeSess.step = 4;
+              }
+            }
+          }
           if (this._syncStateDirect) {
             await this._syncStateDirect(this.activeRoom);
           } else {
