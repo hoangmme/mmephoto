@@ -282,8 +282,10 @@ export const UIMixin = {
         onSelectRoom: (roomKey) => {
           this.activeRoom = roomKey;
           if (this.rooms[roomKey]) this.rooms[roomKey].hasNew = false;
+          this.activeCanvasIndex = 0;
           this._renderTabs();
           this._updateUIForRoom();
+          this._renderCanvas();
         }
       });
     }
@@ -402,37 +404,26 @@ export const UIMixin = {
       }
     }
 
-    // Manage Staff Working Draft state
-    if (isStaffMode) {
-      if (step < 4) {
-        if (this._staffDraftState) {
-          // Restore active working draft into current editor memory
-          this.selectedTemplates = [...(this._staffDraftState.selectedTemplates || [])];
-          this.paperSize = this._staffDraftState.paperSize || this.paperSize;
-          const activeIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
-          if (this.canvasesState && this.canvasesState[activeIdx]) {
-            this.slots = this.canvasesState[activeIdx].slots || [];
-          }
-          if (this._staffDraftState.selectedPhotos) {
-            this.selectedPhotos = new Set(this._staffDraftState.selectedPhotos);
-          }
-        } else {
-          // Initialize working draft
-          this._syncStaffDraftState();
+    // Restore active room session state (canvasesState, selectedTemplates, paperSize, selectedPhotos)
+    if (roomData && roomData.queue && roomData.session) {
+      const activeSess = roomData.queue.find(s => s.id === roomData.session);
+      if (activeSess) {
+        if (activeSess.selectedTemplates && activeSess.selectedTemplates.length > 0) {
+          this.selectedTemplates = [...activeSess.selectedTemplates];
+          this.currentTemplate = this.selectedTemplates[0];
         }
-      }
-    } else {
-      // Customer Mode: Sync from room session
-      if (roomData && roomData.queue) {
-        const activeSess = roomData.queue.find(s => s.id === roomData.session);
-        if (activeSess) {
-          if (activeSess.canvasesState && activeSess.canvasesState.length > 0) {
-            this.canvasesState = activeSess.canvasesState;
-          }
-          const custActiveIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
-          if (this.canvasesState && this.canvasesState[custActiveIdx]) {
-            this.slots = this.canvasesState[custActiveIdx].slots || [];
-          }
+        if (activeSess.paperSize) {
+          this.paperSize = activeSess.paperSize;
+        }
+        if (activeSess.canvasesState && activeSess.canvasesState.length > 0) {
+          this.canvasesState = JSON.parse(JSON.stringify(activeSess.canvasesState));
+        }
+        if (activeSess.selectedImages) {
+          this.selectedPhotos = new Set(activeSess.selectedImages);
+        }
+        const activeIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
+        if (this.canvasesState && this.canvasesState[activeIdx]) {
+          this.slots = this.canvasesState[activeIdx].slots || [];
         }
       }
     }
