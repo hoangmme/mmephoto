@@ -735,14 +735,14 @@ body.pl-mode-staff #roomTabs {
   display: none !important;
 }
 .pl-step-mode-2 .pl-image-list {
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   padding: 20px;
 }
 
 @media (min-width: 820px) {
   .pl-step-mode-2 .pl-image-list {
-    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-columns: repeat(6, 1fr) !important;
   }
 }
 
@@ -773,11 +773,14 @@ body.pl-mode-staff #roomTabs {
   width: 100% !important;
   min-height: 0 !important;
   order: 1 !important;
-  align-items: center !important;
+  align-items: flex-start !important;
   justify-content: center !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 }
 
-.pl-step-mode-3 #panelLeft {
+.pl-step-mode-3 #panelLeft,
+.pl-step-mode-4 #panelLeft {
   display: flex !important;
   width: 100% !important;
   max-width: 100% !important;
@@ -787,6 +790,11 @@ body.pl-mode-staff #roomTabs {
   order: 2 !important;
   flex-shrink: 0 !important;
   background: var(--pl-bg-panel);
+}
+
+.pl-step-mode-4 .pl-panel-header,
+.pl-step-mode-4 #imageList {
+  display: none !important;
 }
 
 .pl-step-mode-3 .pl-image-list {

@@ -534,6 +534,11 @@ export const UIMixin = {
       qrOverlay.style.display = (step === 4 && !isStaffMode) ? 'flex' : 'none';
     }
 
+    const step4BottomBar = document.getElementById('step4BottomBar');
+    if (step4BottomBar) {
+      step4BottomBar.style.display = (step === 4) ? 'flex' : 'none';
+    }
+
     const startOverlay = document.getElementById('startSessionOverlay');
     if (startOverlay) {
       if (!isStaffMode && roomData && roomData.session && !roomData.sessionStarted && step !== 4) {

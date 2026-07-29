@@ -139,6 +139,20 @@ export class TemplatePicker {
       thumb.style.marginBottom = '8px';
       thumb.style.position = 'relative';
       thumb.style.overflow = 'hidden';
+
+      // Slot count badge
+      const slotCount = document.createElement('div');
+      slotCount.innerText = `${t.slots ? t.slots.length : 0} ảnh`;
+      slotCount.style.position = 'absolute';
+      slotCount.style.bottom = '4px';
+      slotCount.style.left = '4px';
+      slotCount.style.background = 'rgba(0,0,0,0.6)';
+      slotCount.style.color = '#fff';
+      slotCount.style.fontSize = '10px';
+      slotCount.style.padding = '2px 6px';
+      slotCount.style.borderRadius = '10px';
+      slotCount.style.zIndex = '5';
+      thumb.appendChild(slotCount);
       
       // Render slots with sample images
       if (t.slots && t.slots.length > 0) {
@@ -181,29 +195,30 @@ export class TemplatePicker {
         img.style.zIndex = '2';
         thumb.appendChild(img);
       }
-      item.appendChild(thumb);
 
-      // Selection badge - neatly inside top right corner of card
+      // Selection badge - neatly inside top right corner of thumb
       if (isSelected) {
         const badge = document.createElement('div');
         badge.innerText = this.paperSize === 'A5' ? (selIndex + 1) : '✓';
         badge.style.position = 'absolute';
-        badge.style.top = '6px';
-        badge.style.right = '6px';
+        badge.style.top = '4px';
+        badge.style.right = '4px';
         badge.style.background = 'var(--pl-accent, #4f3219)';
         badge.style.color = '#fff';
-        badge.style.width = '24px';
-        badge.style.height = '24px';
+        badge.style.width = '20px';
+        badge.style.height = '20px';
         badge.style.borderRadius = '50%';
         badge.style.display = 'flex';
         badge.style.alignItems = 'center';
         badge.style.justifyContent = 'center';
         badge.style.fontWeight = 'bold';
-        badge.style.fontSize = '13px';
+        badge.style.fontSize = '12px';
         badge.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
         badge.style.zIndex = '10';
-        item.appendChild(badge);
+        thumb.appendChild(badge);
       }
+      
+      item.appendChild(thumb);
 
       const name = document.createElement('div');
       name.innerText = t.name;
