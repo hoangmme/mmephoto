@@ -81,6 +81,40 @@ _onCanvasClick(e) {
 
       if (localX >= -s.w/2 && localX <= s.w/2 && localY >= -s.h/2 && localY <= s.h/2) {
         clickedSlot = i;
+
+        // Check hit for Quick Rotate 90° or Reset 0° button if this slot is already active
+        if (i === this.selectedSlotIndex) {
+          const btnRotX = s.w / 2 - 40;
+          const btnRotY = -s.h / 2 + 40;
+          const distRot = Math.hypot(localX - btnRotX, localY - btnRotY);
+
+          if (distRot <= 44) {
+            const sData = this.slots[this.selectedSlotIndex];
+            if (sData) {
+              sData.rotation = ((sData.rotation || 0) + 90) % 360;
+              this._clampPan(this.selectedSlotIndex);
+              this._renderCanvas();
+              this._renderSlotProps();
+            }
+            return;
+          }
+
+          const btnResetX = -s.w / 2 + 40;
+          const btnResetY = -s.h / 2 + 40;
+          const distReset = Math.hypot(localX - btnResetX, localY - btnResetY);
+
+          if (distReset <= 44) {
+            const sData = this.slots[this.selectedSlotIndex];
+            if (sData) {
+              sData.rotation = 0;
+              this._clampPan(this.selectedSlotIndex);
+              this._renderCanvas();
+              this._renderSlotProps();
+            }
+            return;
+          }
+        }
+
         break;
       }
     }
@@ -653,7 +687,43 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
           ctx.stroke();
         });
 
-        // 3. Canva-style Large Rotate Handle (Nút xoay 🔄 nằm ngay trên/dưới khung)
+        // 3. Quick Rotate 90° Button (Ở góc TRÊN BÊN PHẢI của khung ảnh)
+        const btnRotX = slotW / 2 - 40;
+        const btnRotY = -slotH / 2 + 40;
+        
+        ctx.beginPath();
+        ctx.arc(btnRotX, btnRotY, 32, 0, Math.PI * 2);
+        ctx.fillStyle = '#0284c7';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px Inter, system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('↻90°', btnRotX, btnRotY);
+
+        // 4. Quick Reset 0° Button (Ở góc TRÊN BÊN TRÁI của khung ảnh)
+        const btnResetX = -slotW / 2 + 40;
+        const btnResetY = -slotH / 2 + 40;
+        
+        ctx.beginPath();
+        ctx.arc(btnResetX, btnResetY, 32, 0, Math.PI * 2);
+        ctx.fillStyle = '#ef4444';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px Inter, system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('↺0°', btnResetX, btnResetY);
+
+        // 5. Canva-style Large Rotate Handle (Nút xoay 🔄 nằm ngoài khung)
         const imageCenterY = s.cy + (slotData ? (slotData.panY || 0) : 0);
         const isNearBottom = (imageCenterY + slotH / 2 + 110 > h - 40);
         const handleSign = isNearBottom ? -1 : 1;
