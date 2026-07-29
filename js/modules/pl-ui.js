@@ -633,38 +633,8 @@ export const UIMixin = {
       }
     }
 
-    // Timer update (update step banner timers for Step 1, 2, 3)
-    const t1 = document.getElementById('stepTimer1');
-    const t2 = document.getElementById('stepTimer2');
-    const t3 = document.getElementById('stepTimer3');
-
-    const m = Math.floor(Math.max(0, roomData.timeLeft || 0) / 60).toString().padStart(2, '0');
-    const s = (Math.max(0, roomData.timeLeft || 0) % 60).toString().padStart(2, '0');
-    
     // Update global timer
-    const globalTimerEl = document.getElementById('globalTimer');
-    if (globalTimerEl) {
-      if (isStaffMode || !roomData.timerStarted || step === 4) {
-        globalTimerEl.style.display = 'none';
-      } else {
-        globalTimerEl.style.display = 'block';
-        globalTimerEl.textContent = `⏱ ${m}:${s}`;
-        globalTimerEl.style.color = (roomData.timeLeft <= 60) ? '#ef4444' : '#fff';
-      }
-    }
-
-    if (t1) t1.textContent = '';
-    if (t2) t2.textContent = '';
-    if (t3) t3.textContent = '';
-
-
-    if (lockOverlay) {
-      if (roomData.locked && roomData.timerStarted) {
-        lockOverlay.style.display = 'flex';
-      } else {
-        lockOverlay.style.display = 'none';
-      }
-    }
+    if (this._updateTimerUI) this._updateTimerUI();
 
     // QR Code (chỉ render & hiện ở step 4)
     if (roomData.session && step === 4) {
@@ -713,6 +683,36 @@ export const UIMixin = {
   }
   ,
 
+  _updateTimerUI() {
+    if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
+    const roomData = this.rooms[this.activeRoom];
+    const step = roomData.step || 1;
+    
+    const m = Math.floor(Math.max(0, roomData.timeLeft || 0) / 60).toString().padStart(2, '0');
+    const s = (Math.max(0, roomData.timeLeft || 0) % 60).toString().padStart(2, '0');
+    
+    // Update global timer
+    const globalTimerEl = document.getElementById('globalTimer');
+    if (globalTimerEl) {
+      if (isStaffMode || !roomData.timerStarted || step === 4) {
+        globalTimerEl.style.display = 'none';
+      } else {
+        globalTimerEl.style.display = 'block';
+        globalTimerEl.textContent = `⏱ ${m}:${s}`;
+        globalTimerEl.style.color = (roomData.timeLeft <= 60) ? '#ef4444' : '#fff';
+      }
+    }
+
+    const lockOverlay = document.getElementById('lockOverlay');
+    if (lockOverlay) {
+      if (roomData.locked && roomData.timerStarted) {
+        lockOverlay.style.display = 'flex';
+      } else {
+        lockOverlay.style.display = 'none';
+      }
+    }
+  },
+  
   _selectSlide(id, instant = false) {
     const templateChanged = (this.currentTemplate !== id);
     this.currentTemplate = id;

@@ -500,7 +500,8 @@ _startStepTimer(room, step) {
       }
 
       if (this.activeRoom === room) {
-        this._updateUIForRoom();
+        if (this._updateTimerUI) this._updateTimerUI();
+        else this._updateUIForRoom();
       }
     }, 1000);
   }
