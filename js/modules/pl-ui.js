@@ -529,15 +529,38 @@ export const UIMixin = {
       if (this.canvasesState) {
         this.canvasesState.forEach(cs => { if (cs) cs.selectedSlotIndex = -1; });
       }
-      this._updateHeaderActions();
-    }
+      if (panelLeft) panelLeft.style.display = 'none';
+      if (mainSwiperArea) mainSwiperArea.style.display = 'block';
+      if (mainSwiper) mainSwiper.style.display = 'none';
+      if (canvasInfo) canvasInfo.style.display = 'none';
+      if (qrOverlay) qrOverlay.style.display = 'block';
+      if (crossSellBanner) crossSellBanner.style.display = 'block';
+      if (canvasContainer) canvasContainer.style.display = 'block';
 
-    // Explicitly control panelLeft visibility based on step
-    if (panelLeft) {
-      if (step === 1 || step === 4) {
-        panelLeft.style.display = 'none';
-      } else {
-        panelLeft.style.removeProperty('display');
+      // Generate QR Code URL
+      const qrImage = document.getElementById('qrImage');
+      if (qrImage && roomData.session) {
+        const qrUrl = `https://photo.llphotobooth.vn/download?session=${roomData.session}`;
+        if (window.QRCode) {
+          window.QRCode.toDataURL(qrUrl, { width: 260, margin: 1 }, (err, url) => {
+            if (!err && url) qrImage.src = url;
+          });
+        } else {
+          qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(qrUrl)}`;
+        }
+      }
+
+      this._updateHeaderActions();
+    } else {
+      if (qrOverlay) qrOverlay.style.display = 'none';
+      if (crossSellBanner) crossSellBanner.style.display = 'none';
+      if (canvasInfo) canvasInfo.style.display = 'block';
+      if (panelLeft) {
+        if (step === 1) {
+          panelLeft.style.display = 'none';
+        } else {
+          panelLeft.style.removeProperty('display');
+        }
       }
     }
 

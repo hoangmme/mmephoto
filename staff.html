@@ -184,6 +184,52 @@
       <!-- Center: Main Template Swiper & Canvas -->
       <div class="pl-main-swiper-area" id="mainSwiperArea">
 
+        <!-- QR CODE OVERLAY (Bước 4 hoàn tất) -->
+        <div id="qrOverlay" class="pl-qr-overlay" style="display:none; text-align:center; margin: 0 auto 12px auto; pointer-events:none; user-select:none;">
+          <div style="font-weight:700; font-size:15px; color:var(--pl-accent, #4f3219); margin-bottom:6px;">📱 QUÉT MÃ QR ĐỂ TẢI BỘ ẢNH VỀ MÁY</div>
+          <img id="qrImage" width="130" height="130" style="pointer-events:none; user-select:none; border-radius:8px; border:2px solid var(--pl-border); padding:4px; background:#fff;" />
+          <div class="pl-qr-title" style="font-size:12px; color:var(--pl-text-muted); margin-top:4px;">Dùng camera điện thoại để mở link tải bộ ảnh</div>
+        </div>
+
+        <!-- BANNER SẢN PHẨM BÁN KÈM -->
+        <div id="crossSellBanner" class="pl-cross-sell-banner" style="display:none;">
+          <div style="font-weight:700; font-size:15px; color:#d97706; margin-bottom:12px; text-align:center;">
+            🎁 DANH SÁCH SẢN PHẨM MUA KÈM ƯU ĐÃI NỔI BẬT
+          </div>
+          <div class="pl-cross-sell-slider">
+            <div class="pl-cross-sell-item">
+              <img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?q=80&w=200&auto=format&fit=crop" alt="Khung gỗ để bàn" />
+              <div class="pl-cross-sell-title">Khung Gỗ Để Bàn A5</div>
+              <div class="pl-cross-sell-price">+39.000đ</div>
+            </div>
+            <div class="pl-cross-sell-item">
+              <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&auto=format&fit=crop" alt="Móc khóa in ảnh" />
+              <div class="pl-cross-sell-title">Móc Khóa In Ảnh 2 Mặt</div>
+              <div class="pl-cross-sell-price">+25.000đ</div>
+            </div>
+            <div class="pl-cross-sell-item">
+              <img src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=200&auto=format&fit=crop" alt="Khung mica trong" />
+              <div class="pl-cross-sell-title">Khung Mica Trong Suốt</div>
+              <div class="pl-cross-sell-price">+59.000đ</div>
+            </div>
+            <div class="pl-cross-sell-item">
+              <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=200&auto=format&fit=crop" alt="Album ảnh mini" />
+              <div class="pl-cross-sell-title">Album Ảnh Mini Lụa</div>
+              <div class="pl-cross-sell-price">+89.000đ</div>
+            </div>
+            <div class="pl-cross-sell-item">
+              <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b675?q=80&w=200&auto=format&fit=crop" alt="Khung gỗ treo tường" />
+              <div class="pl-cross-sell-title">Khung Gỗ Treo Tường</div>
+              <div class="pl-cross-sell-price">+69.000đ</div>
+            </div>
+            <div class="pl-cross-sell-item">
+              <img src="https://images.unsplash.com/photo-1572949645841-094f3a9c4c94?q=80&w=200&auto=format&fit=crop" alt="Thẻ ảnh VIP" />
+              <div class="pl-cross-sell-title">Thẻ Ảnh Tích Điểm VIP</div>
+              <div class="pl-cross-sell-price">+15.000đ</div>
+            </div>
+          </div>
+        </div>
+
         <div class="pl-swiper-container" id="mainSwiper">
           <!-- Slides injected by JS -->
         </div>
@@ -251,7 +297,7 @@
 
   <!-- Core Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=165"></script>
+  <script type="module" src="js/print-layout.js?v=166"></script>
 
 
 
