@@ -12,6 +12,7 @@ export class ImageListUI {
       this.container = document.getElementById(containerId);
     }
     this.onThumbnailClick = options.onThumbnailClick || options.onPhotoClick || null;
+    this.onZoomClick = options.onZoomClick || null;
   }
 
   render(images, options = {}) {
@@ -54,6 +55,25 @@ export class ImageListUI {
       thumb.appendChild(imgTag);
       thumb.appendChild(label);
 
+      // Lightbox / Zoom button
+      const zoomBtn = document.createElement('button');
+      zoomBtn.className = 'pl-thumb-zoom-btn';
+      zoomBtn.type = 'button';
+      zoomBtn.innerHTML = '🔍';
+      zoomBtn.title = 'Xem phóng to';
+      zoomBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (this.onZoomClick) {
+          const itemIdx = imgList.indexOf(img);
+          this.onZoomClick(itemIdx >= 0 ? itemIdx : 0, imgList);
+        }
+      });
+      zoomBtn.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+      });
+      thumb.appendChild(zoomBtn);
+
       if (step === 2) {
         if (selectedPhotos.has(img.id)) {
           thumb.classList.add('selected');
@@ -70,6 +90,7 @@ export class ImageListUI {
 
       let clickHandled = false;
       const handleSelect = (e) => {
+        if (e.target.closest('.pl-thumb-zoom-btn')) return;
         if (clickHandled) return;
         clickHandled = true;
         setTimeout(() => { clickHandled = false; }, 300);
@@ -77,6 +98,7 @@ export class ImageListUI {
       };
 
       thumb.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.pl-thumb-zoom-btn')) return;
         if (e.pointerType === 'touch' || e.pointerType === 'pen') {
           handleSelect(e);
         }
