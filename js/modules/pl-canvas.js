@@ -58,18 +58,37 @@ _loadTemplateImages() {
   }
 ,
 
-_onCanvasClick(e) {
+  _onCanvasClick(e) {
     const roomData = this.activeRoom && this.rooms && this.rooms[this.activeRoom];
     const step = roomData ? (roomData.step || 3) : (this.currentStep || 3);
     if (step === 1 || step === 4) return;
 
-    const rect = this.canvas.getBoundingClientRect();
-    const scaleX = this.canvas.width / rect.width;
-    const scaleY = this.canvas.height / rect.height;
+    // Dynamically detect target canvas element from click event
+    const targetCanvas = (e && e.target && e.target.tagName === 'CANVAS') ? e.target : (this.canvas || document.getElementById('printCanvas0'));
+    let cIdx = 0;
+    if (targetCanvas && targetCanvas.id === 'printCanvas1') {
+      cIdx = 1;
+    } else if (targetCanvas && targetCanvas.id === 'printCanvas0') {
+      cIdx = 0;
+    } else {
+      cIdx = this.activeCanvasIndex || 0;
+    }
+
+    this.activeCanvasIndex = cIdx;
+    this.canvas = targetCanvas;
+    this.currentTemplate = (this.selectedTemplates && this.selectedTemplates[cIdx]) ? this.selectedTemplates[cIdx] : this.currentTemplate;
+
+    if (this.canvasesState && this.canvasesState[cIdx]) {
+      if (!this.canvasesState[cIdx].slots) this.canvasesState[cIdx].slots = [];
+      this.slots = this.canvasesState[cIdx].slots;
+    }
+
+    const rect = targetCanvas.getBoundingClientRect();
+    const scaleX = targetCanvas.width / rect.width;
+    const scaleY = targetCanvas.height / rect.height;
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
 
-    const cIdx = this.activeCanvasIndex || 0;
     const targetTemplateId = (this.canvasesState && this.canvasesState[cIdx])
       ? this.canvasesState[cIdx].templateId
       : (this.selectedTemplates ? (this.selectedTemplates[cIdx] || this.currentTemplate) : this.currentTemplate);
@@ -99,15 +118,11 @@ _onCanvasClick(e) {
     }
 
     if (clickedSlot >= 0) {
-      const activeCIdx = this.activeCanvasIndex || 0;
       this.selectedSlotIndex = clickedSlot;
 
-      if (this.canvasesState && this.canvasesState[activeCIdx]) {
-        if (!this.canvasesState[activeCIdx].slots) this.canvasesState[activeCIdx].slots = [];
-        this.slots = this.canvasesState[activeCIdx].slots;
-        this.canvasesState[activeCIdx].selectedSlotIndex = clickedSlot;
+      if (this.canvasesState && this.canvasesState[cIdx]) {
+        this.canvasesState[cIdx].selectedSlotIndex = clickedSlot;
       }
-      if (!this.slots) this.slots = [];
 
       // If an image is selected in sidebar, assign it to the clicked slot
       if (this.selectedImageId) {
