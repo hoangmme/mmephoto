@@ -406,7 +406,56 @@ _requestRenderCanvas() {
   },
 
 _renderCanvas() {
-    this._drawToCanvas(this.canvas, true);
+    if (!this.selectedTemplates || this.selectedTemplates.length === 0) return;
+    
+    // Backup active state to restore later
+    const activeIdx = this.activeCanvasIndex || 0;
+    const backupCanvas = this.canvas;
+    const backupTemplate = this.currentTemplate;
+    const backupSlots = this.slots;
+    const backupSelectedSlotIndex = this.selectedSlotIndex;
+
+    const maxCanvases = Math.min(this.selectedTemplates.length, 2); // Max 2 canvases for A5
+    
+    // Manage visibility of canvas columns based on number of templates
+    const col0 = document.getElementById('canvasWrapper0')?.parentElement;
+    const col1 = document.getElementById('colCanvas1');
+    if (col0) col0.style.display = 'flex';
+    if (col1) col1.style.display = maxCanvases > 1 ? 'flex' : 'none';
+
+    for (let i = 0; i < maxCanvases; i++) {
+        const c = document.getElementById('printCanvas' + i);
+        if (!c) continue;
+        
+        // Update styling for active state
+        c.classList.toggle('active', i === activeIdx);
+
+        // Temporarily set state for rendering this canvas
+        this.canvas = c;
+        this.currentTemplate = this.selectedTemplates[i];
+        
+        if (this.canvasesState && this.canvasesState[i]) {
+            this.slots = this.canvasesState[i].slots || [];
+            this.selectedSlotIndex = (i === activeIdx) ? (this.canvasesState[i].selectedSlotIndex || -1) : -1;
+        } else {
+            this.slots = [];
+            this.selectedSlotIndex = -1;
+        }
+
+        // Determine if we need to show labels
+        const labelEl = document.getElementById('canvasLabel' + i);
+        if (labelEl) {
+            labelEl.style.display = maxCanvases > 1 ? 'block' : 'none';
+        }
+
+        this._drawToCanvas(c, true);
+    }
+    
+    // Restore active state
+    this.canvas = backupCanvas;
+    this.currentTemplate = backupTemplate;
+    this.slots = backupSlots;
+    this.selectedSlotIndex = backupSelectedSlotIndex;
   }
 ,
 

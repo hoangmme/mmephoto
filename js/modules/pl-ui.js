@@ -996,16 +996,38 @@ export const UIMixin = {
       inputImport.addEventListener('change', (e) => this._importTemplateJson(e));
     }
 
-    // Canvas click → select slot
-    this.canvas.addEventListener('click', (e) => this._onCanvasClick(e));
-
     // Canvas Drag & Canva Rotate Handle support (Mouse & Touch)
     let isDragging = false, isRotatingSlot = false;
     let dragStartX, dragStartY, dragSlot;
     let rotateStartAngle = 0, initialSlotRot = 0, touchRotateStartTime = 0;
 
+    const bindCanvasEvents = (canvasEl, cIdx) => {
+      if (!canvasEl) return;
+
+      const setActive = () => {
+        if (this.activeCanvasIndex !== cIdx) {
+          this.activeCanvasIndex = cIdx;
+          this.canvas = canvasEl;
+          this.currentTemplate = this.selectedTemplates ? this.selectedTemplates[cIdx] : this.currentTemplate;
+          if (this.canvasesState && this.canvasesState[cIdx]) {
+            this.slots = this.canvasesState[cIdx].slots || [];
+            this.selectedSlotIndex = this.canvasesState[cIdx].selectedSlotIndex || -1;
+          }
+          this._renderCanvas();
+        } else {
+          this.canvas = canvasEl; // ensure `this.canvas` points to the target
+        }
+      };
+
+      // Canvas click → select slot
+      canvasEl.addEventListener('click', (e) => {
+        setActive();
+        this._onCanvasClick(e);
+      });
+
     // Desktop Mouse Drag & Rotate
-    this.canvas.addEventListener('mousedown', (e) => {
+    canvasEl.addEventListener('mousedown', (e) => {
+      setActive();
       const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
       if (step === 1 || step === 4) return;
       if (this.selectedSlotIndex < 0) return;
@@ -1069,7 +1091,8 @@ export const UIMixin = {
       this.canvas.style.cursor = 'grabbing';
     });
 
-    this.canvas.addEventListener('mousemove', (e) => {
+    canvasEl.addEventListener('mousemove', (e) => {
+      setActive();
       if (isRotatingSlot && this.selectedSlotIndex >= 0) {
         const slot = this.slots[this.selectedSlotIndex];
         const tmpl = ALL_TEMPLATES[this.currentTemplate];
@@ -1123,15 +1146,16 @@ export const UIMixin = {
       this.canvas.style.cursor = '';
     };
 
-    this.canvas.addEventListener('mouseup', endMouseDrag);
-    this.canvas.addEventListener('mouseleave', endMouseDrag);
+    canvasEl.addEventListener('mouseup', endMouseDrag);
+    canvasEl.addEventListener('mouseleave', endMouseDrag);
 
     // Touch support (iOS / iPad): Smooth 1-finger Pan & Canva Rotate Handle, 2-finger Pinch Zoom (No Rotation Jitter)
     let touchStartX, touchStartY;
     let initialPinchDistance = 0;
     let initialSlotZoom = 1.0;
 
-    this.canvas.addEventListener('touchstart', (e) => {
+    canvasEl.addEventListener('touchstart', (e) => {
+      setActive();
       const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
       if (step === 1 || step === 4) return;
       if (this.selectedSlotIndex < 0) return;
@@ -1200,7 +1224,8 @@ export const UIMixin = {
       }
     }, { passive: false });
 
-    this.canvas.addEventListener('touchmove', (e) => {
+    canvasEl.addEventListener('touchmove', (e) => {
+      setActive();
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];
       if (!slot || !slot.imageId) return;
@@ -1254,7 +1279,8 @@ export const UIMixin = {
       }
     }, { passive: false });
 
-    this.canvas.addEventListener('touchend', (e) => {
+    canvasEl.addEventListener('touchend', (e) => {
+      setActive();
       if (isRotatingSlot && this.selectedSlotIndex >= 0) {
         if (Date.now() - touchRotateStartTime < 250) {
           const slot = this.slots[this.selectedSlotIndex];
@@ -1269,7 +1295,8 @@ export const UIMixin = {
     });
 
     // Mouse wheel zoom support for desktop testing/usage
-    this.canvas.addEventListener('wheel', (e) => {
+    canvasEl.addEventListener('wheel', (e) => {
+      setActive();
       const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
       if (step === 1 || step === 4) return;
       if (this.selectedSlotIndex < 0) return;
@@ -1279,6 +1306,10 @@ export const UIMixin = {
       this._zoomSlot(this.selectedSlotIndex, Math.max(0.3, Math.min(4.0, (slot.zoom || 1.0) + delta)));
       e.preventDefault();
     }, { passive: false });
+    }; // end bindCanvasEvents
+
+    bindCanvasEvents(document.getElementById('printCanvas0'), 0);
+    bindCanvasEvents(document.getElementById('printCanvas1'), 1);
   }
 
   // ── Load Batch from IndexedDB ──
@@ -1415,60 +1446,7 @@ export const UIMixin = {
   ,
 
   _renderCanvasPagination() {
-    const canvasContainer = document.getElementById('canvasContainer');
-    if (!canvasContainer) return;
-    
-    let pagination = document.getElementById('canvasPagination');
-    if (!this.selectedTemplates || this.selectedTemplates.length <= 1) {
-      if (pagination) pagination.style.display = 'none';
-      return;
-    }
-    
-    if (!pagination) {
-      pagination = document.createElement('div');
-      pagination.id = 'canvasPagination';
-      pagination.style.display = 'flex';
-      pagination.style.gap = '10px';
-      pagination.style.marginBottom = '10px';
-      pagination.style.justifyContent = 'center';
-      
-      // insert before canvas
-      canvasContainer.insertBefore(pagination, canvasContainer.firstChild);
-    }
-    
-    pagination.style.display = 'flex';
-    pagination.innerHTML = '';
-    
-    this.selectedTemplates.forEach((t, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'pl-btn';
-      btn.innerText = `Trang ${i + 1}`;
-      btn.style.padding = '8px 20px';
-      btn.style.borderRadius = '20px';
-      btn.style.fontWeight = 'bold';
-      btn.style.border = '2px solid var(--pl-accent)';
-      
-      if (this.activeCanvasIndex === i) {
-        btn.style.background = 'var(--pl-accent)';
-        btn.style.color = '#fff';
-      } else {
-        btn.style.background = 'var(--pl-bg-section)';
-        btn.style.color = 'var(--pl-text)';
-      }
-      
-      btn.onclick = () => {
-        this.activeCanvasIndex = i;
-        this.currentTemplate = this.selectedTemplates[i];
-        if (this.canvasesState && this.canvasesState[i]) {
-          this.slots = this.canvasesState[i].slots;
-          this.selectedSlotIndex = this.canvasesState[i].selectedSlotIndex || -1;
-        }
-        this._updateUIForRoom();
-        this._renderCanvas();
-      };
-      
-      pagination.appendChild(btn);
-    });
+    // Disabled in favor of dual-canvas layout
   },
 
   _renderImageList() {
