@@ -1413,16 +1413,9 @@ export const UIMixin = {
         </button>
       `;
 
-      const rotateBtnHtml = (step === 3) ? `
-        <button class="pl-thumb-rotate-btn" title="Xoay ảnh 90°">
-          ↻ 90°
-        </button>
-      ` : '';
-
       thumb.innerHTML = `
         <img src="${srcUrl}" alt="${imgName}">
         ${zoomBtnHtml}
-        ${rotateBtnHtml}
         <div class="pl-thumb-info">${imgName}</div>
       `;
 
@@ -1431,23 +1424,6 @@ export const UIMixin = {
         zoomBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           this._openLightbox(idx, imagesToRender);
-        });
-      }
-
-      const rotBtn = thumb.querySelector('.pl-thumb-rotate-btn');
-      if (rotBtn) {
-        rotBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (this.slots) {
-            this.slots.forEach((s, sIdx) => {
-              if (s.imageId === img.id) {
-                s.rotation = ((s.rotation || 0) + 90) % 360;
-                this._clampPan(sIdx);
-              }
-            });
-            this._renderCanvas();
-            this._renderSlotProps();
-          }
         });
       }
 

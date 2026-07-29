@@ -617,78 +617,67 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
           ctx.rotate(s.rotation);
         }
 
-        let halfW = s.w / 2;
-        let halfH = s.h / 2;
+        const slotW = s.w;
+        const slotH = s.h;
 
-        if (slotData && slotData.imageId && this._imageCache && this._imageCache[slotData.imageId]) {
-          const img = this._imageCache[slotData.imageId];
-          if (img.naturalWidth && img.naturalHeight) {
-            const zoom = slotData.zoom || 1.0;
-            const cover = this._calcCover(img.naturalWidth, img.naturalHeight, s.w, s.h, zoom);
-            halfW = cover.drawW / 2;
-            halfH = cover.drawH / 2;
+        // 1. High-Contrast Glowing Slot Frame Highlight Border (Nổi bật tuyệt đối trên mọi khung/ảnh)
+        ctx.strokeStyle = '#0284c7'; // Cyan nổi bật
+        ctx.lineWidth = 6;
+        ctx.shadowColor = 'rgba(2, 132, 199, 0.7)';
+        ctx.shadowBlur = 14;
+        ctx.strokeRect(-slotW / 2, -slotH / 2, slotW, slotH);
+        ctx.shadowBlur = 0; // Reset shadow
 
-            // Translate to image pan position
-            ctx.translate(slotData.panX || 0, slotData.panY || 0);
+        // Inner white dashed line for contrast against dark photos
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 6]);
+        ctx.strokeRect(-slotW / 2, -slotH / 2, slotW, slotH);
+        ctx.setLineDash([]);
 
-            // Rotate by image rotation angle
-            if (slotData.rotation) {
-              ctx.rotate(((slotData.rotation || 0) * Math.PI) / 180);
-            }
-          }
-        }
-
-        const drawW = halfW * 2;
-        const drawH = halfH * 2;
-
-        // 1. Selection Bounding Box (Bao quanh ảnh đã zoom, pan, rotate)
-        ctx.strokeStyle = '#8b5cf6';
-        ctx.lineWidth = 5;
-        ctx.strokeRect(-halfW, -halfH, drawW, drawH);
-
-        // 2. 4 Corner Handles (4 Nút mốc trắng lớn ở 4 góc ảnh)
-        const corners = [
-          { x: -halfW, y: -halfH },
-          { x: halfW, y: -halfH },
-          { x: -halfW, y: halfH },
-          { x: halfW, y: halfH }
+        // 2. 4 Corner Handles
+        const slotCorners = [
+          { x: -slotW / 2, y: -slotH / 2 },
+          { x: slotW / 2, y: -slotH / 2 },
+          { x: -slotW / 2, y: slotH / 2 },
+          { x: slotW / 2, y: slotH / 2 }
         ];
 
-        corners.forEach(c => {
+        slotCorners.forEach(c => {
           ctx.beginPath();
-          ctx.arc(c.x, c.y, 18, 0, Math.PI * 2);
+          ctx.arc(c.x, c.y, 16, 0, Math.PI * 2);
           ctx.fillStyle = '#ffffff';
           ctx.fill();
-          ctx.strokeStyle = '#8b5cf6';
+          ctx.strokeStyle = '#0284c7';
           ctx.lineWidth = 4;
           ctx.stroke();
         });
 
-        // 3. Canva-style Large Rotate Handle (Tự động lật lên phía trên nếu ở gần mép dưới canvas để KHÔNG BAO GIỜ bị cắt)
+        // 3. Canva-style Large Rotate Handle (Nút xoay 🔄 nằm ngay trên/dưới khung)
         const imageCenterY = s.cy + (slotData ? (slotData.panY || 0) : 0);
-        const isNearBottom = (imageCenterY + halfH + 110 > h - 40);
+        const isNearBottom = (imageCenterY + slotH / 2 + 110 > h - 40);
         const handleSign = isNearBottom ? -1 : 1;
-        const handleOffsetY = handleSign * (halfH + 85);
+        const handleOffsetY = handleSign * (slotH / 2 + 85);
 
         // Stem line
         ctx.beginPath();
-        ctx.moveTo(0, handleSign * halfH);
+        ctx.moveTo(0, handleSign * (slotH / 2));
         ctx.lineTo(0, handleOffsetY);
-        ctx.strokeStyle = '#8b5cf6';
+        ctx.strokeStyle = '#0284c7';
         ctx.lineWidth = 5;
         ctx.stroke();
 
-        // Outer Circle Background (Nút tròn đường kính 80px)
+        // Outer Circle Background (Nút tròn xoay)
         ctx.beginPath();
         ctx.arc(0, handleOffsetY, 40, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
-        ctx.strokeStyle = '#8b5cf6';
+        ctx.strokeStyle = '#0284c7';
         ctx.lineWidth = 5;
         ctx.stroke();
 
         // Rotate Icon 🔄
-        ctx.strokeStyle = '#6d28d9';
+        ctx.strokeStyle = '#0284c7';
         ctx.lineWidth = 5;
         ctx.lineCap = 'round';
         ctx.beginPath();
@@ -699,7 +688,7 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
         ctx.arc(0, handleOffsetY, 20, Math.PI * 0.25, -Math.PI * 0.25);
         ctx.stroke();
 
-        // 4. Large Angle Badge Pill (Badge hiển thị số độ cực to, rõ nét - Font 38px)
+        // 4. Large Angle Badge Pill (Badge số độ)
         const currentDeg = Math.round(((slotData ? (slotData.rotation || 0) : 0) % 360 + 360) % 360) + '°';
         ctx.font = 'bold 38px Inter, system-ui, sans-serif';
         const textMetrics = ctx.measureText(currentDeg);
@@ -709,7 +698,7 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
 
         // Pill background
         ctx.save();
-        ctx.fillStyle = 'rgba(139, 92, 246, 0.95)';
+        ctx.fillStyle = 'rgba(2, 132, 199, 0.95)';
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 3;
         ctx.beginPath();
