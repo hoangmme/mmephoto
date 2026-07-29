@@ -953,6 +953,55 @@ export const UIMixin = {
         }
       };
 
+      // Header Action Buttons (Xoay 90° & Reset 0°)
+      const btnRot = document.getElementById('btnRotate90_' + cIdx);
+      if (btnRot) {
+        btnRot.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setActive();
+          let targetSlot = this.selectedSlotIndex;
+          if (targetSlot < 0 && this.slots) {
+            targetSlot = this.slots.findIndex(s => s.imageId);
+            if (targetSlot < 0) targetSlot = 0;
+          }
+          if (targetSlot >= 0 && this.slots[targetSlot]) {
+            this.selectedSlotIndex = targetSlot;
+            if (this.canvasesState && this.canvasesState[cIdx]) {
+              this.canvasesState[cIdx].selectedSlotIndex = targetSlot;
+            }
+            const sData = this.slots[targetSlot];
+            sData.rotation = ((sData.rotation || 0) + 90) % 360;
+            this._clampPan(targetSlot);
+            this._renderCanvas();
+            this._renderSlotProps();
+          }
+        });
+      }
+
+      const btnReset = document.getElementById('btnReset0_' + cIdx);
+      if (btnReset) {
+        btnReset.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setActive();
+          let targetSlot = this.selectedSlotIndex;
+          if (targetSlot < 0 && this.slots) {
+            targetSlot = this.slots.findIndex(s => s.imageId);
+            if (targetSlot < 0) targetSlot = 0;
+          }
+          if (targetSlot >= 0 && this.slots[targetSlot]) {
+            this.selectedSlotIndex = targetSlot;
+            if (this.canvasesState && this.canvasesState[cIdx]) {
+              this.canvasesState[cIdx].selectedSlotIndex = targetSlot;
+            }
+            const sData = this.slots[targetSlot];
+            sData.rotation = 0;
+            this._clampPan(targetSlot);
+            this._renderCanvas();
+            this._renderSlotProps();
+          }
+        });
+      }
+
       // Canvas click → select slot
       canvasEl.addEventListener('click', (e) => {
         setActive();

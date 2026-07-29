@@ -67,12 +67,18 @@ _onCanvasClick(e) {
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
 
-    const tmpl = ALL_TEMPLATES[this.currentTemplate];
+    const cIdx = this.activeCanvasIndex || 0;
+    const targetTemplateId = (this.canvasesState && this.canvasesState[cIdx])
+      ? this.canvasesState[cIdx].templateId
+      : (this.selectedTemplates ? (this.selectedTemplates[cIdx] || this.currentTemplate) : this.currentTemplate);
+
+    const tmpl = ALL_TEMPLATES[targetTemplateId] || ALL_TEMPLATES[this.currentTemplate];
+    if (!tmpl || !tmpl.slots) return;
+
     let clickedSlot = -1;
 
     for (let i = 0; i < tmpl.slots.length; i++) {
       const s = tmpl.slots[i];
-      // Note: Coordinates are un-scaled relative to canvas width/height
       // Convert to local space
       const dx = x - s.cx;
       const dy = y - s.cy;
@@ -82,43 +88,6 @@ _onCanvasClick(e) {
 
       if (localX >= -s.w/2 && localX <= s.w/2 && localY >= -s.h/2 && localY <= s.h/2) {
         clickedSlot = i;
-
-        // Check hit for Quick Rotate 90° or Reset 0° button if this slot is already active
-        if (i === this.selectedSlotIndex) {
-          const btnRadius = Math.max(60, Math.min(90, Math.round(s.w * 0.12)));
-          const btnOffset = btnRadius + 12;
-
-          const btnRotX = s.w / 2 - btnOffset;
-          const btnRotY = -s.h / 2 + btnOffset;
-          const distRot = Math.hypot(localX - btnRotX, localY - btnRotY);
-
-          if (distRot <= btnRadius + 20) {
-            const sData = this.slots[this.selectedSlotIndex];
-            if (sData) {
-              sData.rotation = ((sData.rotation || 0) + 90) % 360;
-              this._clampPan(this.selectedSlotIndex);
-              this._renderCanvas();
-              this._renderSlotProps();
-            }
-            return;
-          }
-
-          const btnResetX = -s.w / 2 + btnOffset;
-          const btnResetY = -s.h / 2 + btnOffset;
-          const distReset = Math.hypot(localX - btnResetX, localY - btnResetY);
-
-          if (distReset <= btnRadius + 20) {
-            const sData = this.slots[this.selectedSlotIndex];
-            if (sData) {
-              sData.rotation = 0;
-              this._clampPan(this.selectedSlotIndex);
-              this._renderCanvas();
-              this._renderSlotProps();
-            }
-            return;
-          }
-        }
-
         break;
       }
     }
@@ -691,46 +660,7 @@ _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = fals
           ctx.stroke();
         });
 
-        // 3. Quick Rotate 90° Button (Ở góc TRÊN BÊN PHẢI ô ảnh - Khổ Canvas 1748x2480)
-        const btnRadius = Math.max(60, Math.min(90, Math.round(slotW * 0.12)));
-        const btnOffset = btnRadius + 12;
-
-        const btnRotX = slotW / 2 - btnOffset;
-        const btnRotY = -slotH / 2 + btnOffset;
-        
-        ctx.beginPath();
-        ctx.arc(btnRotX, btnRotY, btnRadius, 0, Math.PI * 2);
-        ctx.fillStyle = '#0284c7';
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 8;
-        ctx.stroke();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${Math.round(btnRadius * 0.75)}px Inter, system-ui, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('↻90°', btnRotX, btnRotY);
-
-        // 4. Quick Reset 0° Button (Ở góc TRÊN BÊN TRÁI ô ảnh)
-        const btnResetX = -slotW / 2 + btnOffset;
-        const btnResetY = -slotH / 2 + btnOffset;
-        
-        ctx.beginPath();
-        ctx.arc(btnResetX, btnResetY, btnRadius, 0, Math.PI * 2);
-        ctx.fillStyle = '#ef4444';
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 8;
-        ctx.stroke();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${Math.round(btnRadius * 0.75)}px Inter, system-ui, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('↺0°', btnResetX, btnResetY);
-
-        // 5. Canva-style Large Rotate Handle (Nút xoay 🔄 nằm ngoài khung)
+        // 3. Canva-style Large Rotate Handle (Nút xoay 🔄 nằm ngoài khung)
         const imageCenterY = s.cy + (slotData ? (slotData.panY || 0) : 0);
         const isNearBottom = (imageCenterY + slotH / 2 + 110 > h - 40);
         const handleSign = isNearBottom ? -1 : 1;
