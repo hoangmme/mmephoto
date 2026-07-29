@@ -628,13 +628,12 @@ export const UIMixin = {
       canvasInfo.style.display = (step === 1) ? 'block' : 'none';
     }
 
-    const crossSell = document.getElementById('crossSellBanner');
-    if (crossSell) {
-      crossSell.style.display = (step === 4 && !isStaffMode) ? 'flex' : 'none';
+    if (crossSellBanner) {
+      crossSellBanner.style.display = (step === 4) ? 'flex' : 'none';
     }
 
     if (qrOverlay) {
-      qrOverlay.style.display = (step === 4 && !isStaffMode) ? 'flex' : 'none';
+      qrOverlay.style.display = (step === 4) ? 'flex' : 'none';
     }
 
     const startOverlay = document.getElementById('startSessionOverlay');
@@ -647,16 +646,6 @@ export const UIMixin = {
         startOverlay.style.display = 'none';
       }
     }
-
-    // Control swiperArea / mainSwiper / canvasContainer visibility (MUST always run)
-    const swiperArea = document.getElementById('mainSwiperArea');
-    if (swiperArea) swiperArea.style.display = (step === 1) ? 'flex' : 'none';
-    
-    const mainSwiper = document.getElementById('mainSwiper');
-    if (mainSwiper) mainSwiper.style.display = (step === 1) ? 'flex' : 'none';
-    
-    const canvasContainer = document.getElementById('canvasContainer');
-    if (canvasContainer) canvasContainer.style.display = (step === 3 || (isStaffMode && step === 4)) ? 'flex' : 'none';
 
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
