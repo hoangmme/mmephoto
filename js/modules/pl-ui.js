@@ -388,6 +388,19 @@ export const UIMixin = {
     // Update main mode class
     if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
 
+    // Control canvas container display based on step (Step 3 & Step 4 both display dual-canvas layout!)
+    const canvasContainer = document.getElementById('canvasContainer');
+    const mainSwiperArea = document.getElementById('mainSwiperArea');
+    if (canvasContainer && mainSwiperArea) {
+      if (step === 3 || step === 4) {
+        canvasContainer.style.display = 'flex';
+        mainSwiperArea.style.display = 'none';
+      } else {
+        canvasContainer.style.display = 'none';
+        mainSwiperArea.style.display = 'flex';
+      }
+    }
+
     // Manage Staff Working Draft state
     if (isStaffMode) {
       if (step < 4) {
@@ -527,15 +540,10 @@ export const UIMixin = {
       }
     }
 
-    // Control swiperArea / mainSwiper / canvasContainer visibility (MUST always run)
-    const swiperArea = document.getElementById('mainSwiperArea');
-    if (swiperArea) swiperArea.style.display = (step === 1) ? 'flex' : 'none';
-    
-    const mainSwiper = document.getElementById('mainSwiper');
+    // Control swiperArea / mainSwiper / canvasContainer visibility (Step 3 & Step 4 both display dual-canvas layout!)
+    if (mainSwiperArea) mainSwiperArea.style.display = (step === 1) ? 'flex' : 'none';
     if (mainSwiper) mainSwiper.style.display = (step === 1) ? 'flex' : 'none';
-    
-    const canvasContainer = document.getElementById('canvasContainer');
-    if (canvasContainer) canvasContainer.style.display = (step === 3 || (isStaffMode && step === 4)) ? 'flex' : 'none';
+    if (canvasContainer) canvasContainer.style.display = (step === 3 || step === 4) ? 'flex' : 'none';
 
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
