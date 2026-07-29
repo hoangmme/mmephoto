@@ -149,8 +149,11 @@ _initSSE(branch) {
                 }
                 if (data.canvasesState !== undefined && !isUserStep1) {
                   this.canvasesState = data.canvasesState;
-                }
-                if (data.slots && data.slots.length > 0) {
+                  const activeIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
+                  if (this.canvasesState && this.canvasesState[activeIdx]) {
+                    this.slots = this.canvasesState[activeIdx].slots || [];
+                  }
+                } else if (data.slots && data.slots.length > 0) {
                   const serverHasImages = data.slots.some(s => s.imageId);
                   const localHasImages = this.slots && this.slots.some(s => s.imageId);
                   if (serverHasImages || !localHasImages) {
@@ -412,6 +415,11 @@ _updateActiveSession(room, onlyBadge = false) {
 async _syncStateDirect(room) {
     const roomData = this.rooms[room];
     if (!roomData || !this.branch || !roomData.session) return;
+
+    const activeIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
+    if (this.canvasesState && this.canvasesState[activeIdx]) {
+      this.canvasesState[activeIdx].slots = this.slots || [];
+    }
 
     const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
     if (activeSess) {
