@@ -894,31 +894,7 @@ body.pl-mode-staff #roomTabs {
   box-shadow: 0 4px 20px rgba(0,0,0,0.04) !important;
 }
 
-/* Staff / Admin View - Step 4 */
-.pl-mode-staff #crossSellBanner,
-.pl-mode-staff #qrOverlay,
-.pl-mode-staff .pl-step-mode-4 #crossSellBanner,
-.pl-mode-staff .pl-step-mode-4 #qrOverlay {
-  display: none !important;
-}
-
-.pl-mode-staff .pl-step-mode-4 #panelLeft {
-  display: flex !important;
-  width: 320px !important;
-}
-
-.pl-mode-staff .pl-step-mode-4 #mainSwiperArea {
-  display: none !important;
-}
-
-.pl-mode-staff .pl-step-mode-4 #mainSwiper {
-  display: none !important;
-}
-
-.pl-mode-staff .pl-step-mode-4 .pl-slide {
-  height: min(calc(100vh - 280px), calc((100vw - 380px) * 1.418)) !important;
-  width: auto !important;
-}
+/* Staff / Admin View - Step 4 (Unified with User View) */
 
 .pl-qr-overlay,
 #qrOverlay {
