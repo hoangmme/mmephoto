@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=150';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js';
 import { TemplatePicker } from '../components/TemplatePicker.js?v=150';
 
 export const UIMixin = {
@@ -287,11 +287,15 @@ export const UIMixin = {
           this.currentTemplate = selectedTemplates[0];
           
           // Re-init canvasesState based on selection
-          this.canvasesState = this.selectedTemplates.map(t => ({
-            templateId: t,
-            slots: [],
-            selectedSlotIndex: -1
-          }));
+          this.canvasesState = this.selectedTemplates.map(t => {
+            const tmpl = ALL_TEMPLATES[t];
+            const numSlots = tmpl && tmpl.slots ? tmpl.slots.length : 0;
+            return {
+              templateId: t,
+              slots: Array(numSlots).fill(null).map(() => ({ imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: 0 })),
+              selectedSlotIndex: -1
+            };
+          });
           this.activeCanvasIndex = 0;
           this.slots = [];
           this.selectedPhotos.clear();
