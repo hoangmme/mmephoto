@@ -505,49 +505,35 @@ _renderCanvas() {
     const finalSel = (this.canvasesState && this.canvasesState[activeIdx]) ? this.canvasesState[activeIdx].selectedSlotIndex : backupSelectedSlotIndex;
     this.selectedSlotIndex = (finalSel !== undefined && finalSel !== null) ? finalSel : -1;
     this.slots = (this.canvasesState && this.canvasesState[activeIdx]) ? this.canvasesState[activeIdx].slots : backupSlots;
-  }
-,
+  },
 
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(currentDeg, 0, badgeY);
-        ctx.restore();
+  _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = false) {
+    const currentStep = (this.activeRoom && this.rooms && this.rooms[this.activeRoom])
+      ? (this.rooms[this.activeRoom].step || 1)
+      : (this.currentStep || 1);
 
-        ctx.restore();
-      }
-    }
-  }
-,
+    CanvasRenderer.drawToCanvas(canvas, {
+      currentTemplate: this.currentTemplate,
+      overrideTemplate: overrideTemplate,
+      slots: this.slots,
+      selectedSlotIndex: this.selectedSlotIndex,
+      imageCache: this._imageCache || {},
+      bgImageObj: this.bgImageObj,
+      frameImageObj: this.frameImageObj,
+      defaultPreviewImages: this.defaultPreviewImages || [],
+      isPreview: isPreview,
+      currentStep: currentStep,
+      isPreviewSwiper: isPreviewSwiper
+    });
+  },
 
   _drawImageInSlot(ctx, img, slotDef, slotData) {
-    const zoom = slotData.zoom || 1.0;
-    const { drawW, drawH } = this._calcCover(img.naturalWidth, img.naturalHeight, slotDef.w, slotDef.h, zoom);
-
-    // Clip to slot
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
-    ctx.clip();
-    
-    // Translate to pan position
-    ctx.translate(slotData.panX || 0, slotData.panY || 0);
-    
-    // Rotate canvas around center
-    if (slotData.rotation) {
-      ctx.rotate((slotData.rotation * Math.PI) / 180);
-    }
-    
-    // Draw image centered (ctx.rotate handles the rotation)
-    ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
-    
-    ctx.restore();
-  }
+    CanvasRenderer.drawImageInSlot(ctx, img, slotDef, slotData);
+  },
 
   // ══════════════════════════════════════
   // Export
   // ══════════════════════════════════════
-,
 
   async _exportJPG() {
     await CanvasExporter.exportJPG(this);
@@ -556,9 +542,8 @@ _renderCanvas() {
   async _exportPDF() {
     await CanvasExporter.exportPDF(this);
   },
-,
 
-_print() {
+  _print() {
     // Render full res first
     const exportCanvas = document.createElement('canvas');
     this._drawToCanvas(exportCanvas, false);
