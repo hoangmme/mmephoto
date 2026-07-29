@@ -849,10 +849,10 @@ body.pl-mode-staff #roomTabs {
 }
 
 /* ── Step 4: Finish Layout (Customer View: Products | Staff View: Canvas Preview) ── */
-.pl-step-mode-4:not(.pl-mode-staff) #panelLeft,
-.pl-step-mode-4:not(.pl-mode-staff) #mainSwiper,
-.pl-step-mode-4:not(.pl-mode-staff) #paperInfoNote,
-.pl-step-mode-4:not(.pl-mode-staff) #canvasInfo,
+body:not(.pl-mode-staff) .pl-step-mode-4 #panelLeft,
+body:not(.pl-mode-staff) .pl-step-mode-4 #mainSwiper,
+body:not(.pl-mode-staff) .pl-step-mode-4 #paperInfoNote,
+body:not(.pl-mode-staff) .pl-step-mode-4 #canvasInfo,
 .pl-mode-user .pl-step-mode-4 #panelLeft,
 .pl-mode-user .pl-step-mode-4 #mainSwiper,
 .pl-mode-user .pl-step-mode-4 #paperInfoNote,
@@ -860,7 +860,7 @@ body.pl-mode-staff #roomTabs {
   display: none !important;
 }
 
-.pl-step-mode-4:not(.pl-mode-staff) #mainSwiperArea,
+body:not(.pl-mode-staff) .pl-step-mode-4 #mainSwiperArea,
 .pl-mode-user .pl-step-mode-4 #mainSwiperArea {
   display: flex !important;
   flex-direction: column !important;
@@ -873,7 +873,7 @@ body.pl-mode-staff #roomTabs {
   overflow-y: auto !important;
 }
 
-.pl-step-mode-4:not(.pl-mode-staff) #qrOverlay,
+body:not(.pl-mode-staff) .pl-step-mode-4 #qrOverlay,
 .pl-mode-user .pl-step-mode-4 #qrOverlay {
   display: flex !important;
   flex-direction: column !important;
@@ -883,7 +883,7 @@ body.pl-mode-staff #roomTabs {
   flex-shrink: 0 !important;
 }
 
-.pl-step-mode-4:not(.pl-mode-staff) #crossSellBanner,
+body:not(.pl-mode-staff) .pl-step-mode-4 #crossSellBanner,
 .pl-mode-user .pl-step-mode-4 #crossSellBanner {
   display: flex !important;
   flex-direction: column !important;
