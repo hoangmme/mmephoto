@@ -297,6 +297,16 @@ export const UIMixin = {
           this.selectedPhotos.clear();
           
           if (this.activeRoom && this.rooms[this.activeRoom]) {
+            const roomData = this.rooms[this.activeRoom];
+            if (roomData && roomData.queue && roomData.session) {
+              const active = roomData.queue.find(s => s.id === roomData.session);
+              if (active) {
+                active.selectedTemplates = this.selectedTemplates;
+                active.paperSize = this.paperSize;
+                active.canvasesState = this.canvasesState;
+                active.slots = [];
+              }
+            }
             this._updateActiveSession(this.activeRoom);
           }
           this._loadTemplateImages();
