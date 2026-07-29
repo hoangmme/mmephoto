@@ -222,6 +222,25 @@
     </main>
 
     <!-- Bottom Step Controls Bar -->
+    <footer class="pl-footer" id="stepFooter">
+      <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1200px; margin: 0 auto;">
+        <button class="pl-btn-secondary" id="btnStepPrev">
+          ← Quay lại
+        </button>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="pl-btn-primary" id="btnStaffDownload" style="background: #10b981; display: none;">
+            📥 Tải Ảnh Layout (In cho khách)
+          </button>
+          <button class="pl-btn-primary" id="btnNextCustomer" style="background: #0284c7; display: none;">
+            ➡️ Next Customer (Đón lượt tiếp)
+          </button>
+          <button class="pl-btn-primary" id="btnStepNext">
+            Tiếp tục →
+          </button>
+        </div>
+      </div>
+    </footer>
   </div>
 
   <!-- Processing overlay -->
@@ -232,7 +251,7 @@
 
   <!-- Core Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" src="js/print-layout.js?v=164"></script>
+  <script type="module" src="js/print-layout.js?v=165"></script>
 
 
 
