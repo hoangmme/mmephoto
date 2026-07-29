@@ -306,18 +306,20 @@ _clampPan(slotIndex) {
     if (!slot || !slot.imageId) return;
 
     const tmpl = ALL_TEMPLATES[this.currentTemplate];
+    if (!tmpl || !tmpl.slots || !tmpl.slots[slotIndex]) return;
     const slotDef = tmpl.slots[slotIndex];
-    const img = this._imageCache[slot.imageId];
+    const img = this._imageCache ? this._imageCache[slot.imageId] : null;
     if (!img) return;
 
     // Calculate cover dimensions
-    const { drawW, drawH } = this._calcCover(img.naturalWidth, img.naturalHeight, slotDef.w, slotDef.h, slot.zoom);
+    const { drawW, drawH } = this._calcCover(img.naturalWidth, img.naturalHeight, slotDef.w, slotDef.h, slot.zoom || 1.0);
 
-    const maxPanX = Math.max(0, (drawW - slotDef.w) / 2);
-    const maxPanY = Math.max(0, (drawH - slotDef.h) / 2);
+    // Allow generous free panning in all 4 directions (left, right, up, down)
+    const maxPanX = Math.max(slotDef.w * 0.65, (drawW - slotDef.w) / 2 + slotDef.w * 0.4);
+    const maxPanY = Math.max(slotDef.h * 0.65, (drawH - slotDef.h) / 2 + slotDef.h * 0.4);
 
-    slot.panX = Math.max(-maxPanX, Math.min(maxPanX, slot.panX));
-    slot.panY = Math.max(-maxPanY, Math.min(maxPanY, slot.panY));
+    slot.panX = Math.max(-maxPanX, Math.min(maxPanX, slot.panX || 0));
+    slot.panY = Math.max(-maxPanY, Math.min(maxPanY, slot.panY || 0));
   }
 ,
 

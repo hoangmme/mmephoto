@@ -1413,9 +1413,16 @@ export const UIMixin = {
         </button>
       `;
 
+      const rotateBtnHtml = (step === 3) ? `
+        <button class="pl-thumb-rotate-btn" title="Xoay ảnh 90°">
+          ↻ 90°
+        </button>
+      ` : '';
+
       thumb.innerHTML = `
         <img src="${srcUrl}" alt="${imgName}">
         ${zoomBtnHtml}
+        ${rotateBtnHtml}
         <div class="pl-thumb-info">${imgName}</div>
       `;
 
@@ -1424,6 +1431,23 @@ export const UIMixin = {
         zoomBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           this._openLightbox(idx, imagesToRender);
+        });
+      }
+
+      const rotBtn = thumb.querySelector('.pl-thumb-rotate-btn');
+      if (rotBtn) {
+        rotBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (this.slots) {
+            this.slots.forEach((s, sIdx) => {
+              if (s.imageId === img.id) {
+                s.rotation = ((s.rotation || 0) + 90) % 360;
+                this._clampPan(sIdx);
+              }
+            });
+            this._renderCanvas();
+            this._renderSlotProps();
+          }
         });
       }
 
@@ -1488,6 +1512,7 @@ export const UIMixin = {
   _updateImageListUI() {
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
     const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
+    const activeSlotImageId = (this.selectedSlotIndex >= 0 && this.slots && this.slots[this.selectedSlotIndex]) ? this.slots[this.selectedSlotIndex].imageId : null;
 
     if (step === 2) {
       const instructionText = document.getElementById('stepInstructionText');
@@ -1516,7 +1541,9 @@ export const UIMixin = {
           thumb.appendChild(badge);
         }
       } else {
-        if (imgId === this.selectedImageId) thumb.classList.add('selected');
+        if (imgId === this.selectedImageId || imgId === activeSlotImageId) {
+          thumb.classList.add('selected');
+        }
         if (usedIds.has(imgId)) thumb.classList.add('used');
       }
     });
