@@ -588,7 +588,7 @@ export const UIMixin = {
     if (mainSwiper) mainSwiper.style.display = (step === 1) ? 'flex' : 'none';
     
     const canvasContainer = document.getElementById('canvasContainer');
-    if (canvasContainer) canvasContainer.style.display = (step > 1) ? 'flex' : 'none';
+    if (canvasContainer) canvasContainer.style.display = (step === 3 || (isStaffMode && step === 4)) ? 'flex' : 'none';
 
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
