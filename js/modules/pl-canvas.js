@@ -112,7 +112,7 @@ _onCanvasClick(e) {
 
       this._renderCanvas();
       this._renderSlotProps();
-      this._renderImageList();
+      this._updateImageListUI();
     }
   },
 
@@ -481,16 +481,17 @@ _renderCanvas() {
         
         if (this.canvasesState && this.canvasesState[i]) {
             this.slots = this.canvasesState[i].slots || [];
-            this.selectedSlotIndex = (i === activeIdx) ? (this.canvasesState[i].selectedSlotIndex || -1) : -1;
+            const stateSel = this.canvasesState[i].selectedSlotIndex;
+            this.selectedSlotIndex = (i === activeIdx) ? (stateSel !== undefined && stateSel !== null ? stateSel : -1) : -1;
         } else {
             this.slots = [];
             this.selectedSlotIndex = -1;
         }
 
-        // Determine if we need to show labels
+        // Determine if we need to show labels (always use flex)
         const labelEl = document.getElementById('canvasLabel' + i);
         if (labelEl) {
-            labelEl.style.display = maxCanvases > 1 ? 'block' : 'none';
+            labelEl.style.display = 'flex';
         }
 
         this._drawToCanvas(c, true);
@@ -499,8 +500,9 @@ _renderCanvas() {
     // Restore active state
     this.canvas = backupCanvas;
     this.currentTemplate = backupTemplate;
+    const finalSel = (this.canvasesState && this.canvasesState[activeIdx]) ? this.canvasesState[activeIdx].selectedSlotIndex : backupSelectedSlotIndex;
+    this.selectedSlotIndex = (finalSel !== undefined && finalSel !== null) ? finalSel : -1;
     this.slots = (this.canvasesState && this.canvasesState[activeIdx]) ? this.canvasesState[activeIdx].slots : backupSlots;
-    this.selectedSlotIndex = backupSelectedSlotIndex;
   }
 ,
 
