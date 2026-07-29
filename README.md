@@ -60,9 +60,32 @@ node server.js &
 
 ---
 
-## ✨ 3. Các Tính Năng Nổi Bật Đã Cập Nhật
+## ✨ 5. Các Tính Năng Nổi Bật Đã Cập Nhật
 
 1. **Đồng bộ ảnh siêu tốc WebP**: Tự động nén ảnh trên RAM và stream upload lên VPS trong thời gian thực.
 2. **Quét đệ quy thư mục con**: Tự động nhận diện tất cả ảnh trong thư mục gốc và thư mục con của phần mềm máy ảnh.
 3. **Quản Lý Hàng Chờ & Xóa Vật Lý**: Khi xóa phiên chụp trong bảng *Quản Lý Hàng Chờ*, hệ thống sẽ tự động xóa sạch thư mục ảnh đó khỏi đĩa VPS.
 4. **Xem QR / Tải Ảnh**: Mở trực tiếp trang download mã QR (`download.html`) chuẩn cho khách hàng.
+5. **Giao diện Canvas linh hoạt (A4/A5)**: Hỗ trợ chọn 1 khung hoặc combo 2 khung A5, kéo giãn zoom, xoay 90 độ, căn chỉnh vị trí ảnh mượt mà.
+6. **Đồng bộ Real-Time User & Staff**: Staff quan sát được trực tiếp thao tác chọn ảnh, xếp khung của khách theo từng phòng chụp real-time qua SSE.
+
+---
+
+## 🛠️ 6. Kế Hoạch & Tiến Độ Tối Ưu Hóa Kiến Trúc (3 Giai Đoạn)
+
+### 🔴 Giai Đoạn 1: Dọn Dẹp Rác Kỹ Thuật (Technical Debt Cleanup)
+- [x] **Dọn dẹp script vá tạm**: Gom toàn bộ 46 file vá tạm (`*.py`, `*.cjs`, `*.js`) ở thư mục gốc vào `archive/scripts/`.
+- [x] **Tối ưu hóa thư mục gốc**: Giữ thư mục gốc dự án gọn gàng, rõ ràng chỉ chứa các file chạy hệ thống cốt lõi.
+- [x] **Khởi tạo Ledger CONTINUITY.md**: Lưu giữ ngữ cảnh kiến trúc, North Star và các quyết định chiến lược.
+
+### 🟡 Giai Đoạn 2: Tách Nhỏ Monolithic UI Modules (Sub-Components Refactoring)
+- [x] **Tách TemplatePicker Component**: Tách logic chọn khung mẫu thành component độc lập (`js/components/TemplatePicker.js`).
+- [x] **Tách Lightbox Component**: Tách logic phóng to / xem trước ảnh thành `js/components/LightboxComponent.js`.
+- [x] **Tách HeaderActions Component**: Tách logic các nút thao tác khung (`↻ Xoay 90°`, `↺ Reset 0°`).
+- [ ] **Tách CrossSellBanner Component**: Tách logic danh sách sản phẩm bán kèm mua cùng ảnh.
+- [ ] **Đưa dung lượng file về dưới 500 dòng**: Giảm kích thước `pl-ui.js` (1,745 dòng) và `pl-canvas.js` (850 dòng) tuân thủ 500-line rule.
+
+### 🔵 Giai Đoạn 3: Tích Hợp Build Tool & Tự Động Hóa Cache Invalidation
+- [ ] **Tích hợp Vite / Esbuild**: Cấu hình quy trình đóng gói tự động cho ứng dụng Client.
+- [ ] **Tự động mã hóa tên file (Bundle Hashing)**: Sinh filename hash (ví dụ: `print-layout.[hash].js`) để triệt tiêu 100% việc đổi `?v=XXX` thủ công.
+- [ ] **Chuyển đổi Class-based ES Modules**: Thay thế Mixin pattern bằng Class dependency injection rõ ràng.

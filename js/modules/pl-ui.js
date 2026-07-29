@@ -1,5 +1,7 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=160';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=150';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=175';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=175';
+import { LightboxComponent } from '../components/LightboxComponent.js?v=175';
+import { HeaderActions } from '../components/HeaderActions.js?v=175';
 
 export const UIMixin = {
   _initLogin() {
@@ -166,111 +168,38 @@ export const UIMixin = {
   }
   ,
 
-  _openLightbox(index, imagesList) {
-    this.lightboxImages = imagesList || this.images;
-    this.lightboxIndex = index;
-    this._updateLightboxContent();
-
-    const overlay = document.getElementById('lightboxOverlay');
-    if (overlay) overlay.classList.add('active');
-  },
-
-  _updateLightboxContent() {
-    if (!this.lightboxImages || this.lightboxImages.length === 0) return;
-    if (this.lightboxIndex < 0) this.lightboxIndex = 0;
-    if (this.lightboxIndex >= this.lightboxImages.length) this.lightboxIndex = this.lightboxImages.length - 1;
-
-    const imgObj = this.lightboxImages[this.lightboxIndex];
-    const lightboxImg = document.getElementById('lightboxImg');
-    const counter = document.getElementById('lightboxCounter');
-    const selectText = document.getElementById('lightboxSelectText');
-
-    if (lightboxImg) lightboxImg.src = imgObj.objectUrl || imgObj.url;
-    if (counter) counter.textContent = `${this.lightboxIndex + 1} / ${this.lightboxImages.length}`;
-
-    if (selectText) {
-      const isSelected = this.selectedPhotos && this.selectedPhotos.has(imgObj.id);
-      selectText.textContent = isSelected ? 'Bỏ chọn ảnh này' : 'Chọn ảnh này';
-    }
-  },
-
   _initLightboxEvents() {
-    const overlay = document.getElementById('lightboxOverlay');
-    const closeBtn = document.getElementById('btnLightboxClose');
-    const prevBtn = document.getElementById('btnLightboxPrev');
-    const nextBtn = document.getElementById('btnLightboxNext');
-    const selectBtn = document.getElementById('btnLightboxSelect');
-
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        if (overlay) overlay.classList.remove('active');
-      });
-    }
-
-    if (overlay) {
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-          overlay.classList.remove('active');
-        }
-      });
-    }
-
-    if (prevBtn) {
-      prevBtn.addEventListener('click', () => {
-        if (this.lightboxIndex > 0) {
-          this.lightboxIndex--;
-          this._updateLightboxContent();
-        }
-      });
-    }
-
-    if (nextBtn) {
-      nextBtn.addEventListener('click', () => {
-        if (this.lightboxImages && this.lightboxIndex < this.lightboxImages.length - 1) {
-          this.lightboxIndex++;
-          this._updateLightboxContent();
-        }
-      });
-    }
-
-    if (selectBtn) {
-      selectBtn.addEventListener('click', () => {
-        if (!this.lightboxImages || this.lightboxIndex < 0) return;
-        const imgObj = this.lightboxImages[this.lightboxIndex];
-        if (!imgObj) return;
-
-        if (this.selectedPhotos.has(imgObj.id)) {
-          this.selectedPhotos.delete(imgObj.id);
-        } else {
-          const maxSlots = this._getMaxSlots();
-          if (maxSlots > 0 && this.selectedPhotos.size >= maxSlots) {
-            alert(`Bạn chỉ được chọn tối đa ${maxSlots} ảnh cho khung này.`);
-            return;
+    if (!this._lightboxComponent) {
+      this._lightboxComponent = new LightboxComponent({
+        isImageSelected: (imgId) => this.selectedPhotos && this.selectedPhotos.has(imgId),
+        onSelectToggle: (imgObj) => {
+          if (!imgObj) return;
+          if (this.selectedPhotos.has(imgObj.id)) {
+            this.selectedPhotos.delete(imgObj.id);
+          } else {
+            const maxSlots = this._getMaxSlots();
+            if (maxSlots > 0 && this.selectedPhotos.size >= maxSlots) {
+              alert(`Bạn chỉ được chọn tối đa ${maxSlots} ảnh cho khung này.`);
+              return;
+            }
+            this.selectedPhotos.add(imgObj.id);
           }
-          this.selectedPhotos.add(imgObj.id);
-        }
-        if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].queue) {
-          const activeSess = this.rooms[this.activeRoom].queue.find(s => s.id === this.rooms[this.activeRoom].session);
-          if (activeSess) {
-            activeSess.selectedImages = Array.from(this.selectedPhotos);
+          if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].queue) {
+            const activeSess = this.rooms[this.activeRoom].queue.find(s => s.id === this.rooms[this.activeRoom].session);
+            if (activeSess) {
+              activeSess.selectedImages = Array.from(this.selectedPhotos);
+            }
           }
+          this._updateImageListUI();
+          this._syncState(this.activeRoom);
         }
-        this._updateImageListUI();
-        this._syncState(this.activeRoom);
-        this._updateLightboxContent();
       });
     }
+  },
 
-    document.addEventListener('keydown', (e) => {
-      if (!overlay || !overlay.classList.contains('active')) return;
-      if (e.key === 'Escape') {
-        overlay.classList.remove('active');
-      } else if (e.key === 'ArrowLeft') {
-        if (prevBtn) prevBtn.click();
-      } else if (e.key === 'ArrowRight') {
-        if (nextBtn) nextBtn.click();
-      }
-    });
+  _openLightbox(index, imagesList) {
+    this._initLightboxEvents();
+    this._lightboxComponent.open(imagesList || this.images, index);
   },
 
   _initMainSwiper() {
@@ -1639,29 +1568,17 @@ export const UIMixin = {
   },
 
   _updateHeaderActions() {
+    if (!this._headerActions) {
+      this._headerActions = new HeaderActions({
+        onRotate: (cIdx) => this._rotateActiveSlot(90, cIdx),
+        onReset: (cIdx) => this._resetActiveSlotRotation(cIdx)
+      });
+    }
     const currentStep = (this.activeRoom && this.rooms && this.rooms[this.activeRoom])
       ? (this.rooms[this.activeRoom].step || 1)
       : (this.currentStep || 1);
 
-    [0, 1].forEach(cIdx => {
-      const actionsEl = document.getElementById('canvasActions' + cIdx);
-      if (!actionsEl) return;
-
-      if (currentStep === 4) {
-        actionsEl.style.display = 'none';
-        return;
-      }
-
-      const activeSlotIdx = (this.canvasesState && this.canvasesState[cIdx])
-        ? this.canvasesState[cIdx].selectedSlotIndex
-        : (cIdx === (this.activeCanvasIndex || 0) ? this.selectedSlotIndex : -1);
-
-      if (cIdx === (this.activeCanvasIndex || 0) && activeSlotIdx >= 0) {
-        actionsEl.style.display = 'flex';
-      } else {
-        actionsEl.style.display = 'none';
-      }
-    });
+    this._headerActions.updateVisibility(currentStep, this.activeCanvasIndex, this.canvasesState, this.selectedSlotIndex);
   }
 
   // ── Canvas Click → Select Slot ──
