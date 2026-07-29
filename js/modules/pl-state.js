@@ -444,15 +444,6 @@ async _syncStateDirect(room) {
 ,
 
 _syncState(room) {
-    // Màn Khách: Tắt toàn bộ đồng bộ trung gian trong các Bước 1, 2, 3.
-    // Chỉ lưu và đồng bộ lên Server duy nhất 1 lần khi Khách nhấn "Hoàn tất" (Step 4)!
-    if (!isStaffMode) {
-      const roomData = this.rooms[room];
-      if (roomData && (roomData.step || 1) < 4) {
-        return; // Không gửi request đồng bộ trong lúc Khách đang chọn/sửa
-      }
-    }
-
     const roomData = this.rooms[room];
     if (!roomData || !this.branch || !roomData.session) return;
     

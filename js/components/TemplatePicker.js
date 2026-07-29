@@ -21,12 +21,12 @@ export class TemplatePicker {
       this.selectedTemplates = [id];
     } else {
       // A5: chọn tối đa 2 frame
-      const idx = this.selectedTemplates.indexOf(id);
-      if (idx > -1) {
-        this.selectedTemplates.splice(idx, 1);
+      if (this.selectedTemplates.length < 2) {
+        this.selectedTemplates.push(id);
       } else {
-        if (this.selectedTemplates.length < 2) {
-          this.selectedTemplates.push(id);
+        const idx = this.selectedTemplates.indexOf(id);
+        if (idx > -1) {
+          this.selectedTemplates.splice(idx, 1);
         } else {
           this.selectedTemplates[1] = id;
         }
