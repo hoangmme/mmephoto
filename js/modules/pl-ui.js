@@ -624,7 +624,6 @@ export const UIMixin = {
       paperNote.style.display = (step === 1) ? 'block' : 'none';
     }
 
-    const canvasInfo = document.getElementById('canvasInfo');
     if (canvasInfo) {
       canvasInfo.style.display = (step === 1) ? 'block' : 'none';
     }
