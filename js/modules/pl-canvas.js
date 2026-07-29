@@ -86,7 +86,11 @@ _onCanvasClick(e) {
       const localX = dx * Math.cos(-rot) - dy * Math.sin(-rot);
       const localY = dx * Math.sin(-rot) + dy * Math.cos(-rot);
 
-      if (localX >= -s.w/2 && localX <= s.w/2 && localY >= -s.h/2 && localY <= s.h/2) {
+      // Generous hit tolerance (10% + 20px) to ensure slot 0 and tilted slots are easily clickable
+      const padW = s.w * 0.1 + 20;
+      const padH = s.h * 0.1 + 20;
+
+      if (localX >= -s.w/2 - padW && localX <= s.w/2 + padW && localY >= -s.h/2 - padH && localY <= s.h/2 + padH) {
         clickedSlot = i;
         break;
       }
