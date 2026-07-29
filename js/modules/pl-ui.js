@@ -1575,9 +1575,9 @@ export const UIMixin = {
         onReset: (cIdx) => this._resetActiveSlotRotation(cIdx)
       });
     }
-    const currentStep = (this.activeRoom && this.rooms && this.rooms[this.activeRoom])
-      ? (this.rooms[this.activeRoom].step || 1)
-      : (this.currentStep || 1);
+    const currentStep = (isStaffMode && this.currentStep)
+      ? this.currentStep
+      : ((this.activeRoom && this.rooms && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1);
 
     this._headerActions.updateVisibility(currentStep, this.activeCanvasIndex, this.canvasesState, this.selectedSlotIndex);
   }

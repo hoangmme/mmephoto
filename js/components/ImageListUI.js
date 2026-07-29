@@ -54,7 +54,6 @@ export class ImageListUI {
         if (img.id === selectedImageId || img.id === activeSlotImageId) {
           thumb.classList.add('selected');
         }
-        if (usedIds.has(img.id)) thumb.classList.add('used');
       }
 
       thumb.addEventListener('click', () => {
