@@ -36,16 +36,11 @@ export class TemplatePicker {
 
   _confirmSelection() {
     if (!this.onComplete) return true;
+    if (this.paperSize === 'A5' && this.selectedTemplates.length === 1) {
+      this.selectedTemplates = [this.selectedTemplates[0], this.selectedTemplates[0]];
+    }
     const requiredCount = this.paperSize === 'A4' ? 1 : 2;
-    if (this.selectedTemplates.length === requiredCount) {
-      try { 
-        this.onComplete(this.paperSize, this.selectedTemplates); 
-        return true;
-      }
-      catch(e) { console.error('TemplatePicker onComplete error:', e); }
-    } else if (this.paperSize === 'A5' && this.selectedTemplates.length === 1) {
-      // Auto-duplicate frame if only 1 chosen for A5
-      this.selectedTemplates.push(this.selectedTemplates[0]);
+    if (this.selectedTemplates.length >= requiredCount) {
       try { 
         this.onComplete(this.paperSize, this.selectedTemplates); 
         return true;

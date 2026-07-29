@@ -217,8 +217,12 @@ export const UIMixin = {
         ALL_TEMPLATES,
         (paperSize, selectedTemplates) => {
           this.paperSize = paperSize;
-          this.selectedTemplates = selectedTemplates;
-          this.currentTemplate = selectedTemplates[0];
+          let tmpls = selectedTemplates ? [...selectedTemplates] : [];
+          if (paperSize === 'A5' && tmpls.length === 1) {
+            tmpls = [tmpls[0], tmpls[0]];
+          }
+          this.selectedTemplates = tmpls;
+          this.currentTemplate = tmpls[0];
           
           // Re-init canvasesState based on selection
           this.canvasesState = this.selectedTemplates.map(t => {
