@@ -24,8 +24,8 @@ export class TemplatePicker {
       
       // Strict Tag & Type Filtering
       if (allowedType) {
-        const isA4 = (tmpl.tags && tmpl.tags.includes('a4')) || key.startsWith('a4') || key === 'template-4';
-        const isA5 = (tmpl.tags && tmpl.tags.includes('a5')) || key.startsWith('a5') || key === 'template-3';
+        const isA4 = (tmpl.tags && tmpl.tags.includes('a4')) || (key.startsWith('a4') && key !== 'template-4');
+        const isA5 = (tmpl.tags && tmpl.tags.includes('a5')) || key.startsWith('a5') || key.startsWith('template-');
         
         if (allowedType === 'a4' && !isA4) return;
         if (allowedType === 'a5' && !isA5) return;

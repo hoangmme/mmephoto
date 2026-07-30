@@ -480,6 +480,7 @@ const TEMPLATES = {
     },
     "template-4": {
         "id": "template-4",
+        "tags": ["a5"],
         "name": "Template 4",
         "canvas_width": 2480,
         "canvas_height": 3507,
@@ -546,7 +547,7 @@ Object.keys(TEMPLATES).forEach(k => {
 
 export const ALL_TEMPLATES = { ...parsedDefaults };
 Object.keys(ALL_TEMPLATES).forEach(k => {
-  if (k.startsWith('a4') || k === 'template-4') {
+  if (k.startsWith('a4')) {
     ALL_TEMPLATES[k].tags = ['a4'];
   } else {
     ALL_TEMPLATES[k].tags = ['a5'];
