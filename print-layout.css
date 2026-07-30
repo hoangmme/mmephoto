@@ -1647,8 +1647,8 @@ body.pl-mode-staff #startSessionOverlay {
 }
 
 .layout-a4 {
-  height: 353px;
-  width: 250px;
+  height: 495px;
+  width: 350px;
   position: relative;
   background: #f8fafc;
 }
@@ -1663,8 +1663,8 @@ body.pl-mode-staff #startSessionOverlay {
 }
 
 .layout-a5-stack {
-  height: 353px;
-  width: 250px;
+  height: 495px;
+  width: 350px;
   display: flex;
   flex-direction: column;
   gap: 11px;
@@ -1695,8 +1695,8 @@ body.pl-mode-staff #startSessionOverlay {
 }
 
 .layout-a5-stack img {
-  width: 171px;
-  height: 250px;
+  width: 67%;
+  height: auto;
   object-fit: contain;
   display: block;
   transform: rotate(-90deg);
