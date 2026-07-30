@@ -145,8 +145,8 @@ export const UIStepsMixin = {
         canvasContainer.style.display = 'none';
         mainSwiperArea.style.display = 'flex';
       }
+      }
     }
-
     // Step 4: Shared Read-Only Official Session Component (Strictly no auto-fill)
     if (step === 4) {
       this.selectedSlotIndex = -1;

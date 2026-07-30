@@ -131,8 +131,13 @@ _initSSE(branch) {
             // Only update globals if this room is the currently viewed tab
             if (this.activeRoom === room) {
               // Staff editing override: block ALL server overwrites when Staff is editing steps 1-3
-              const blockOverwrite = isStaffMode && this._staffEditingOverride;
+              let blockOverwrite = isStaffMode && this._staffEditingOverride;
               
+              if (!isStaffMode && this.rooms[room].step === 4 && data.step !== undefined && data.step < 4) {
+                // If User is currently viewing Step 4, ignore any incoming state syncs from Staff editing older steps
+                blockOverwrite = true;
+              }
+
               let templateChanged = false;
               const isUserStep1 = !isStaffMode && (this.rooms[room].step || 1) === 1;
               
