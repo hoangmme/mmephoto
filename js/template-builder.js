@@ -449,6 +449,7 @@ class TemplateBuilderApp {
 
     const img = new Image();
     img.onload = () => {
+      const isSvg = this.template.frame_url.startsWith('data:image/svg+xml');
       const w = this.template.canvas_width;
       const h = this.template.canvas_height;
       
@@ -519,11 +520,57 @@ class TemplateBuilderApp {
       });
 
       if (updatedCount > 0) {
-        ctx.putImageData(imgData, 0, 0);
-        this.template.frame_url = canvas.toDataURL('image/png');
+        if (isSvg) {
+          // Keep frame as SVG, just remove the magic colored shapes
+          try {
+            let svgString = '';
+            if (this.template.frame_url.includes(';base64,')) {
+               svgString = atob(this.template.frame_url.split(';base64,')[1]);
+            } else {
+               svgString = decodeURIComponent(this.template.frame_url.split(',')[1]);
+            }
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(svgString, "image/svg+xml");
+            
+            let removedShapes = false;
+            this.template.slots.forEach(slot => {
+                const hex = slot.color.toLowerCase();
+                const elements = doc.querySelectorAll('*');
+                for (let el of elements) {
+                    if (!el.tagName) continue;
+                    const fillAttr = (el.getAttribute('fill') || '').toLowerCase();
+                    const styleAttr = (el.getAttribute('style') || '').toLowerCase();
+                    if (fillAttr === hex || styleAttr.includes(`fill:${hex}`) || styleAttr.includes(`fill: ${hex}`)) {
+                        el.remove();
+                        removedShapes = true;
+                    }
+                }
+            });
+            
+            if (removedShapes) {
+                const serializer = new XMLSerializer();
+                const newSvgStr = serializer.serializeToString(doc);
+                // Convert back to utf-8 base64 safely
+                const encoder = new TextEncoder();
+                const encodedData = encoder.encode(newSvgStr);
+                const base64 = btoa(String.fromCharCode.apply(null, encodedData));
+                this.template.frame_url = 'data:image/svg+xml;base64,' + base64;
+            }
+          } catch (e) {
+            console.error("Lỗi khi xử lý SVG nguyên bản:", e);
+          }
+        } else {
+          // Punch holes in raster image
+          ctx.putImageData(imgData, 0, 0);
+          this.template.frame_url = canvas.toDataURL('image/png');
+        }
+
         this._updateFrameUI();
         this._renderWorkspace();
         this._renderSlotsList();
+        this.saveState();
+        alert(`Đã quét và đục lỗ thành công ${updatedCount} slot!`);
       } else {
         alert("Không tìm thấy khối màu nào khớp với các Slot đã tạo.");
       }
