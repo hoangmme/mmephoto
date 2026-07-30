@@ -592,7 +592,12 @@ class TemplateBuilderApp {
           const newSvgStr = serializer.serializeToString(svgEl);
           const encoder = new TextEncoder();
           const encodedData = encoder.encode(newSvgStr);
-          const base64 = btoa(String.fromCharCode.apply(null, encodedData));
+          let binary = '';
+          const len = encodedData.byteLength;
+          for (let i = 0; i < len; i++) {
+              binary += String.fromCharCode(encodedData[i]);
+          }
+          const base64 = btoa(binary);
           this.template.frame_url = 'data:image/svg+xml;base64,' + base64;
           
           this._updateFrameUI();
