@@ -322,7 +322,7 @@ export const UIInteractionsMixin = {
           const imageCenterY = slotDef.cy + (slot.panY || 0);
           const isNearBottom = (imageCenterY + halfH + 110 > (this.canvas ? this.canvas.height : 2480) - 40);
           const handleSign = isNearBottom ? -1 : 1;
-          const handleOffsetY = handleSign * (halfH + 85);
+          const handleOffsetY = handleSign * (halfH + 100);
 
           let dx = x - slotDef.cx;
           let dy = y - slotDef.cy;
@@ -339,7 +339,7 @@ export const UIInteractionsMixin = {
 
           const distHandle = Math.hypot(imgX, imgY - handleOffsetY);
 
-          if (distHandle <= 65) {
+          if (distHandle <= 200) {
             isRotatingSlot = true;
             touchRotateStartTime = Date.now();
             rotateStartAngle = Math.atan2(y - (slotDef.cy + (slot.panY || 0)), x - (slotDef.cx + (slot.panX || 0))) * (180 / Math.PI);
@@ -455,7 +455,7 @@ export const UIInteractionsMixin = {
           const imageCenterY = slotDef.cy + (slot.panY || 0);
           const isNearBottom = (imageCenterY + halfH + 110 > (this.canvas ? this.canvas.height : 2480) - 40);
           const handleSign = isNearBottom ? -1 : 1;
-          const handleOffsetY = handleSign * (halfH + 85);
+          const handleOffsetY = handleSign * (halfH + 100);
 
           let dx = x - slotDef.cx;
           let dy = y - slotDef.cy;
@@ -463,7 +463,7 @@ export const UIInteractionsMixin = {
           let localX = dx * Math.cos(-slotRotRad) - dy * Math.sin(-slotRotRad);
           let localY = dx * Math.sin(-slotRotRad) + dy * Math.cos(-slotRotRad);
 
-          localX -= (slot.panY || 0);
+          localX -= (slot.panX || 0);
           localY -= (slot.panY || 0);
 
           const imgRotRad = ((slot.rotation || 0) * Math.PI) / 180;
@@ -472,12 +472,13 @@ export const UIInteractionsMixin = {
 
           const distHandle = Math.hypot(imgX, imgY - handleOffsetY);
 
-          if (distHandle <= 70) {
+          if (distHandle <= 220) {
             isRotatingSlot = true;
             touchRotateStartTime = Date.now();
             rotateStartAngle = Math.atan2(y - (slotDef.cy + (slot.panY || 0)), x - (slotDef.cx + (slot.panX || 0))) * (180 / Math.PI);
             initialSlotRot = slot.rotation || 0;
             e.preventDefault();
+            if (e.stopPropagation) e.stopPropagation();
             return;
           }
         }

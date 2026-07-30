@@ -242,46 +242,53 @@ export class CanvasRenderer {
         });
 
         // Canva Rotate Handle
-        const isNearBottom = (s.cy + (slotData ? (slotData.panY || 0) : 0) + slotH / 2 + 110 > h - 40);
+        const isNearBottom = (s.cy + (slotData ? (slotData.panY || 0) : 0) + slotH / 2 + 130 > h - 40);
         const handleSign = isNearBottom ? -1 : 1;
-        const handleOffsetY = handleSign * (slotH / 2 + 85);
+        const handleOffsetY = handleSign * (slotH / 2 + 100);
 
+        // Connecting Line
         ctx.beginPath();
         ctx.moveTo(0, handleSign * (slotH / 2));
         ctx.lineTo(0, handleOffsetY);
         ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 8;
         ctx.stroke();
 
+        // White Circle with Shadow and Thick Border
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+        ctx.shadowBlur = 18;
         ctx.beginPath();
-        ctx.arc(0, handleOffsetY, 40, 0, Math.PI * 2);
+        ctx.arc(0, handleOffsetY, 85, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
         ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 8;
         ctx.stroke();
+        ctx.restore();
 
+        // Rotate Arc Icon (↻)
         ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 8;
         ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.arc(0, handleOffsetY, 20, -Math.PI * 0.75, Math.PI * 0.75);
+        ctx.arc(0, handleOffsetY, 44, -Math.PI * 0.75, Math.PI * 0.75);
         ctx.stroke();
 
         // Rotation Angle Pill Badge
         const currentDeg = Math.round(((slotData ? (slotData.rotation || 0) : 0) % 360 + 360) % 360) + '°';
-        ctx.font = 'bold 38px Inter, system-ui, sans-serif';
+        ctx.font = 'bold 42px Inter, system-ui, sans-serif';
         const textMetrics = ctx.measureText(currentDeg);
-        const badgeW = textMetrics.width + 36;
-        const badgeH = 54;
-        const badgeY = handleOffsetY + (isNearBottom ? -75 : 75);
+        const badgeW = textMetrics.width + 40;
+        const badgeH = 58;
+        const badgeY = handleOffsetY + (isNearBottom ? -110 : 110);
 
         ctx.save();
         ctx.fillStyle = 'rgba(2, 132, 199, 0.95)';
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 4;
         ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, 14);
+        if (ctx.roundRect) ctx.roundRect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, 16);
         else ctx.rect(-badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH);
         ctx.fill();
         ctx.stroke();
