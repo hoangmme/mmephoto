@@ -490,7 +490,11 @@ class TemplateBuilderApp {
       tempContainer.appendChild(svgEl);
       document.body.appendChild(tempContainer);
       
-      const magicColors = ['#ff3131', '#38b6ff', '#ffde59', '#7ed957'];
+      const magicColors = [
+          '#ff3131', '#38b6ff', '#ffde59', '#7ed957', '#cb6ce6', '#ff66c4', 
+          '#8c52ff', '#0cc0df', '#ff914d', '#c1ff72', '#5ce1e6', '#ff5757', 
+          '#004aad', '#00bf63', '#ffbd59', '#1800ad', '#5170ff', '#0097b2', '#ff751f'
+      ];
       let newSlots = [];
       let removedShapes = false;
       
