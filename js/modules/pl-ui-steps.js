@@ -221,6 +221,23 @@ export const UIStepsMixin = {
         this.canvasesState.forEach(cs => { if (cs) cs.selectedSlotIndex = -1; });
       }
 
+      // Step 4 ALWAYS shows the officially committed session, not the draft
+      if (roomData && roomData.queue && roomData.session) {
+        const activeSess = roomData.queue.find(s => s.id === roomData.session);
+        if (activeSess && activeSess.canvasesState) {
+          this.selectedTemplates = activeSess.selectedTemplates ? [...activeSess.selectedTemplates] : this.selectedTemplates;
+          this.paperSize = activeSess.paperSize || this.paperSize;
+          this.canvasesState = JSON.parse(JSON.stringify(activeSess.canvasesState));
+          const s4ActiveIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
+          if (this.canvasesState && this.canvasesState[s4ActiveIdx]) {
+            this.slots = this.canvasesState[s4ActiveIdx].slots || [];
+          }
+          if (activeSess.selectedImages) {
+            this.selectedPhotos = new Set(activeSess.selectedImages);
+          }
+        }
+      }
+
       this._updateHeaderActions();
     }
 
