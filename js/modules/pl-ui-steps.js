@@ -222,23 +222,6 @@ export const UIStepsMixin = {
         this.canvasesState.forEach(cs => { if (cs) cs.selectedSlotIndex = -1; });
       }
 
-      // If Staff is viewing Step 4 preview, render committed activeSess state for preview
-      if (isStaffMode && roomData && roomData.queue && roomData.session) {
-        const activeSess = roomData.queue.find(s => s.id === roomData.session);
-        if (activeSess && activeSess.canvasesState) {
-          this.selectedTemplates = activeSess.selectedTemplates ? [...activeSess.selectedTemplates] : this.selectedTemplates;
-          this.paperSize = activeSess.paperSize || this.paperSize;
-          this.canvasesState = JSON.parse(JSON.stringify(activeSess.canvasesState));
-          const s4ActiveIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
-          if (this.canvasesState && this.canvasesState[s4ActiveIdx]) {
-            this.slots = this.canvasesState[s4ActiveIdx].slots || [];
-          }
-          if (activeSess.selectedImages) {
-            this.selectedPhotos = new Set(activeSess.selectedImages);
-          }
-        }
-      }
-
       this._updateHeaderActions();
     }
 
