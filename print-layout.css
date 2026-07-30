@@ -916,8 +916,8 @@ body.pl-mode-staff #roomTabs {
 }
 
 .pl-step4-bottom-container #qrOverlay img {
-  width: 80px;
-  height: 80px;
+  width: 150px;
+  height: 150px;
 }
 
 .pl-step4-bottom-container #qrOverlay div:first-child {
