@@ -1562,9 +1562,7 @@ body.pl-mode-staff #startSessionOverlay {
     max-height: 50vh;
   }
 }
-. p l - c a n v a s - o v e r l a y   {   p o i n t e r - e v e n t s :   n o n e ;   } 
- 
- 
+
 /* ============================================
    Layout Selector & Template Modal (Step 1 UI)
    ============================================ */
@@ -1589,7 +1587,7 @@ body.pl-mode-staff #startSessionOverlay {
   flex-wrap: nowrap;
   justify-content: center;
   align-items: flex-end;
-  gap: 80px;
+  gap: 30px;
   width: 100%;
   max-width: 820px;
   margin: 0 auto;
@@ -1647,8 +1645,8 @@ body.pl-mode-staff #startSessionOverlay {
 }
 
 .layout-a4 {
-  height: 495px;
-  width: 350px;
+  height: 530px;
+  width: 375px;
   position: relative;
   background: #f8fafc;
 }
@@ -1663,8 +1661,8 @@ body.pl-mode-staff #startSessionOverlay {
 }
 
 .layout-a5-stack {
-  height: 495px;
-  width: 350px;
+  height: 530px;
+  width: 375px;
   display: flex;
   flex-direction: column;
   gap: 11px;
