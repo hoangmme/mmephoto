@@ -181,10 +181,11 @@ this._syncLayoutSelection = () => {
           const tmpls = (typeof ALL_TEMPLATES !== 'undefined' ? ALL_TEMPLATES : null) || (typeof window !== 'undefined' ? window.ALL_TEMPLATES : null) || {};
           
           this._templatePickerModal.templates = tmpls;
+          const excludeKey = (allowedType === 'a5') ? this.selectedLayoutTemplates.a5_top : null;
           this._templatePickerModal.showModal(allowedType, (selectedKey) => {
             this.selectedLayoutTemplates[templateKey] = selectedKey;
             updateUI();
-          });
+          }, excludeKey);
           return;
         }
 

@@ -3,7 +3,7 @@ export class TemplatePicker {
     this.templates = templates;
   }
 
-  showModal(allowedType, onSelect) {
+  showModal(allowedType, onSelect, excludeKey = null) {
     const modal = document.getElementById('templateModal');
     const grid = document.getElementById('modalTemplateGrid');
     const btnClose = document.getElementById('btnCloseModal');
@@ -22,6 +22,7 @@ export class TemplatePicker {
     Object.keys(tmpls).forEach(key => {
       const tmpl = tmpls[key];
       
+      if (excludeKey && key === excludeKey) return;
       // Strict Tag & Type Filtering
       if (allowedType) {
         const isA4 = (tmpl.tags && tmpl.tags.includes('a4')) || (key.startsWith('a4') && key !== 'template-4');
