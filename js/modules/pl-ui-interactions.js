@@ -357,6 +357,8 @@ export const UIInteractionsMixin = {
     });
 
     window.addEventListener('mousemove', (e) => {
+      const curStep = (this.activeRoom && this.rooms && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || this.currentStep || 1) : (this.currentStep || 1);
+      if (curStep === 4) { isDragging = false; isRotatingSlot = false; return; }
       if (!isRotatingSlot && !isDragging) return;
       setActive();
       if (isRotatingSlot && this.selectedSlotIndex >= 0) {
@@ -492,6 +494,8 @@ export const UIInteractionsMixin = {
     }, { passive: false });
 
     canvasEl.addEventListener('touchmove', (e) => {
+      const curStep = (this.activeRoom && this.rooms && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || this.currentStep || 1) : (this.currentStep || 1);
+      if (curStep === 4) return;
       setActive();
       if (this.selectedSlotIndex < 0) return;
       const slot = this.slots[this.selectedSlotIndex];
@@ -566,6 +570,8 @@ export const UIInteractionsMixin = {
 
     // Mouse wheel zoom support for desktop testing/usage
     canvasEl.addEventListener('wheel', (e) => {
+      const curStep = (this.activeRoom && this.rooms && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || this.currentStep || 1) : (this.currentStep || 1);
+      if (curStep === 4) return;
       setActive();
       const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
       if (step === 1 || step === 4) return;

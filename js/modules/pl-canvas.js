@@ -311,7 +311,15 @@ _loadTemplateImages() {
   }
 ,
 
+
+  _getCurrentStep() {
+    return (this.activeRoom && this.rooms && this.rooms[this.activeRoom])
+      ? (this.rooms[this.activeRoom].step || this.currentStep || 1)
+      : (this.currentStep || 1);
+  },
+
 _panSlot(slotIndex, dx, dy) {
+    if (this._getCurrentStep() === 4) return;
     const slot = this.slots[slotIndex];
     if (!slot || !slot.imageId) return;
     
@@ -331,6 +339,7 @@ _panSlot(slotIndex, dx, dy) {
 ,
 
 _zoomSlot(slotIndex, zoom) {
+    if (this._getCurrentStep() === 4) return;
     const slot = this.slots[slotIndex];
     if (!slot) return;
     slot.zoom = Math.max(0.5, Math.min(3.0, zoom));
