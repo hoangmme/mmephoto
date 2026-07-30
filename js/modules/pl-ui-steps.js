@@ -404,6 +404,10 @@ export const UIStepsMixin = {
     requestAnimationFrame(() => {
       if (this._updatePadding) this._updatePadding();
     });
+
+    if (this._loadTemplateImages) {
+      this._loadTemplateImages();
+    }
   },
 
 
