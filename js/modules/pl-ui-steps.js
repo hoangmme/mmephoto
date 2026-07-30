@@ -182,6 +182,9 @@ export const UIStepsMixin = {
   
         if (currentDraft) {
         this.selectedTemplates = [...(currentDraft.selectedTemplates || [])];
+        if (this.selectedTemplates && this.selectedTemplates.length > 0) {
+          this.currentTemplate = this.selectedTemplates[0];
+        }
         this.paperSize = currentDraft.paperSize || this.paperSize;
         this.canvasesState = JSON.parse(JSON.stringify(currentDraft.canvasesState || []));
         this.selectedPhotos = new Set(currentDraft.selectedPhotos || []);
@@ -191,6 +194,9 @@ export const UIStepsMixin = {
         const activeIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
         if (this.canvasesState && this.canvasesState[activeIdx]) {
           this.slots = this.canvasesState[activeIdx].slots || [];
+          if (this.canvasesState[activeIdx].templateId) {
+            this.currentTemplate = this.canvasesState[activeIdx].templateId;
+          }
         }
       } else if (roomData && roomData.queue && roomData.session) {
         // First load initialization from active session if draft doesn't exist yet
@@ -226,11 +232,17 @@ export const UIStepsMixin = {
         const activeSess = roomData.queue.find(s => s.id === roomData.session);
         if (activeSess && activeSess.canvasesState) {
           this.selectedTemplates = activeSess.selectedTemplates ? [...activeSess.selectedTemplates] : this.selectedTemplates;
+          if (this.selectedTemplates && this.selectedTemplates.length > 0) {
+            this.currentTemplate = this.selectedTemplates[0];
+          }
           this.paperSize = activeSess.paperSize || this.paperSize;
           this.canvasesState = JSON.parse(JSON.stringify(activeSess.canvasesState));
           const s4ActiveIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
           if (this.canvasesState && this.canvasesState[s4ActiveIdx]) {
             this.slots = this.canvasesState[s4ActiveIdx].slots || [];
+            if (this.canvasesState[s4ActiveIdx].templateId) {
+              this.currentTemplate = this.canvasesState[s4ActiveIdx].templateId;
+            }
           }
           if (activeSess.selectedImages) {
             this.selectedPhotos = new Set(activeSess.selectedImages);
