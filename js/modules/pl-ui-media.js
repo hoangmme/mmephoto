@@ -123,7 +123,19 @@ export const UIMediaMixin = {
     const opt1 = document.getElementById('layoutOpt1');
     const opt2 = document.getElementById('layoutOpt2');
     
+this._syncLayoutSelection = () => {
+      if (this.selectedLayoutOption === 1) {
+        this.paperSize = 'A4';
+        this.selectedTemplates = [this.selectedLayoutTemplates.a4];
+      } else {
+        this.paperSize = 'A5';
+        this.selectedTemplates = [this.selectedLayoutTemplates.a5_top, this.selectedLayoutTemplates.a5_bottom];
+      }
+      this.currentTemplate = this.selectedTemplates[0];
+    };
+
     const updateUI = () => {
+      this._syncLayoutSelection();
       if (opt1) opt1.classList.toggle('active', this.selectedLayoutOption === 1);
       if (opt2) opt2.classList.toggle('active', this.selectedLayoutOption === 2);
       

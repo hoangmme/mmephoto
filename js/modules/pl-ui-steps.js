@@ -347,10 +347,10 @@ export const UIStepsMixin = {
     if (mainSwiperArea && canvasContainer && canvasContainer.parentElement === mainSwiperArea) {
       mainSwiperArea.after(canvasContainer);
     }
-    if (mainSwiperArea) mainSwiperArea.style.display = (step === 1) ? 'flex' : 'none';
+    if (mainSwiperArea) mainSwiperArea.style.setProperty('display', (step === 1) ? 'flex' : 'none', 'important');
     if (step === 1 && this._initLayoutSelector) this._initLayoutSelector();
     
-    if (canvasContainer) canvasContainer.style.display = (step === 3 || step === 4) ? 'flex' : 'none';
+    if (canvasContainer) canvasContainer.style.setProperty('display', (step === 3 || step === 4) ? 'flex' : 'none', 'important');
 
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
