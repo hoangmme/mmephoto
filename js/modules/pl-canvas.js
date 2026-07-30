@@ -20,65 +20,59 @@ _preloadImage(id, url) {
 
 _loadTemplateImages() {
     return new Promise((resolve) => {
-        const tmpl = ALL_TEMPLATES[this.currentTemplate];
-        if (!tmpl) {
-            resolve();
-            return;
-        }
-        
-        this.frameImageObj = null;
-        this.bgImageObj = null;
-
         this._templateImagesCache = this._templateImagesCache || {};
-        const cache = this._templateImagesCache[this.currentTemplate] || { bg: null, frame: null };
-        this._templateImagesCache[this.currentTemplate] = cache;
-
+        
+        const templatesToLoad = (this.selectedTemplates && this.selectedTemplates.length > 0) 
+            ? this.selectedTemplates 
+            : (this.currentTemplate ? [this.currentTemplate] : []);
+            
         let loadedCount = 0;
         let imagesToLoad = 0;
-
-        const tryRender = () => {
-           loadedCount++;
+        
+        const checkDone = () => {
            if (loadedCount >= imagesToLoad) {
-              this._renderCanvas();
-              resolve();
+               // Backward compatibility for currentTemplate
+               const activeCache = this._templateImagesCache[this.currentTemplate];
+               if (activeCache) {
+                   this.frameImageObj = activeCache.frame;
+                   this.bgImageObj = activeCache.bg;
+               }
+               this._renderCanvas();
+               resolve();
            }
         };
 
-        if (tmpl.frame_url && !cache.frame) imagesToLoad++;
-        if (tmpl.background_image && !cache.bg) imagesToLoad++;
-
-        if (tmpl.frame_url) {
-          this.frameImageObj = cache.frame || new Image();
-          if (!cache.frame) {
-            this.frameImageObj.crossOrigin = 'anonymous';
-            this.frameImageObj.onload = tryRender;
-            this.frameImageObj.onerror = tryRender;
-            this.frameImageObj.src = tmpl.frame_url;
-            cache.frame = this.frameImageObj;
-          }
-        } else {
-          this.frameImageObj = null;
-        }
-
-        if (tmpl.background_image) {
-          this.bgImageObj = cache.bg || new Image();
-          if (!cache.bg) {
-            this.bgImageObj.crossOrigin = 'anonymous';
-            this.bgImageObj.onload = tryRender;
-            this.bgImageObj.onerror = tryRender;
-            this.bgImageObj.src = tmpl.background_image;
-            cache.bg = this.bgImageObj;
-          }
-        } else {
-          this.bgImageObj = null;
-        }
+        templatesToLoad.forEach(tId => {
+            const tmpl = ALL_TEMPLATES[tId];
+            if (!tmpl) return;
+            
+            if (!this._templateImagesCache[tId]) {
+                this._templateImagesCache[tId] = { bg: null, frame: null };
+            }
+            const cache = this._templateImagesCache[tId];
+            
+            if (tmpl.frame_url && !cache.frame) imagesToLoad++;
+            if (tmpl.background_image && !cache.bg) imagesToLoad++;
+            
+            if (tmpl.frame_url && !cache.frame) {
+                cache.frame = new Image();
+                cache.frame.crossOrigin = 'anonymous';
+                cache.frame.onload = () => { loadedCount++; checkDone(); };
+                cache.frame.onerror = () => { loadedCount++; checkDone(); };
+                cache.frame.src = tmpl.frame_url;
+            }
+            
+            if (tmpl.background_image && !cache.bg) {
+                cache.bg = new Image();
+                cache.bg.crossOrigin = 'anonymous';
+                cache.bg.onload = () => { loadedCount++; checkDone(); };
+                cache.bg.onerror = () => { loadedCount++; checkDone(); };
+                cache.bg.src = tmpl.background_image;
+            }
+        });
         
         if (imagesToLoad === 0) {
-           // Both were cached
-           if (cache.frame) this.frameImageObj = cache.frame;
-           if (cache.bg) this.bgImageObj = cache.bg;
-           this._renderCanvas();
-           resolve();
+           checkDone();
         }
     });
   },
@@ -575,8 +569,8 @@ _renderCanvas() {
       slots: this.slots,
       selectedSlotIndex: this.selectedSlotIndex,
       imageCache: this._imageCache || {},
-      bgImageObj: cache.bg || this.bgImageObj,
-      frameImageObj: cache.frame || this.frameImageObj,
+      bgImageObj: cache.bg,
+      frameImageObj: cache.frame,
       defaultPreviewImages: this.defaultPreviewImages || [],
       isPreview: isPreview,
       currentStep: currentStep,
