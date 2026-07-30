@@ -115,6 +115,7 @@ _loadTemplateImages() {
     const tmpl = ALL_TEMPLATES[targetTemplateId] || ALL_TEMPLATES[this.currentTemplate];
     if (!tmpl || !tmpl.slots) return;
 
+    let clickedSlot = -1;
     let smallestArea = Infinity;
 
     for (let i = 0; i < tmpl.slots.length; i++) {
