@@ -385,9 +385,8 @@ export const UIMixin = {
 
     const roomData = this.rooms[this.activeRoom];
     const step = (isStaffMode && this.currentStep) ? this.currentStep : (roomData.step || 1);
-    this.images = roomData.images;
+    this.images = roomData.images || [];
     if (this.imageCount) this.imageCount.textContent = `${this.images.length} ảnh`;
-    this._renderImageList();
 
     // Update main mode class
     if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
@@ -517,8 +516,8 @@ export const UIMixin = {
         this._restoreStandardPanelLeft();
       }
     }
-
-    // (Removed dangerous async failsafe here. _applySelectionToSlots is now reliably called in _setStep)
+    // Render image list AFTER all state (Drafts, activeSession) is fully loaded!
+    this._renderImageList();
 
     // Update step banner active/completed items
     if (stepBanner) {
