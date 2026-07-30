@@ -1565,18 +1565,32 @@ body.pl-mode-staff #startSessionOverlay {
 . p l - c a n v a s - o v e r l a y   {   p o i n t e r - e v e n t s :   n o n e ;   } 
  
  
-/* Layout Selector (Fixed Side-by-Side) */
+/* Main Swiper Area Container */
+#mainSwiperArea,
+.pl-main-swiper-area {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 400px !important;
+  overflow: auto !important;
+}
+
+/* Layout Selector (Strict Horizontal Side-by-Side) */
 .pl-layout-selector {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
   justify-content: center !important;
-  align-items: flex-end !important;
-  gap: 40px !important;
-  padding: 24px 16px !important;
+  align-items: center !important;
+  gap: 60px !important;
   width: 100% !important;
-  max-width: 600px !important;
+  max-width: 700px !important;
   margin: 0 auto !important;
+  padding: 30px 20px !important;
   box-sizing: border-box !important;
 }
 
@@ -1584,20 +1598,21 @@ body.pl-mode-staff #startSessionOverlay {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  gap: 10px !important;
+  gap: 14px !important;
   cursor: pointer !important;
+  flex-shrink: 0 !important;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  opacity: 0.55 !important;
+  opacity: 0.65 !important;
 }
 
 .pl-layout-option:hover {
-  opacity: 0.9 !important;
-  transform: translateY(-4px) !important;
+  opacity: 0.95 !important;
+  transform: translateY(-5px) !important;
 }
 
 .pl-layout-option.active {
   opacity: 1 !important;
-  transform: scale(1.03) !important;
+  transform: scale(1.05) !important;
 }
 
 .pl-layout-option.active .pl-layout-label {
@@ -1607,30 +1622,31 @@ body.pl-mode-staff #startSessionOverlay {
 
 .pl-layout-preview {
   background: #ffffff !important;
-  border: 2px solid #cbd5e1 !important;
-  border-radius: 10px !important;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+  border: 3px solid #cbd5e1 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
   overflow: hidden !important;
-  width: 160px !important;
-  height: 226px !important;
+  width: 170px !important;
+  height: 240px !important;
   position: relative !important;
   transition: all 0.2s ease !important;
 }
 
 .pl-layout-option.active .pl-layout-preview {
   border-color: var(--pl-primary, #6366f1) !important;
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25), 0 8px 20px rgba(99, 102, 241, 0.15) !important;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3), 0 12px 28px rgba(99, 102, 241, 0.2) !important;
 }
 
 .pl-layout-label {
-  font-size: 15px !important;
-  font-weight: 600 !important;
-  color: var(--pl-text-muted, #64748b) !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--pl-text-muted, #475569) !important;
 }
 
 /* Specific Frame Dimensions */
 .layout-a4 {
-  height: 226px !important;
+  height: 240px !important;
+  width: 170px !important;
   position: relative !important;
   background: #f8fafc !important;
 }
@@ -1645,8 +1661,8 @@ body.pl-mode-staff #startSessionOverlay {
 
 /* Two A5s stacked vertically = A4 */
 .layout-a5-stack {
-  height: 226px !important;
-  width: 160px !important;
+  height: 240px !important;
+  width: 170px !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 8px !important;
@@ -1658,19 +1674,19 @@ body.pl-mode-staff #startSessionOverlay {
 
 .layout-a5-stack .pl-frame-a5 {
   flex: 1 !important;
-  height: 109px !important;
+  height: 116px !important;
   background: #ffffff !important;
-  border: 2px solid #cbd5e1 !important;
-  border-radius: 8px !important;
+  border: 3px solid #cbd5e1 !important;
+  border-radius: 10px !important;
   overflow: hidden !important;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
   position: relative !important;
   transition: all 0.2s ease !important;
 }
 
 .pl-layout-option.active .layout-a5-stack .pl-frame-a5 {
   border-color: var(--pl-primary, #6366f1) !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3) !important;
 }
 
 .layout-a5-stack img {
@@ -1685,7 +1701,7 @@ body.pl-mode-staff #startSessionOverlay {
 .pl-modal {
   position: fixed !important;
   inset: 0 !important;
-  background: rgba(0, 0, 0, 0.6) !important;
+  background: rgba(0, 0, 0, 0.65) !important;
   backdrop-filter: blur(4px) !important;
   z-index: 10000 !important;
   display: flex !important;
@@ -1724,10 +1740,16 @@ body.pl-mode-staff #startSessionOverlay {
 .pl-modal-close {
   background: none !important;
   border: none !important;
-  font-size: 28px !important;
+  font-size: 32px !important;
   cursor: pointer !important;
-  color: #94a3b8 !important;
+  color: #64748b !important;
   line-height: 1 !important;
+  padding: 4px 8px !important;
+  transition: color 0.2s ease !important;
+}
+
+.pl-modal-close:hover {
+  color: #ef4444 !important;
 }
 
 .pl-modal-body {

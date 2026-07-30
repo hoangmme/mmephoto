@@ -16,7 +16,6 @@ export class TemplatePicker {
     grid.innerHTML = '';
     Object.keys(tmpls).forEach(key => {
       const tmpl = tmpls[key];
-      // Filter by tags (a4 or a5)
       if (allowedType && tmpl.tags && !tmpl.tags.includes(allowedType)) {
         return;
       }
@@ -34,9 +33,10 @@ export class TemplatePicker {
       card.appendChild(img);
       card.appendChild(title);
       
-      card.onclick = () => {
+      card.onclick = (e) => {
+        e.stopPropagation();
         modal.style.display = 'none';
-        onSelect(key, tmpl);
+        if (onSelect) onSelect(key, tmpl);
       };
       
       grid.appendChild(card);
@@ -44,12 +44,15 @@ export class TemplatePicker {
 
     modal.style.display = 'flex';
 
-    btnClose.onclick = () => {
-      modal.style.display = 'none';
-    };
-    
+    if (btnClose) {
+      btnClose.onclick = (e) => {
+        e.stopPropagation();
+        modal.style.display = 'none';
+      };
+    }
+
     modal.onclick = (e) => {
-      if (e.target === modal) {
+      if (e.target === modal || e.target.classList.contains('pl-modal-close')) {
         modal.style.display = 'none';
       }
     };
