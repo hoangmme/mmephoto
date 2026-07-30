@@ -544,3 +544,5 @@ Object.keys(TEMPLATES).forEach(k => {
 });
 
 export const ALL_TEMPLATES = { ...parsedDefaults };
+
+if (typeof window !== "undefined") { window.ALL_TEMPLATES = ALL_TEMPLATES; }

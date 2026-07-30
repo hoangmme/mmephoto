@@ -113,7 +113,6 @@ export const UIMediaMixin = {
     const layoutSelector = document.getElementById('layoutSelector');
     if (!layoutSelector) return;
     
-    // Default selected layout
     this.selectedLayoutOption = this.selectedLayoutOption || 1;
     this.selectedLayoutTemplates = this.selectedLayoutTemplates || {
       a4: 'a4-1',
@@ -128,29 +127,34 @@ export const UIMediaMixin = {
       if (opt1) opt1.classList.toggle('active', this.selectedLayoutOption === 1);
       if (opt2) opt2.classList.toggle('active', this.selectedLayoutOption === 2);
       
+      const tmpls = (typeof ALL_TEMPLATES !== 'undefined' ? ALL_TEMPLATES : null) || (typeof window !== 'undefined' ? window.ALL_TEMPLATES : null) || {};
+      
       const img1 = document.getElementById('imgLayout1_0');
-      if (img1 && window.ALL_TEMPLATES && window.ALL_TEMPLATES[this.selectedLayoutTemplates.a4]) {
-        img1.src = window.ALL_TEMPLATES[this.selectedLayoutTemplates.a4].frame_url;
+      if (img1 && tmpls[this.selectedLayoutTemplates.a4]) {
+        img1.src = tmpls[this.selectedLayoutTemplates.a4].frame_url;
       }
       
       const img2_0 = document.getElementById('imgLayout2_0');
-      if (img2_0 && window.ALL_TEMPLATES && window.ALL_TEMPLATES[this.selectedLayoutTemplates.a5_top]) {
-        img2_0.src = window.ALL_TEMPLATES[this.selectedLayoutTemplates.a5_top].frame_url;
+      if (img2_0 && tmpls[this.selectedLayoutTemplates.a5_top]) {
+        img2_0.src = tmpls[this.selectedLayoutTemplates.a5_top].frame_url;
       }
       
       const img2_1 = document.getElementById('imgLayout2_1');
-      if (img2_1 && window.ALL_TEMPLATES && window.ALL_TEMPLATES[this.selectedLayoutTemplates.a5_bottom]) {
-        img2_1.src = window.ALL_TEMPLATES[this.selectedLayoutTemplates.a5_bottom].frame_url;
+      if (img2_1 && tmpls[this.selectedLayoutTemplates.a5_bottom]) {
+        img2_1.src = tmpls[this.selectedLayoutTemplates.a5_bottom].frame_url;
       }
     };
     
-    setTimeout(updateUI, 100);
+    updateUI();
+    setTimeout(updateUI, 50);
+    setTimeout(updateUI, 300);
 
     if (opt1) opt1.onclick = () => { this.selectedLayoutOption = 1; updateUI(); };
     if (opt2) opt2.onclick = () => { this.selectedLayoutOption = 2; updateUI(); };
     
     if (!this._templatePickerModal) {
-      this._templatePickerModal = new TemplatePicker(window.ALL_TEMPLATES || {});
+      const tmpls = (typeof ALL_TEMPLATES !== 'undefined' ? ALL_TEMPLATES : null) || (typeof window !== 'undefined' ? window.ALL_TEMPLATES : null) || {};
+      this._templatePickerModal = new TemplatePicker(tmpls);
     }
 
     const setupFrameClick = (frameId, templateKey, allowedType) => {
@@ -160,6 +164,8 @@ export const UIMediaMixin = {
         e.stopPropagation();
         this.selectedLayoutOption = (allowedType === 'a4') ? 1 : 2;
         updateUI();
+        const tmpls = (typeof ALL_TEMPLATES !== 'undefined' ? ALL_TEMPLATES : null) || (typeof window !== 'undefined' ? window.ALL_TEMPLATES : null) || {};
+        this._templatePickerModal.templates = tmpls;
         this._templatePickerModal.showModal(allowedType, (selectedKey) => {
           this.selectedLayoutTemplates[templateKey] = selectedKey;
           updateUI();

@@ -255,22 +255,22 @@
 
         <div class="pl-layout-selector" id="layoutSelector">
           <div class="pl-layout-option active" data-layout="1" id="layoutOpt1">
-            <div class="pl-layout-preview layout-a4" data-frame-type="a4" data-frame-index="0" title="Click để đổi Template">
+            <div class="pl-layout-preview layout-a4" id="previewLayout1" data-frame-type="a4" data-frame-index="0" title="Click để đổi Template">
               <img src="" id="imgLayout1_0" />
             </div>
-            <div class="pl-layout-label">1 ảnh</div>
+            <div class="pl-layout-label">1 ảnh (A4 Khung Đơn)</div>
           </div>
           
           <div class="pl-layout-option" data-layout="2" id="layoutOpt2">
             <div class="pl-layout-preview layout-a5-stack">
-              <div class="pl-frame-a5 top" data-frame-type="a5" data-frame-index="0" title="Click để đổi Template">
+              <div class="pl-frame-a5 top" id="previewLayout2_0" data-frame-type="a5" data-frame-index="0" title="Click để đổi Template">
                 <img src="" id="imgLayout2_0" />
               </div>
-              <div class="pl-frame-a5 bottom" data-frame-type="a5" data-frame-index="1" title="Click để đổi Template">
+              <div class="pl-frame-a5 bottom" id="previewLayout2_1" data-frame-type="a5" data-frame-index="1" title="Click để đổi Template">
                 <img src="" id="imgLayout2_1" />
               </div>
             </div>
-            <div class="pl-layout-label">2 ảnh</div>
+            <div class="pl-layout-label">2 ảnh (A5 Combo 2 Khung)</div>
           </div>
         </div>
 
@@ -278,7 +278,7 @@
         <div id="templateModal" class="pl-modal" style="display:none;">
           <div class="pl-modal-content">
             <div class="pl-modal-header">
-              <h3>Chọn Template</h3>
+              <h3>Chọn Mẫu Template</h3>
               <button id="btnCloseModal" class="pl-modal-close">&times;</button>
             </div>
             <div class="pl-modal-body">
@@ -287,8 +287,6 @@
           </div>
         </div>
 
-        <div class="pl-canvas-info" id="canvasInfo">A5 — 1748 × 2480 px — 300 DPI</div>
-        
         <!-- Note giải thích khổ giấy A4 & A5 cho khách -->
         <div id="paperInfoNote" class="pl-paper-info-note" style="margin: 6px auto 0 auto; max-width: 550px; padding: 6px 12px; background: rgba(79, 50, 25, 0.08); border: 1px dashed var(--pl-border); border-radius: 10px; font-size: 11px; color: var(--pl-text); text-align: center; line-height: 1.4;">
           💡 <strong>Lưu ý quy cách khổ giấy in:</strong><br>

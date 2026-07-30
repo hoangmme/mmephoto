@@ -348,6 +348,7 @@ export const UIStepsMixin = {
       mainSwiperArea.after(canvasContainer);
     }
     if (mainSwiperArea) mainSwiperArea.style.display = (step === 1) ? 'flex' : 'none';
+    if (step === 1 && this._initLayoutSelector) this._initLayoutSelector();
     
     if (canvasContainer) canvasContainer.style.display = (step === 3 || step === 4) ? 'flex' : 'none';
 

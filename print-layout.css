@@ -1562,185 +1562,213 @@ body.pl-mode-staff #startSessionOverlay {
     max-height: 50vh;
   }
 }
-. p l - c a n v a s - o v e r l a y   {   p o i n t e r - e v e n t s :   n o n e ;   }  
+. p l - c a n v a s - o v e r l a y   {   p o i n t e r - e v e n t s :   n o n e ;   } 
  
-/* Layout Selector */
+ 
+/* Layout Selector (Fixed Side-by-Side) */
 .pl-layout-selector {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  padding: 24px;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: center !important;
+  align-items: flex-end !important;
+  gap: 40px !important;
+  padding: 24px 16px !important;
+  width: 100% !important;
+  max-width: 600px !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
 }
 
 .pl-layout-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  opacity: 0.6;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  opacity: 0.55 !important;
 }
 
 .pl-layout-option:hover {
-  opacity: 0.8;
-  transform: translateY(-2px);
+  opacity: 0.9 !important;
+  transform: translateY(-4px) !important;
 }
 
 .pl-layout-option.active {
-  opacity: 1;
+  opacity: 1 !important;
+  transform: scale(1.03) !important;
 }
 
 .pl-layout-option.active .pl-layout-label {
-  color: var(--pl-primary, #6366f1);
-  font-weight: 700;
+  color: var(--pl-primary, #6366f1) !important;
+  font-weight: 700 !important;
 }
 
 .pl-layout-preview {
-  background: white;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  overflow: hidden;
-  width: 140px; /* Base width */
+  background: #ffffff !important;
+  border: 2px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+  overflow: hidden !important;
+  width: 160px !important;
+  height: 226px !important;
+  position: relative !important;
+  transition: all 0.2s ease !important;
 }
 
 .pl-layout-option.active .pl-layout-preview {
-  border-color: var(--pl-primary, #6366f1);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border-color: var(--pl-primary, #6366f1) !important;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25), 0 8px 20px rgba(99, 102, 241, 0.15) !important;
 }
 
 .pl-layout-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--pl-text-muted);
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: var(--pl-text-muted, #64748b) !important;
 }
 
-/* Specific Frame Dimensions (Scaled down A4/A5 ratios) */
-/* A4 Ratio is 1:1.414 */
+/* Specific Frame Dimensions */
 .layout-a4 {
-  height: 198px; 
-  position: relative;
-  background: #f8fafc;
+  height: 226px !important;
+  position: relative !important;
+  background: #f8fafc !important;
 }
 
 .layout-a4 img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  display: block !important;
+  background: #fff !important;
 }
 
 /* Two A5s stacked vertically = A4 */
 .layout-a5-stack {
-  height: 198px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px; /* Gap between the two A5 pages */
-  background: transparent;
-  border: none;
-  box-shadow: none;
+  height: 226px !important;
+  width: 160px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 .layout-a5-stack .pl-frame-a5 {
-  flex: 1;
-  background: white;
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  position: relative;
+  flex: 1 !important;
+  height: 109px !important;
+  background: #ffffff !important;
+  border: 2px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06) !important;
+  position: relative !important;
+  transition: all 0.2s ease !important;
 }
 
 .pl-layout-option.active .layout-a5-stack .pl-frame-a5 {
-  border: 2px solid var(--pl-primary, #6366f1);
+  border-color: var(--pl-primary, #6366f1) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
 }
 
 .layout-a5-stack img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  display: block !important;
+  background: #fff !important;
 }
 
-/* Modal */
+/* Modal Styles */
 .pl-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
+  z-index: 10000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px !important;
 }
 
 .pl-modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 800px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  background: white !important;
+  border-radius: 16px !important;
+  width: 100% !important;
+  max-width: 650px !important;
+  max-height: 85vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3) !important;
+  overflow: hidden !important;
 }
 
 .pl-modal-header {
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--pl-border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 18px 24px !important;
+  border-bottom: 1px solid var(--pl-border, #e2e8f0) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
 }
 
 .pl-modal-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: var(--pl-text);
+  margin: 0 !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: var(--pl-text, #1e293b) !important;
 }
 
 .pl-modal-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--pl-text-muted);
+  background: none !important;
+  border: none !important;
+  font-size: 28px !important;
+  cursor: pointer !important;
+  color: #94a3b8 !important;
+  line-height: 1 !important;
 }
 
 .pl-modal-body {
-  padding: 24px;
-  overflow-y: auto;
+  padding: 24px !important;
+  overflow-y: auto !important;
 }
 
 .pl-template-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 16px;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+  gap: 16px !important;
 }
 
 .pl-template-card {
-  background: white;
-  border-radius: 8px;
-  border: 2px solid var(--pl-border);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  overflow: hidden;
+  background: white !important;
+  border-radius: 10px !important;
+  border: 2px solid #e2e8f0 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  overflow: hidden !important;
 }
 
 .pl-template-card:hover {
-  border-color: var(--pl-primary);
-  transform: translateY(-2px);
+  border-color: var(--pl-primary, #6366f1) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
 }
 
 .pl-template-card img {
-  width: 100%;
-  height: auto;
-  display: block;
+  width: 100% !important;
+  height: 160px !important;
+  object-fit: contain !important;
+  display: block !important;
+  background: #f8fafc !important;
 }
 
 .pl-template-card .pl-template-name {
-  padding: 8px;
-  font-size: 13px;
-  text-align: center;
-  font-weight: 600;
-  color: var(--pl-text);
-  border-top: 1px solid var(--pl-border);
+  padding: 10px !important;
+  font-size: 13px !important;
+  text-align: center !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  border-top: 1px solid #f1f5f9 !important;
 }
