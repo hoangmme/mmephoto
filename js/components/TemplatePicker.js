@@ -30,6 +30,9 @@ export class TemplatePicker {
       
       const img = document.createElement('img');
       img.src = tmpl.frame_url || 'templates/default.png';
+      if (allowedType === 'a5') {
+        img.style.cssText = "transform: rotate(-90deg) scale(1.1) !important; margin: 15px auto !important;";
+      }
       
       const title = document.createElement('div');
       title.className = 'pl-template-name';

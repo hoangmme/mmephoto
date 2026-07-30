@@ -1682,18 +1682,18 @@ body.pl-mode-staff #startSessionOverlay {
   box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
   position: relative !important;
   transition: all 0.2s ease !important;
-}
-
-.pl-layout-option.active .layout-a5-stack .pl-frame-a5 {
-  border-color: var(--pl-primary, #6366f1) !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .layout-a5-stack img {
-  width: 100% !important;
-  height: 100% !important;
+  width: 116px !important;
+  height: 170px !important;
   object-fit: contain !important;
   display: block !important;
+  transform: rotate(-90deg) !important;
+  transform-origin: center center !important;
   background: #fff !important;
 }
 
