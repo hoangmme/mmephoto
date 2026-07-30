@@ -777,7 +777,7 @@ body.pl-mode-staff #roomTabs {
   overflow-y: auto;
   overflow-x: hidden;
   margin-top: 0;
-  padding: 90px 0 20px 0;
+  padding: 20px 0 20px 0;
 }
 
 .pl-main.pl-step-mode-3 #panelLeft,
@@ -1471,13 +1471,12 @@ body.pl-mode-staff #startSessionOverlay {
 }
 
 .pl-canvas-col {
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 45%;
-  max-width: 320px;
+  width: 50%;
+  max-width: 380px;
 }
 
 .pl-canvas-label {
