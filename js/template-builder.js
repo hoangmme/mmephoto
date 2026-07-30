@@ -513,23 +513,58 @@ class TemplateBuilderApp {
          }
          
          if (matchedColor) {
+             let targetEl = el;
+             let measureEl = el;
+             let isMasked = false;
+             
+             let current = el;
+             let clipNode = null;
+             let clipPathId = null;
+             while (current && current !== svgEl) {
+                 const cp = current.getAttribute('clip-path');
+                 if (cp && cp.includes('url(')) {
+                     const match = cp.match(/url\\(['"]?#([^'"\\)]+)['"]?\\)/);
+                     if (match && match[1]) {
+                         clipPathId = match[1];
+                         clipNode = current;
+                         break;
+                     }
+                 }
+                 current = current.parentNode;
+             }
+             
+             if (clipPathId) {
+                 const clipEl = svgEl.querySelector('#' + clipPathId);
+                 if (clipEl) {
+                     const shape = clipEl.querySelector('path, rect, circle, ellipse, polygon, polyline');
+                     if (shape) {
+                         targetEl = shape;
+                         isMasked = true;
+                         measureEl = targetEl.cloneNode(true);
+                         measureEl.setAttribute('fill', 'none');
+                         measureEl.setAttribute('stroke', 'none');
+                         clipNode.appendChild(measureEl);
+                     }
+                 }
+             }
+
              let pathData = '';
-             const tag = el.tagName.toLowerCase();
+             const tag = targetEl.tagName.toLowerCase();
              if (tag === 'path') {
-                 pathData = el.getAttribute('d');
+                 pathData = targetEl.getAttribute('d');
              } else if (tag === 'rect') {
-                 const rx = parseFloat(el.getAttribute('x')||0);
-                 const ry = parseFloat(el.getAttribute('y')||0);
-                 const rw = parseFloat(el.getAttribute('width')||0);
-                 const rh = parseFloat(el.getAttribute('height')||0);
+                 const rx = parseFloat(targetEl.getAttribute('x')||0);
+                 const ry = parseFloat(targetEl.getAttribute('y')||0);
+                 const rw = parseFloat(targetEl.getAttribute('width')||0);
+                 const rh = parseFloat(targetEl.getAttribute('height')||0);
                  pathData = `M ${rx} ${ry} H ${rx+rw} V ${ry+rh} H ${rx} Z`;
              } else if (tag === 'circle') {
-                 const cx = parseFloat(el.getAttribute('cx')||0);
-                 const cy = parseFloat(el.getAttribute('cy')||0);
-                 const r = parseFloat(el.getAttribute('r')||0);
+                 const cx = parseFloat(targetEl.getAttribute('cx')||0);
+                 const cy = parseFloat(targetEl.getAttribute('cy')||0);
+                 const r = parseFloat(targetEl.getAttribute('r')||0);
                  pathData = `M ${cx-r}, ${cy} a ${r},${r} 0 1,0 ${r*2},0 a ${r},${r} 0 1,0 -${r*2},0`;
              } else if (tag === 'polygon' || tag === 'polyline') {
-                 const points = el.getAttribute('points');
+                 const points = targetEl.getAttribute('points');
                  if (points) {
                      const pairs = points.trim().split(/\\s+|,/);
                      if (pairs.length >= 2) {
@@ -543,8 +578,8 @@ class TemplateBuilderApp {
              }
              
              if (pathData) {
-                 const ctm = el.getCTM();
-                 const bbox = el.getBBox();
+                 const ctm = measureEl.getCTM();
+                 const bbox = measureEl.getBBox();
                  
                  const corners = [
                      {x: bbox.x, y: bbox.y},
@@ -580,6 +615,10 @@ class TemplateBuilderApp {
                      clipPath: pathData,
                      clipMatrix: [ctm.a, ctm.b, ctm.c, ctm.d, ctm.e, ctm.f]
                  });
+                 
+                 if (isMasked && measureEl.parentNode) {
+                     measureEl.parentNode.removeChild(measureEl);
+                 }
                  
                  el.remove();
                  removedShapes = true;
