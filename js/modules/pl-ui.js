@@ -189,14 +189,8 @@ export const UIMixin = {
             }
             this.selectedPhotos.add(imgObj.id);
           }
-          if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].queue) {
-            const activeSess = this.rooms[this.activeRoom].queue.find(s => s.id === this.rooms[this.activeRoom].session);
-            if (activeSess) {
-              activeSess.selectedImages = Array.from(this.selectedPhotos);
-            }
-          }
           this._updateImageListUI();
-          this._syncState(this.activeRoom);
+          if (this._syncStaffDraftState) this._syncStaffDraftState();
         }
       });
     }
@@ -1624,15 +1618,8 @@ export const UIMixin = {
               }
               this.selectedPhotos.add(img.id);
             }
-            if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].queue) {
-              const activeSess = this.rooms[this.activeRoom].queue.find(s => s.id === this.rooms[this.activeRoom].session);
-              if (activeSess) {
-                activeSess.selectedImages = Array.from(this.selectedPhotos);
-              }
-            }
             this._updateImageListUI();
             if (this._syncStaffDraftState) this._syncStaffDraftState();
-            this._syncState(this.activeRoom);
           } else {
             const activeCIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
             if (!this.canvasesState || !this.canvasesState[activeCIdx]) {

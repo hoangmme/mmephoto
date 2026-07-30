@@ -415,36 +415,30 @@ async _syncStateDirect(room) {
     const roomData = this.rooms[room];
     if (!roomData || !this.branch || !roomData.session) return;
 
-    const activeIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
-    if (this.canvasesState && this.canvasesState[activeIdx]) {
-      this.canvasesState[activeIdx].slots = this.slots || [];
-    }
-
     const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
     if (activeSess) {
-      activeSess.slots = JSON.parse(JSON.stringify(this.slots || []));
-      activeSess.selectedImages = Array.from(this.selectedPhotos || []);
-      activeSess.currentTemplate = this.currentTemplate;
-      activeSess.selectedTemplates = this.selectedTemplates || [this.currentTemplate];
-      activeSess.paperSize = this.paperSize || 'A4';
-      activeSess.canvasesState = this.canvasesState || [];
       activeSess.step = roomData.step;
     }
 
     try {
+      const payload = {
+        clientId: this.clientId,
+        step: roomData.step
+      };
+
+      if (activeSess) {
+        payload.currentTemplate = activeSess.currentTemplate || '1photo';
+        payload.selectedTemplates = activeSess.selectedTemplates || ['1photo'];
+        payload.paperSize = activeSess.paperSize || 'A4';
+        payload.canvasesState = activeSess.canvasesState || [];
+        payload.selectedImages = activeSess.selectedImages || [];
+        payload.slots = activeSess.slots || [];
+      }
+
       const res = await fetch(`/api/sync-state/${encodeURIComponent(this.branch)}/${encodeURIComponent(room)}/${encodeURIComponent(roomData.session)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clientId: this.clientId,
-          step: roomData.step,
-          currentTemplate: this.currentTemplate,
-          selectedTemplates: this.selectedTemplates || [this.currentTemplate],
-          paperSize: this.paperSize || 'A4',
-          canvasesState: this.canvasesState || [],
-          selectedImages: Array.from(this.selectedPhotos || []),
-          slots: this.slots || []
-        })
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (data && data.sessionStartedAt && activeSess) {

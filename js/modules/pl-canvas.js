@@ -228,13 +228,6 @@ _loadTemplateImages() {
         }
       }
 
-      // Đồng bộ danh sách ảnh đã tick vào session
-      if (roomData && roomData.queue) {
-        const activeSess = roomData.queue.find(s => s.id === roomData.session);
-        if (activeSess) {
-          activeSess.selectedImages = Array.from(this.selectedPhotos);
-        }
-      }
       if (this._updateImageListUI) this._updateImageListUI();
     }
 
@@ -276,12 +269,7 @@ _loadTemplateImages() {
       }
     });
 
-    if (roomData && roomData.queue) {
-      const activeSess = roomData.queue.find(s => s.id === roomData.session);
-      if (activeSess) {
-        activeSess.canvasesState = JSON.parse(JSON.stringify(this.canvasesState));
-      }
-    }
+    if (this._syncStaffDraftState) this._syncStaffDraftState();
   }
 ,
 
