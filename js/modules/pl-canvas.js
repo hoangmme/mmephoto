@@ -115,7 +115,7 @@ _loadTemplateImages() {
     const tmpl = ALL_TEMPLATES[targetTemplateId] || ALL_TEMPLATES[this.currentTemplate];
     if (!tmpl || !tmpl.slots) return;
 
-    let clickedSlot = -1;
+    let smallestArea = Infinity;
 
     for (let i = 0; i < tmpl.slots.length; i++) {
       const s = tmpl.slots[i];
@@ -126,13 +126,16 @@ _loadTemplateImages() {
       const localX = dx * Math.cos(-rot) - dy * Math.sin(-rot);
       const localY = dx * Math.sin(-rot) + dy * Math.cos(-rot);
 
-      // Generous hit tolerance (10% + 20px) to ensure slot 0 and tilted slots are easily clickable
-      const padW = s.w * 0.1 + 20;
-      const padH = s.h * 0.1 + 20;
+      // Hit tolerance
+      const padW = s.w * 0.08 + 15;
+      const padH = s.h * 0.08 + 15;
 
       if (localX >= -s.w/2 - padW && localX <= s.w/2 + padW && localY >= -s.h/2 - padH && localY <= s.h/2 + padH) {
-        clickedSlot = i;
-        break;
+        const area = s.w * s.h;
+        if (area < smallestArea) {
+          smallestArea = area;
+          clickedSlot = i;
+        }
       }
     }
 
