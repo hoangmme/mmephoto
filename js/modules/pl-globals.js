@@ -543,6 +543,18 @@ Object.keys(TEMPLATES).forEach(k => {
   };
 });
 
+
 export const ALL_TEMPLATES = { ...parsedDefaults };
+Object.keys(ALL_TEMPLATES).forEach(k => {
+  if (k.startsWith('a4') || k === 'template-4') {
+    ALL_TEMPLATES[k].tags = ['a4'];
+  } else {
+    ALL_TEMPLATES[k].tags = ['a5'];
+  }
+});
+if (typeof window !== "undefined") {
+  window.ALL_TEMPLATES = ALL_TEMPLATES;
+}
+
 
 if (typeof window !== "undefined") { window.ALL_TEMPLATES = ALL_TEMPLATES; }

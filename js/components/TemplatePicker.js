@@ -9,9 +9,13 @@ export class TemplatePicker {
     const btnClose = document.getElementById('btnCloseModal');
     if (!modal || !grid) return;
 
+    const tmpls = (this.templates && Object.keys(this.templates).length > 0) 
+      ? this.templates 
+      : (typeof window !== 'undefined' ? window.ALL_TEMPLATES : {}) || {};
+
     grid.innerHTML = '';
-    Object.keys(this.templates).forEach(key => {
-      const tmpl = this.templates[key];
+    Object.keys(tmpls).forEach(key => {
+      const tmpl = tmpls[key];
       // Filter by tags (a4 or a5)
       if (allowedType && tmpl.tags && !tmpl.tags.includes(allowedType)) {
         return;
