@@ -542,20 +542,7 @@ export const UIStepsMixin = {
 
 
   _getMaxSlots() {
-    if (this.selectedTemplates && this.selectedTemplates.length > 0) {
-      return this.selectedTemplates.reduce((sum, tId) => {
-        const tmpl = ALL_TEMPLATES[tId];
-        return sum + (tmpl ? (tmpl.slots ? tmpl.slots.length : 0) : 0);
-      }, 0);
-    }
-    if (this.canvasesState && this.canvasesState.length > 0) {
-      return this.canvasesState.reduce((sum, cs) => {
-        const tmpl = ALL_TEMPLATES[cs.templateId];
-        return sum + (tmpl ? (tmpl.slots ? tmpl.slots.length : 0) : 0);
-      }, 0);
-    }
-    const tmpl = ALL_TEMPLATES[this.currentTemplate];
-    return tmpl ? (tmpl.slots ? tmpl.slots.length : 0) : 0;
+    return this.paperSize === 'A4' ? 6 : 4;
   }
   ,
 
