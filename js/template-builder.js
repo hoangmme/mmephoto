@@ -366,6 +366,9 @@ class TemplateBuilderApp {
     let backtrack = 7; 
     let attempts = 0;
     
+    let firstP = null;
+    let firstBacktrack = null;
+    
     do {
       boundary.push({x: p.x + minX, y: p.y + minY}); 
       let found = false;
@@ -382,8 +385,16 @@ class TemplateBuilderApp {
         }
       }
       if (!found) break;
+      
+      if (firstP === null) {
+        firstP = {x: p.x, y: p.y};
+        firstBacktrack = backtrack;
+      } else if (p.x === firstP.x && p.y === firstP.y && backtrack === firstBacktrack) {
+        break; // Full boundary traced
+      }
+      
       attempts++;
-    } while ((p.x !== startX || p.y !== startY) && attempts < pixels.length * 4);
+    } while (attempts < bw * bh * 4);
     
     const simplified = this._simplifyPath(boundary, 2.5); // epsilon
     
