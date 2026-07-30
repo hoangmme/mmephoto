@@ -115,6 +115,46 @@ _loadTemplateImages() {
     const tmpl = ALL_TEMPLATES[targetTemplateId] || ALL_TEMPLATES[this.currentTemplate];
     if (!tmpl || !tmpl.slots) return;
 
+    if (this.canvasesState && this.canvasesState[cIdx] && this.slots) {
+      const activeSlotIdx = this.canvasesState[cIdx].selectedSlotIndex;
+      if (activeSlotIdx >= 0 && tmpl.slots[activeSlotIdx] && this.slots[activeSlotIdx]) {
+        const slotDef = tmpl.slots[activeSlotIdx];
+        const slot = this.slots[activeSlotIdx];
+        let halfH = slotDef.h / 2;
+        if (slot.imageId && this._imageCache && this._imageCache[slot.imageId]) {
+          const img = this._imageCache[slot.imageId];
+          if (img.naturalWidth && img.naturalHeight) {
+            const cover = this._calcCover(img.naturalWidth, img.naturalHeight, slotDef.w, slotDef.h, slot.zoom || 1.0);
+            halfH = cover.drawH / 2;
+          }
+        }
+        const imageCenterY = slotDef.cy + (slot.panY || 0);
+        const isNearBottom = (imageCenterY + halfH + 130 > (targetCanvas.height || 2480) - 40);
+        const handleSign = isNearBottom ? -1 : 1;
+        const handleOffsetY = handleSign * (halfH + 100);
+
+        let dx = x - slotDef.cx;
+        let dy = y - slotDef.cy;
+        const slotRotRad = slotDef.rotation || 0;
+        let localX = dx * Math.cos(-slotRotRad) - dy * Math.sin(-slotRotRad);
+        let localY = dx * Math.sin(-slotRotRad) + dy * Math.cos(-slotRotRad);
+
+        localX -= (slot.panX || 0);
+        localY -= (slot.panY || 0);
+
+        const imgRotRad = ((slot.rotation || 0) * Math.PI) / 180;
+        const imgX = localX * Math.cos(-imgRotRad) - localY * Math.sin(-imgRotRad);
+        const imgY = localX * Math.sin(-imgRotRad) + localY * Math.cos(-imgRotRad);
+
+        const distHandle = Math.hypot(imgX, imgY - handleOffsetY);
+
+        if (distHandle <= 220) {
+          // Hit the rotate handle! Abort slot selection so touchstart can process rotation
+          return;
+        }
+      }
+    }
+
     let clickedSlot = -1;
     let smallestArea = Infinity;
 
