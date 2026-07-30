@@ -543,7 +543,7 @@ export const UIStepsMixin = {
 
 
   _getMaxSlots() {
-    return this.paperSize === 'A4' ? 6 : 4;
+    return 6;
   }
   ,
 
