@@ -878,7 +878,7 @@ body.pl-mode-staff #roomTabs {
   max-width: 100%;
   height: auto;
   padding: 0;
-  background: var(--pl-bg-section, #faf8f5);
+  background: var(--pl-bg);
   border-top: none;
   border-bottom: 1px solid var(--pl-border, #e5e7eb);
   order: 1;
@@ -907,7 +907,7 @@ body.pl-mode-staff #roomTabs {
   flex-shrink: 0;
   margin: 0;
   padding: 16px 10px;
-  background: #ffffff;
+  background: transparent;
   border-right: none;
   border-bottom: 1px solid var(--pl-border, #e5e7eb);
   cursor: pointer;
@@ -990,8 +990,8 @@ body.pl-mode-staff #roomTabs {
   align-items: center;
   justify-content: flex-start;
   padding: 6px;
-  background: var(--pl-bg);
-  border: 1px solid var(--pl-border);
+  background: #ffffff;
+  border: 1px solid rgba(79, 50, 25, 0.15);
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.04);
   transition: all 0.25s ease;
@@ -1038,7 +1038,7 @@ body.pl-mode-staff #roomTabs {
   font-size: 10px;
   font-weight: 700;
   color: #ffffff;
-  background: rgba(220, 38, 38, 0.9);
+  background: var(--pl-accent, #4f3219);
   padding: 2px 6px;
   border-radius: 6px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.25);
