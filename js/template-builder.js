@@ -237,14 +237,25 @@ class TemplateBuilderApp {
       el.style.width = slot.w + 'px';
       el.style.height = slot.h + 'px';
       el.style.pointerEvents = 'none';
-      el.style.borderColor = slot.color;
-      el.style.backgroundColor = slot.color + '33';
       el.style.zIndex = index + 1;
       
       const rotDeg = (slot.rotation || 0) * (180 / Math.PI);
       el.style.transform = `rotate(${rotDeg}deg)`;
       
-      el.innerHTML = `<span style="color:${slot.color}; font-weight:bold; font-size:24px;">S${index + 1}</span>`;
+      if (slot.clipPath) {
+        el.style.border = 'none';
+        el.style.backgroundColor = 'transparent';
+        el.innerHTML = `
+          <svg width="${slot.w}" height="${slot.h}" viewBox="${-slot.w/2} ${-slot.h/2} ${slot.w} ${slot.h}" style="position:absolute; top:0; left:0; width:100%; height:100%; overflow:visible; pointer-events:none;">
+            <path d="${slot.clipPath}" fill="${slot.color}33" stroke="${slot.color}" stroke-width="4" stroke-dasharray="10 5" />
+          </svg>
+          <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:${slot.color}; font-weight:bold; font-size:24px;">S${index + 1}</div>
+        `;
+      } else {
+        el.style.borderColor = slot.color;
+        el.style.backgroundColor = slot.color + '33';
+        el.innerHTML = `<span style="color:${slot.color}; font-weight:bold; font-size:24px;">S${index + 1}</span>`;
+      }
       this.slotsLayer.appendChild(el);
     });
   }
