@@ -168,7 +168,13 @@ this._syncLayoutSelection = () => {
     if (!layoutSelector._hasEventDelegation) {
       layoutSelector._hasEventDelegation = true;
       layoutSelector.addEventListener('click', (e) => {
-        const frameEl = e.target.closest('[data-frame-type]');
+        let frameEl = e.target.closest('[data-frame-type]');
+        if (!frameEl) {
+          const fixedEl = e.target.closest('#previewLayout2_0, [data-fixed="true"]');
+          if (fixedEl) {
+            frameEl = document.getElementById('previewLayout2_1') || fixedEl;
+          }
+        }
         if (frameEl) {
           e.stopPropagation();
           const allowedType = frameEl.getAttribute('data-frame-type');
