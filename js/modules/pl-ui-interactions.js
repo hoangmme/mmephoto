@@ -582,7 +582,7 @@ export const UIInteractionsMixin = {
 
   // ── Load Batch from IndexedDB ──
   ,
-,
+
 
   _updateHeaderActions() {
     if (!this._headerActions) {
@@ -606,7 +606,7 @@ export const UIInteractionsMixin = {
 
   // ── Canvas Click → Select Slot ──
   ,
-,
+
 
   _rotateActiveSlot(degrees, cIdx) {
     if (this.canvasesState && this.canvasesState[cIdx]) {
@@ -618,7 +618,7 @@ export const UIInteractionsMixin = {
       }
     }
   },
-,
+
 
   _resetActiveSlotRotation(cIdx) {
     if (this.canvasesState && this.canvasesState[cIdx]) {
@@ -633,6 +633,6 @@ export const UIInteractionsMixin = {
       }
     }
   },
-,
+
 
 };

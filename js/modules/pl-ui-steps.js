@@ -42,7 +42,7 @@ export const UIStepsMixin = {
     }
   }
   ,
-,
+
 
   _updateUIForRoom() {
     const mainHeader = document.getElementById('mainHeader');
@@ -412,7 +412,7 @@ export const UIStepsMixin = {
       if (this._updatePadding) this._updatePadding();
     });
   },
-,
+
 
   _renderTabs() {
     if (!this._roomTabsComponent) {
@@ -440,7 +440,7 @@ export const UIStepsMixin = {
     this._roomTabsComponent.render(this.rooms, this.activeRoom);
   }
   ,
-,
+
 
   _updateTimerUI() {
     if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
@@ -474,7 +474,7 @@ export const UIStepsMixin = {
 
   // ── Event Bindings ──
 
-,
+
 
   _renderStep4BottomPanel() {
     const panelLeft = document.getElementById('panelLeft');
@@ -510,7 +510,7 @@ export const UIStepsMixin = {
     if (crossSellBanner) crossSellBanner.style.display = 'flex';
     step4Bottom.style.display = 'flex';
   },
-,
+
 
   _restoreStandardPanelLeft() {
     const panelLeft = document.getElementById('panelLeft');
@@ -542,7 +542,7 @@ export const UIStepsMixin = {
     const step4Bottom = document.getElementById('step4BottomContainer');
     if (step4Bottom) step4Bottom.style.display = 'none';
   },
-,
+
 
   _getMaxSlots() {
     if (this.selectedTemplates && this.selectedTemplates.length > 0) {
@@ -561,7 +561,7 @@ export const UIStepsMixin = {
     return tmpl ? (tmpl.slots ? tmpl.slots.length : 0) : 0;
   }
   ,
-,
+
 
   _initTemplate() {
     const tmpl = ALL_TEMPLATES[this.currentTemplate];
@@ -583,6 +583,6 @@ export const UIStepsMixin = {
     // Don't auto-select first slot to avoid accidental overwrites
     this.selectedSlotIndex = -1;
   },
-,
+
 
 };

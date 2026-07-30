@@ -73,7 +73,7 @@ export const UIMediaMixin = {
     }
   }
   ,
-,
+
 
   _initLightboxEvents() {
     if (!this._lightboxComponent) {
@@ -97,13 +97,13 @@ export const UIMediaMixin = {
       });
     }
   },
-,
+
 
   _openLightbox(index, imagesList) {
     this._initLightboxEvents();
     this._lightboxComponent.open(imagesList || this.images, index);
   },
-,
+
 
   _initMainSwiper() {
     if (!this.mainSwiper) return;
@@ -177,7 +177,7 @@ export const UIMediaMixin = {
     this.mainSwiper.classList.add('loaded'); // Fix opacity: 0 issue
   }
   ,
-,
+
 
   _renderImageList() {
     if (!this._imageListUI) {
@@ -254,7 +254,7 @@ export const UIMediaMixin = {
     });
   }
   ,
-,
+
 
   _updateImageListUI() {
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
@@ -297,7 +297,7 @@ export const UIMediaMixin = {
 
     this._updateHeaderActions();
   },
-,
+
 
   _selectAll() {
     // Select all images (visual highlight)
@@ -305,14 +305,14 @@ export const UIMediaMixin = {
     this._renderImageList();
   }
   ,
-,
+
 
   _deselectAll() {
     this.selectedImageId = null;
     this._renderImageList();
   }
   ,
-,
+
 
   _handleImageUpload(e) {
     const files = e.target.files;
@@ -330,7 +330,7 @@ export const UIMediaMixin = {
 
   // ── Import JSON Template ──
   ,
-,
+
 
   _importTemplateJson(e) {
     const file = e.target.files[0];
@@ -378,7 +378,7 @@ export const UIMediaMixin = {
 
   // ── Canvas Interaction ──
   ,
-,
+
 
   async _loadBatch() {
     if (!this.batchId) {
@@ -435,7 +435,7 @@ export const UIMediaMixin = {
 
   // ── Countdown Timer ──
   ,
-,
+
 
   async _uploadTestImages(e) {
     const branch = localStorage.getItem('branchId') || 'CN01';
@@ -462,6 +462,6 @@ export const UIMediaMixin = {
     e.target.value = ''; // reset
   }
   ,
-,
+
 
 };

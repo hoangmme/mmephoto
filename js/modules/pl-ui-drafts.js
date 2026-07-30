@@ -17,7 +17,7 @@ export const UIDraftsMixin = {
       if (userVal) this._userDrafts = JSON.parse(userVal);
     } catch (e) {}
   },
-,
+
 
   _syncStaffDraftState() {
     if (!this.activeRoom) return;
@@ -51,7 +51,7 @@ export const UIDraftsMixin = {
       try { localStorage.setItem('mme_user_drafts', JSON.stringify(this._userDrafts)); } catch (e) {}
     }
   },
-,
+
 
   _commitDraftToOfficialSession(roomKey) {
     const targetRoom = roomKey || this.activeRoom;
@@ -93,6 +93,6 @@ export const UIDraftsMixin = {
 
     if (this._syncStateDirect) this._syncStateDirect(targetRoom);
   },
-,
+
 
 };

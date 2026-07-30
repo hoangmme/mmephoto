@@ -66,7 +66,7 @@ export const UICoreMixin = {
     document.getElementById('btnLockNextCustomer')?.addEventListener('click', handleNextCustomer);
   }
   ,
-,
+
 
   async _initApp() {
     try {
@@ -108,7 +108,7 @@ export const UICoreMixin = {
     this._initOverlays();
   }
   ,
-,
+
 
   _handleTimeout() {
     // Block the UI completely
@@ -131,7 +131,7 @@ export const UICoreMixin = {
     document.body.appendChild(overlay);
   }
   ,
-,
+
 
   _openDB() {
     return new Promise((resolve, reject) => {
@@ -151,6 +151,6 @@ export const UICoreMixin = {
     });
   }
   ,
-,
+
 
 };
