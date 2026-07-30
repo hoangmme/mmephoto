@@ -603,7 +603,6 @@ class TemplateBuilderApp {
           this._updateFrameUI();
           this._renderSlotsList();
           this._renderWorkspace();
-          this.saveState();
           
           alert(`Phân tích SVG thành công! Đã tự động tạo ${newSlots.length} slot.`);
       } else {
@@ -713,7 +712,6 @@ class TemplateBuilderApp {
         this._updateFrameUI();
         this._renderWorkspace();
         this._renderSlotsList();
-        this.saveState();
         alert(`Đã quét và đục lỗ thành công ${updatedCount} slot!`);
       } else {
         alert("Không tìm thấy khối màu nào khớp với các Slot đã tạo.");
