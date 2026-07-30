@@ -867,6 +867,12 @@ body.pl-mode-staff #roomTabs {
   order: 2;
 }
 
+.pl-main.pl-step-mode-4 .pl-print-canvas.active {
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
 .pl-main.pl-step-mode-4 .pl-canvas-actions,
 .pl-main.pl-step-mode-4 [id^="canvasActions"] {
   display: none;
