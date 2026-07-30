@@ -245,12 +245,37 @@ class TemplateBuilderApp {
       if (slot.clipPath) {
         el.style.border = 'none';
         el.style.backgroundColor = 'transparent';
-        el.innerHTML = `
-          <svg width="${slot.w}" height="${slot.h}" viewBox="${-slot.w/2} ${-slot.h/2} ${slot.w} ${slot.h}" style="position:absolute; top:0; left:0; width:100%; height:100%; overflow:visible; pointer-events:none;">
-            <path d="${slot.clipPath}" fill="${slot.color}33" stroke="${slot.color}" stroke-width="4" stroke-dasharray="10 5" />
-          </svg>
-          <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:${slot.color}; font-weight:bold; font-size:24px;">S${index + 1}</div>
-        `;
+        
+        if (slot.clipMatrix) {
+          // Native SVG extraction with CTM
+          // We draw the absolute path in a full-canvas SVG overlay, attached directly to slotsLayer
+          const svgWrapper = document.createElement('div');
+          svgWrapper.style.position = 'absolute';
+          svgWrapper.style.top = '0';
+          svgWrapper.style.left = '0';
+          svgWrapper.style.width = this.template.canvas_width + 'px';
+          svgWrapper.style.height = this.template.canvas_height + 'px';
+          svgWrapper.style.pointerEvents = 'none';
+          svgWrapper.style.zIndex = index + 1;
+          svgWrapper.innerHTML = `
+            <svg width="100%" height="100%" style="overflow:visible;">
+              <path d="${slot.clipPath}" transform="matrix(${slot.clipMatrix.join(',')})" fill="${slot.color}33" stroke="${slot.color}" stroke-width="4" stroke-dasharray="10 5" />
+            </svg>
+          `;
+          this.slotsLayer.appendChild(svgWrapper);
+          
+          el.innerHTML = `
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:${slot.color}; font-weight:bold; font-size:24px;">S${index + 1}</div>
+          `;
+        } else {
+          // Old relative clipPath
+          el.innerHTML = `
+            <svg width="${slot.w}" height="${slot.h}" viewBox="${-slot.w/2} ${-slot.h/2} ${slot.w} ${slot.h}" style="position:absolute; top:0; left:0; width:100%; height:100%; overflow:visible; pointer-events:none;">
+              <path d="${slot.clipPath}" fill="${slot.color}33" stroke="${slot.color}" stroke-width="4" stroke-dasharray="10 5" />
+            </svg>
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:${slot.color}; font-weight:bold; font-size:24px;">S${index + 1}</div>
+          `;
+        }
       } else {
         el.style.borderColor = slot.color;
         el.style.backgroundColor = slot.color + '33';
@@ -438,6 +463,157 @@ class TemplateBuilderApp {
     return den === 0 ? 0 : num / den;
   }
 
+  _processNativeSvg(w, h) {
+    try {
+      let svgString = '';
+      if (this.template.frame_url.includes(';base64,')) {
+         svgString = atob(this.template.frame_url.split(';base64,')[1]);
+      } else {
+         svgString = decodeURIComponent(this.template.frame_url.split(',')[1]);
+      }
+      
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svgString, "image/svg+xml");
+      
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.visibility = 'hidden';
+      tempContainer.style.pointerEvents = 'none';
+      tempContainer.style.width = w + 'px';
+      tempContainer.style.height = h + 'px';
+      
+      const svgEl = doc.documentElement.cloneNode(true);
+      svgEl.setAttribute('width', w + 'px');
+      svgEl.setAttribute('height', h + 'px');
+      svgEl.setAttribute('preserveAspectRatio', 'none');
+      
+      tempContainer.appendChild(svgEl);
+      document.body.appendChild(tempContainer);
+      
+      const magicColors = ['#ff3131', '#38b6ff', '#ffde59', '#7ed957'];
+      let newSlots = [];
+      let removedShapes = false;
+      
+      const elements = svgEl.querySelectorAll('*');
+      for (let el of elements) {
+         if (!el.tagName) continue;
+         const fillAttr = (el.getAttribute('fill') || '').toLowerCase();
+         const styleAttr = (el.getAttribute('style') || '').toLowerCase();
+         
+         let matchedColor = null;
+         for (let hex of magicColors) {
+            if (fillAttr === hex || styleAttr.includes(`fill:${hex}`) || styleAttr.includes(`fill: ${hex}`)) {
+                matchedColor = hex;
+                break;
+            }
+         }
+         
+         if (matchedColor) {
+             let pathData = '';
+             const tag = el.tagName.toLowerCase();
+             if (tag === 'path') {
+                 pathData = el.getAttribute('d');
+             } else if (tag === 'rect') {
+                 const rx = parseFloat(el.getAttribute('x')||0);
+                 const ry = parseFloat(el.getAttribute('y')||0);
+                 const rw = parseFloat(el.getAttribute('width')||0);
+                 const rh = parseFloat(el.getAttribute('height')||0);
+                 pathData = `M ${rx} ${ry} H ${rx+rw} V ${ry+rh} H ${rx} Z`;
+             } else if (tag === 'circle') {
+                 const cx = parseFloat(el.getAttribute('cx')||0);
+                 const cy = parseFloat(el.getAttribute('cy')||0);
+                 const r = parseFloat(el.getAttribute('r')||0);
+                 pathData = `M ${cx-r}, ${cy} a ${r},${r} 0 1,0 ${r*2},0 a ${r},${r} 0 1,0 -${r*2},0`;
+             } else if (tag === 'polygon' || tag === 'polyline') {
+                 const points = el.getAttribute('points');
+                 if (points) {
+                     const pairs = points.trim().split(/\\s+|,/);
+                     if (pairs.length >= 2) {
+                         pathData = `M ${pairs[0]} ${pairs[1]}`;
+                         for(let i=2; i<pairs.length; i+=2) {
+                             if(pairs[i] && pairs[i+1]) pathData += ` L ${pairs[i]} ${pairs[i+1]}`;
+                         }
+                         if (tag === 'polygon') pathData += ' Z';
+                     }
+                 }
+             }
+             
+             if (pathData) {
+                 const ctm = el.getCTM();
+                 const bbox = el.getBBox();
+                 
+                 const corners = [
+                     {x: bbox.x, y: bbox.y},
+                     {x: bbox.x + bbox.width, y: bbox.y},
+                     {x: bbox.x, y: bbox.y + Math.max(bbox.height, 0)},
+                     {x: bbox.x + bbox.width, y: bbox.y + Math.max(bbox.height, 0)}
+                 ];
+                 
+                 let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+                 corners.forEach(pt => {
+                     const tx = ctm.a * pt.x + ctm.c * pt.y + ctm.e;
+                     const ty = ctm.b * pt.x + ctm.d * pt.y + ctm.f;
+                     if (tx < minX) minX = tx;
+                     if (tx > maxX) maxX = tx;
+                     if (ty < minY) minY = ty;
+                     if (ty > maxY) maxY = ty;
+                 });
+                 
+                 const slotW = Math.round(maxX - minX);
+                 const slotH = Math.round(maxY - minY);
+                 const slotCX = Math.round(minX + slotW / 2);
+                 const slotCY = Math.round(minY + slotH / 2);
+                 
+                 const rotation = Math.atan2(ctm.b, ctm.a);
+                 
+                 newSlots.push({
+                     color: matchedColor,
+                     cx: slotCX,
+                     cy: slotCY,
+                     w: slotW,
+                     h: slotH,
+                     rotation: rotation,
+                     clipPath: pathData,
+                     clipMatrix: [ctm.a, ctm.b, ctm.c, ctm.d, ctm.e, ctm.f]
+                 });
+                 
+                 el.remove();
+                 removedShapes = true;
+             }
+         }
+      }
+      
+      document.body.removeChild(tempContainer);
+      
+      if (removedShapes) {
+          this.template.slots = newSlots;
+          
+          const serializer = new XMLSerializer();
+          const newSvgStr = serializer.serializeToString(svgEl);
+          const encoder = new TextEncoder();
+          const encodedData = encoder.encode(newSvgStr);
+          const base64 = btoa(String.fromCharCode.apply(null, encodedData));
+          this.template.frame_url = 'data:image/svg+xml;base64,' + base64;
+          
+          this._updateFrameUI();
+          this._renderSlotsList();
+          this._renderWorkspace();
+          this.saveState();
+          
+          alert(`Phân tích SVG thành công! Đã tự động tạo ${newSlots.length} slot.`);
+      } else {
+          alert("Không tìm thấy mảng màu Magic Color nào trong SVG!");
+      }
+      
+    } catch (e) {
+      console.error(e);
+      alert("Lỗi khi xử lý SVG.");
+    } finally {
+      this.btnAutoScan.textContent = '🪄 Tự động quét & Xóa nền';
+      this.btnAutoScan.disabled = false;
+    }
+  }
+
   _autoScanAndPunch() {
     if (!this.template.frame_url) {
       alert("Vui lòng tải lên ảnh khung trước!");
@@ -447,11 +623,16 @@ class TemplateBuilderApp {
     this.btnAutoScan.textContent = 'Đang quét...';
     this.btnAutoScan.disabled = true;
 
+    const w = this.template.canvas_width;
+    const h = this.template.canvas_height;
+    
+    if (this.template.frame_url.startsWith('data:image/svg+xml')) {
+       this._processNativeSvg(w, h);
+       return;
+    }
+
     const img = new Image();
     img.onload = () => {
-      const isSvg = this.template.frame_url.startsWith('data:image/svg+xml');
-      const w = this.template.canvas_width;
-      const h = this.template.canvas_height;
       
       const canvas = document.createElement('canvas');
       canvas.width = w;
@@ -520,51 +701,9 @@ class TemplateBuilderApp {
       });
 
       if (updatedCount > 0) {
-        if (isSvg) {
-          // Keep frame as SVG, just remove the magic colored shapes
-          try {
-            let svgString = '';
-            if (this.template.frame_url.includes(';base64,')) {
-               svgString = atob(this.template.frame_url.split(';base64,')[1]);
-            } else {
-               svgString = decodeURIComponent(this.template.frame_url.split(',')[1]);
-            }
-            
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(svgString, "image/svg+xml");
-            
-            let removedShapes = false;
-            this.template.slots.forEach(slot => {
-                const hex = slot.color.toLowerCase();
-                const elements = doc.querySelectorAll('*');
-                for (let el of elements) {
-                    if (!el.tagName) continue;
-                    const fillAttr = (el.getAttribute('fill') || '').toLowerCase();
-                    const styleAttr = (el.getAttribute('style') || '').toLowerCase();
-                    if (fillAttr === hex || styleAttr.includes(`fill:${hex}`) || styleAttr.includes(`fill: ${hex}`)) {
-                        el.remove();
-                        removedShapes = true;
-                    }
-                }
-            });
-            
-            if (removedShapes) {
-                const serializer = new XMLSerializer();
-                const newSvgStr = serializer.serializeToString(doc);
-                // Convert back to utf-8 base64 safely
-                const encoder = new TextEncoder();
-                const encodedData = encoder.encode(newSvgStr);
-                const base64 = btoa(String.fromCharCode.apply(null, encodedData));
-                this.template.frame_url = 'data:image/svg+xml;base64,' + base64;
-            }
-          } catch (e) {
-            console.error("Lỗi khi xử lý SVG nguyên bản:", e);
-          }
-        } else {
-          // Punch holes in raster image
-          ctx.putImageData(imgData, 0, 0);
-          this.template.frame_url = canvas.toDataURL('image/png');
-        }
+        // Punch holes in raster image
+        ctx.putImageData(imgData, 0, 0);
+        this.template.frame_url = canvas.toDataURL('image/png');
 
         this._updateFrameUI();
         this._renderWorkspace();

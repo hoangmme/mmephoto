@@ -42,6 +42,23 @@ export class CanvasRenderer {
     };
   }
 
+  static _getClipPath(slotDef) {
+    if (!slotDef.clipPath) return null;
+    let p = new Path2D(slotDef.clipPath);
+    if (slotDef.clipMatrix) {
+      let m = new DOMMatrix();
+      if (slotDef.rotation) {
+        m.rotateSelf(-slotDef.rotation * 180 / Math.PI);
+      }
+      m.translateSelf(-slotDef.cx, -slotDef.cy);
+      m.multiplySelf(new DOMMatrix(slotDef.clipMatrix));
+      let tp = new Path2D();
+      tp.addPath(p, m);
+      return tp;
+    }
+    return p;
+  }
+
   static drawImageInSlot(ctx, img, slotDef, slotData) {
     const zoom = slotData ? (slotData.zoom || 1.0) : 1.0;
     const rotation = slotData ? (slotData.rotation || 0) : 0;
@@ -50,7 +67,7 @@ export class CanvasRenderer {
     ctx.save();
     
     if (slotDef.clipPath) {
-      const p = new Path2D(slotDef.clipPath);
+      const p = this._getClipPath(slotDef);
       ctx.clip(p);
     } else {
       ctx.beginPath();
@@ -122,7 +139,7 @@ export class CanvasRenderer {
           this.drawImageInSlot(ctx, cachedImg, slotDef, slotData);
         } else {
           ctx.fillStyle = '#e4e4e7';
-          if (slotDef.clipPath) ctx.fill(new Path2D(slotDef.clipPath));
+          if (slotDef.clipPath) ctx.fill(this._getClipPath(slotDef));
           else ctx.fillRect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
         }
       } else if (currentStep === 1 || isPreviewSwiper) {
@@ -131,13 +148,13 @@ export class CanvasRenderer {
           this.drawImageInSlot(ctx, defaultImg, slotDef, { zoom: 1.0, panX: 0, panY: 0, rotation: 0 });
         } else {
           ctx.fillStyle = '#e4e4e7';
-          if (slotDef.clipPath) ctx.fill(new Path2D(slotDef.clipPath));
+          if (slotDef.clipPath) ctx.fill(this._getClipPath(slotDef));
           else ctx.fillRect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
         }
       } else {
         ctx.fillStyle = '#f4f4f5';
         if (slotDef.clipPath) {
-          const p = new Path2D(slotDef.clipPath);
+          const p = this._getClipPath(slotDef);
           ctx.fill(p);
           ctx.strokeStyle = '#d4d4d8';
           ctx.lineWidth = 2;
