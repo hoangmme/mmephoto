@@ -236,11 +236,49 @@ class TemplateBuilderApp {
       el.style.top = top + 'px';
       el.style.width = slot.w + 'px';
       el.style.height = slot.h + 'px';
-      el.style.pointerEvents = 'none';
+      el.style.pointerEvents = 'auto'; // Make it clickable and draggable
+      el.style.cursor = 'move';
       el.style.zIndex = index + 1;
       
       const rotDeg = (slot.rotation || 0) * (180 / Math.PI);
       el.style.transform = `rotate(${rotDeg}deg)`;
+      
+      // Dragging logic
+      el.addEventListener('mousedown', (e) => {
+        e.preventDefault(); // Prevent default text selection
+        e.stopPropagation();
+        
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const initialCx = slot.cx;
+        const initialCy = slot.cy;
+        
+        const onMouseMove = (moveEvent) => {
+          const dx = (moveEvent.clientX - startX) / this.scale;
+          const dy = (moveEvent.clientY - startY) / this.scale;
+          
+          slot.cx = initialCx + dx;
+          slot.cy = initialCy + dy;
+          
+          // Update visual position of el
+          el.style.left = (slot.cx - slot.w / 2) + 'px';
+          el.style.top = (slot.cy - slot.h / 2) + 'px';
+          
+          // If it has svgWrapper, we should probably update it too if possible
+          // But for now, user is mainly doing manual frames
+        };
+        
+        const onMouseUp = () => {
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+          
+          // Re-render to ensure everything is synced (including side panel list)
+          this._renderSlotsList();
+        };
+        
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
       
       if (slot.clipPath) {
         el.style.border = 'none';
@@ -270,16 +308,16 @@ class TemplateBuilderApp {
         } else {
           // Old relative clipPath
           el.innerHTML = `
-            <svg width="${slot.w}" height="${slot.h}" viewBox="${-slot.w/2} ${-slot.h/2} ${slot.w} ${slot.h}" style="position:absolute; top:0; left:0; width:100%; height:100%; overflow:visible; pointer-events:none;">
+            <svg width="100%" height="100%" viewBox="${-slot.w/2} ${-slot.h/2} ${slot.w} ${slot.h}" style="position:absolute; top:0; left:0; width:100%; height:100%; overflow:visible; pointer-events:none;">
               <path d="${slot.clipPath}" fill="${slot.color}33" stroke="${slot.color}" stroke-width="4" stroke-dasharray="10 5" />
             </svg>
-            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:${slot.color}; font-weight:bold; font-size:24px;">S${index + 1}</div>
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:${slot.color}; font-weight:bold; font-size:24px; pointer-events:none;">S${index + 1}</div>
           `;
         }
       } else {
         el.style.borderColor = slot.color;
         el.style.backgroundColor = slot.color + '33';
-        el.innerHTML = `<span style="color:${slot.color}; font-weight:bold; font-size:24px;">S${index + 1}</span>`;
+        el.innerHTML = `<span style="color:${slot.color}; font-weight:bold; font-size:24px; pointer-events:none;">S${index + 1}</span>`;
       }
       this.slotsLayer.appendChild(el);
     });
