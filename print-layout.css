@@ -1698,17 +1698,23 @@ body.pl-mode-staff #startSessionOverlay {
 }
 
 /* Modal Styles */
+
 .pl-modal {
   position: fixed !important;
   inset: 0 !important;
   background: rgba(0, 0, 0, 0.65) !important;
   backdrop-filter: blur(4px) !important;
   z-index: 10000 !important;
-  display: flex !important;
+  display: none;
   align-items: center !important;
   justify-content: center !important;
   padding: 24px !important;
 }
+
+.pl-modal.active {
+  display: flex !important;
+}
+
 
 .pl-modal-content {
   background: white !important;

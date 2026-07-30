@@ -9,6 +9,11 @@ export class TemplatePicker {
     const btnClose = document.getElementById('btnCloseModal');
     if (!modal || !grid) return;
 
+    const closeModal = () => {
+      modal.style.setProperty('display', 'none', 'important');
+      modal.classList.remove('active');
+    };
+
     const tmpls = (this.templates && Object.keys(this.templates).length > 0) 
       ? this.templates 
       : (typeof window !== 'undefined' ? window.ALL_TEMPLATES : {}) || {};
@@ -35,25 +40,26 @@ export class TemplatePicker {
       
       card.onclick = (e) => {
         e.stopPropagation();
-        modal.style.display = 'none';
+        closeModal();
         if (onSelect) onSelect(key, tmpl);
       };
       
       grid.appendChild(card);
     });
 
-    modal.style.display = 'flex';
+    modal.style.setProperty('display', 'flex', 'important');
+    modal.classList.add('active');
 
     if (btnClose) {
       btnClose.onclick = (e) => {
         e.stopPropagation();
-        modal.style.display = 'none';
+        closeModal();
       };
     }
 
     modal.onclick = (e) => {
       if (e.target === modal || e.target.classList.contains('pl-modal-close')) {
-        modal.style.display = 'none';
+        closeModal();
       }
     };
   }
