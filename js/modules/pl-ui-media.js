@@ -146,36 +146,46 @@ export const UIMediaMixin = {
     };
     
     updateUI();
-    setTimeout(updateUI, 50);
-    setTimeout(updateUI, 300);
+    setTimeout(updateUI, 100);
 
-    if (opt1) opt1.onclick = () => { this.selectedLayoutOption = 1; updateUI(); };
-    if (opt2) opt2.onclick = () => { this.selectedLayoutOption = 2; updateUI(); };
-    
     if (!this._templatePickerModal) {
       const tmpls = (typeof ALL_TEMPLATES !== 'undefined' ? ALL_TEMPLATES : null) || (typeof window !== 'undefined' ? window.ALL_TEMPLATES : null) || {};
       this._templatePickerModal = new TemplatePicker(tmpls);
     }
 
-    const setupFrameClick = (frameId, templateKey, allowedType) => {
-      const frame = document.getElementById(frameId);
-      if (!frame) return;
-      frame.onclick = (e) => {
-        e.stopPropagation();
-        this.selectedLayoutOption = (allowedType === 'a4') ? 1 : 2;
-        updateUI();
-        const tmpls = (typeof ALL_TEMPLATES !== 'undefined' ? ALL_TEMPLATES : null) || (typeof window !== 'undefined' ? window.ALL_TEMPLATES : null) || {};
-        this._templatePickerModal.templates = tmpls;
-        this._templatePickerModal.showModal(allowedType, (selectedKey) => {
-          this.selectedLayoutTemplates[templateKey] = selectedKey;
+    if (!layoutSelector._hasEventDelegation) {
+      layoutSelector._hasEventDelegation = true;
+      layoutSelector.addEventListener('click', (e) => {
+        const frameEl = e.target.closest('[data-frame-type]');
+        if (frameEl) {
+          e.stopPropagation();
+          const allowedType = frameEl.getAttribute('data-frame-type');
+          const frameIndex = frameEl.getAttribute('data-frame-index');
+          
+          this.selectedLayoutOption = (allowedType === 'a4') ? 1 : 2;
           updateUI();
-        });
-      };
-    };
+          
+          const templateKey = (allowedType === 'a4') ? 'a4' : (frameIndex === '0' ? 'a5_top' : 'a5_bottom');
+          const tmpls = (typeof ALL_TEMPLATES !== 'undefined' ? ALL_TEMPLATES : null) || (typeof window !== 'undefined' ? window.ALL_TEMPLATES : null) || {};
+          
+          this._templatePickerModal.templates = tmpls;
+          this._templatePickerModal.showModal(allowedType, (selectedKey) => {
+            this.selectedLayoutTemplates[templateKey] = selectedKey;
+            updateUI();
+          });
+          return;
+        }
 
-    setupFrameClick('previewLayout1', 'a4', 'a4');
-    setupFrameClick('previewLayout2_0', 'a5_top', 'a5');
-    setupFrameClick('previewLayout2_1', 'a5_bottom', 'a5');
+        const optEl = e.target.closest('.pl-layout-option');
+        if (optEl) {
+          const layout = parseInt(optEl.getAttribute('data-layout'), 10);
+          if (layout) {
+            this.selectedLayoutOption = layout;
+            updateUI();
+          }
+        }
+      });
+    }
   }
   ,
 

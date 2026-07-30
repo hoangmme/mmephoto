@@ -1566,8 +1566,7 @@ body.pl-mode-staff #startSessionOverlay {
  
  
 /* Main Swiper Area Container */
-#mainSwiperArea,
-.pl-main-swiper-area {
+#mainSwiperArea {
   flex: 1 !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1688,6 +1687,7 @@ body.pl-mode-staff #startSessionOverlay {
 }
 
 .layout-a5-stack img {
+  pointer-events: none !important;
   width: 116px !important;
   height: 170px !important;
   object-fit: contain !important;
