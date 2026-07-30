@@ -230,13 +230,8 @@ export const UIStepsMixin = {
       if (step === 1) {
         panelLeft.style.display = 'none';
       } else if (step === 4) {
-        if (!isStaffMode) {
-          panelLeft.style.display = 'none';
-          this._restoreStandardPanelLeft();
-        } else {
-          panelLeft.style.display = 'flex';
-          this._renderStep4BottomPanel();
-        }
+        panelLeft.style.display = 'flex';
+        this._renderStep4BottomPanel();
       } else {
         panelLeft.style.removeProperty('display');
         this._restoreStandardPanelLeft();
