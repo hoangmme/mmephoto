@@ -49,7 +49,7 @@ class PrintLayoutApp {
     // DOM
     this.imageList = document.getElementById('imageList');
     this.imageCount = document.getElementById('imageCount');
-    this.mainSwiper = document.getElementById('mainSwiper');
+    
     this.slotProps = document.getElementById('slotProps');
     this.exportOverlay = document.getElementById('exportOverlay');
 

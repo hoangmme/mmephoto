@@ -348,7 +348,7 @@ export const UIStepsMixin = {
       mainSwiperArea.after(canvasContainer);
     }
     if (mainSwiperArea) mainSwiperArea.style.display = (step === 1) ? 'flex' : 'none';
-    if (mainSwiper) mainSwiper.style.display = (step === 1) ? 'flex' : 'none';
+    
     if (canvasContainer) canvasContainer.style.display = (step === 3 || step === 4) ? 'flex' : 'none';
 
     // Instruction text & buttons based on step
@@ -378,7 +378,7 @@ export const UIStepsMixin = {
           ? '🔔 Khách đã chỉnh xong! Nhân viên vui lòng kiểm tra lại bố cục, bấm "Tải Ảnh Layout" để in cho khách và bấm "Next Customer" để đón lượt tiếp theo.'
           : '✨ Xin chúc mừng bạn đã hoàn thành! Vui lòng quét mã QR để tải bộ ảnh về điện thoại nhé.';
 
-        const mainSwiper = document.getElementById('mainSwiper');
+        
         if (mainSwiper) mainSwiper.style.display = 'none';
 
         if (isStaffMode) {
@@ -527,12 +527,12 @@ export const UIStepsMixin = {
     const mainSwiperArea = document.getElementById('mainSwiperArea');
     const qrOverlay = document.getElementById('qrOverlay');
     const crossSellBanner = document.getElementById('crossSellBanner');
-    const mainSwiper = document.getElementById('mainSwiper');
+    
     if (mainSwiperArea && qrOverlay && qrOverlay.parentElement?.id === 'step4BottomContainer') {
-      mainSwiperArea.insertBefore(qrOverlay, mainSwiper || mainSwiperArea.firstChild);
+      mainSwiperArea.appendChild(qrOverlay);
     }
     if (mainSwiperArea && crossSellBanner && crossSellBanner.parentElement?.id === 'step4BottomContainer') {
-      mainSwiperArea.insertBefore(crossSellBanner, mainSwiper || mainSwiperArea.firstChild);
+      mainSwiperArea.appendChild(crossSellBanner);
     }
     if (qrOverlay) qrOverlay.style.display = 'none';
     if (crossSellBanner) crossSellBanner.style.display = 'none';

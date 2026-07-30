@@ -106,62 +106,70 @@ export const UIMediaMixin = {
 
 
   _initMainSwiper() {
-    if (!this.mainSwiper) return;
-    
-    // Use the new TemplatePicker component
-    if (!this._templatePicker) {
-      this._templatePicker = new TemplatePicker(
-        this.mainSwiper,
-        ALL_TEMPLATES,
-        (paperSize, selectedTemplates) => {
-          this.paperSize = paperSize;
-          let tmpls = selectedTemplates ? [...selectedTemplates] : [];
-          if (paperSize === 'A5' && tmpls.length === 1) {
-            tmpls = [tmpls[0], tmpls[0]];
-          }
-          this.selectedTemplates = tmpls;
-          this.currentTemplate = tmpls[0];
-          
-          // Re-init canvasesState based on selection
-          this.canvasesState = this.selectedTemplates.map(t => {
-            const tmpl = ALL_TEMPLATES[t];
-            const numSlots = tmpl && tmpl.slots ? tmpl.slots.length : 0;
-            return {
-              templateId: t,
-              slots: Array(numSlots).fill(null).map(() => ({ imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: 0 })),
-              selectedSlotIndex: -1
-            };
-          });
-          this.activeCanvasIndex = 0;
-          this.slots = [];
-          this.selectedPhotos.clear();
-          
+    this._initLayoutSelector();
+  },
 
-          if (this._syncStaffDraftState) this._syncStaffDraftState();
-          this._loadTemplateImages();
-          
-          // Advance to step 2
-          const room = this.activeRoom;
-          const roomData = room && this.rooms[room];
-          if (room && roomData) {
-            this._setStep(room, 2);
-            this._updateUIForRoom();
-            this._renderCanvas();
-          }
-        }
-      );
-    }
+  _initLayoutSelector() {
+    const layoutSelector = document.getElementById('layoutSelector');
+    if (!layoutSelector) return;
     
-    // Sync current state to picker
-    if (this.paperSize) this._templatePicker.paperSize = this.paperSize;
-    if (this.selectedTemplates && this.selectedTemplates.length > 0) {
-      this._templatePicker.selectedTemplates = [...this.selectedTemplates];
-    } else if (this.currentTemplate) {
-      this._templatePicker.selectedTemplates = [this.currentTemplate];
-    }
+    // Default selected layout
+    this.selectedLayoutOption = this.selectedLayoutOption || 1;
+    this.selectedLayoutTemplates = this.selectedLayoutTemplates || {
+      a4: 'a4-1',
+      a5_top: 'a5-1',
+      a5_bottom: 'template-3'
+    };
+
+    const opt1 = document.getElementById('layoutOpt1');
+    const opt2 = document.getElementById('layoutOpt2');
     
-    this._templatePicker.render();
-    this.mainSwiper.classList.add('loaded'); // Fix opacity: 0 issue
+    const updateUI = () => {
+      if (opt1) opt1.classList.toggle('active', this.selectedLayoutOption === 1);
+      if (opt2) opt2.classList.toggle('active', this.selectedLayoutOption === 2);
+      
+      const img1 = document.getElementById('imgLayout1_0');
+      if (img1 && window.ALL_TEMPLATES && window.ALL_TEMPLATES[this.selectedLayoutTemplates.a4]) {
+        img1.src = window.ALL_TEMPLATES[this.selectedLayoutTemplates.a4].frame_url;
+      }
+      
+      const img2_0 = document.getElementById('imgLayout2_0');
+      if (img2_0 && window.ALL_TEMPLATES && window.ALL_TEMPLATES[this.selectedLayoutTemplates.a5_top]) {
+        img2_0.src = window.ALL_TEMPLATES[this.selectedLayoutTemplates.a5_top].frame_url;
+      }
+      
+      const img2_1 = document.getElementById('imgLayout2_1');
+      if (img2_1 && window.ALL_TEMPLATES && window.ALL_TEMPLATES[this.selectedLayoutTemplates.a5_bottom]) {
+        img2_1.src = window.ALL_TEMPLATES[this.selectedLayoutTemplates.a5_bottom].frame_url;
+      }
+    };
+    
+    setTimeout(updateUI, 100);
+
+    if (opt1) opt1.onclick = () => { this.selectedLayoutOption = 1; updateUI(); };
+    if (opt2) opt2.onclick = () => { this.selectedLayoutOption = 2; updateUI(); };
+    
+    if (!this._templatePickerModal) {
+      this._templatePickerModal = new TemplatePicker(window.ALL_TEMPLATES || {});
+    }
+
+    const setupFrameClick = (frameId, templateKey, allowedType) => {
+      const frame = document.getElementById(frameId);
+      if (!frame) return;
+      frame.onclick = (e) => {
+        e.stopPropagation();
+        this.selectedLayoutOption = (allowedType === 'a4') ? 1 : 2;
+        updateUI();
+        this._templatePickerModal.showModal(allowedType, (selectedKey) => {
+          this.selectedLayoutTemplates[templateKey] = selectedKey;
+          updateUI();
+        });
+      };
+    };
+
+    setupFrameClick('previewLayout1', 'a4', 'a4');
+    setupFrameClick('previewLayout2_0', 'a5_top', 'a5');
+    setupFrameClick('previewLayout2_1', 'a5_bottom', 'a5');
   }
   ,
 

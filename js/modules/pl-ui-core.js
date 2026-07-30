@@ -95,7 +95,7 @@ export const UICoreMixin = {
       console.error("Error fetching templates from server", e);
     }
 
-    this.mainSwiper = document.getElementById('mainSwiper');
+    
     this.canvas = document.getElementById('printCanvas0') || this.canvas;
 
     this._initMainSwiper();
