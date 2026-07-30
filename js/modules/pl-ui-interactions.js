@@ -270,24 +270,7 @@ export const UIInteractionsMixin = {
         };
       }
 
-      // Header Action Buttons (Xoay 90° & Reset 0°)
-      const btnRot = document.getElementById('btnRotate90_' + cIdx);
-      if (btnRot) {
-        btnRot.addEventListener('click', (e) => {
-          e.stopPropagation();
-          setActive();
-          if (this._rotateActiveSlot) this._rotateActiveSlot(90, cIdx);
-        });
-      }
 
-      const btnReset = document.getElementById('btnReset0_' + cIdx);
-      if (btnReset) {
-        btnReset.addEventListener('click', (e) => {
-          e.stopPropagation();
-          setActive();
-          if (this._resetActiveSlotRotation) this._resetActiveSlotRotation(cIdx);
-        });
-      }
 
       // Canvas click & touch tap → select slot
       let slotClickHandled = false;
