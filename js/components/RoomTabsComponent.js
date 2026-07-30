@@ -3,7 +3,7 @@
  * Manages rendering and interaction of Staff room tabs at the header.
  */
 
-import { isStaffMode } from '../modules/pl-globals.js?v=175';
+import { isStaffMode } from '../modules/pl-globals.js?v=218';
 
 export class RoomTabsComponent {
   constructor(containerId = 'roomTabs', options = {}) {
