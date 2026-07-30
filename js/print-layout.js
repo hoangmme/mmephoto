@@ -27,7 +27,7 @@ class PrintLayoutApp {
     defaultImg.crossOrigin = 'anonymous'; // Important for external URLs on canvas
     defaultImg.onload = () => {
       if (this.canvas) this._renderCanvas();
-      if (this.mainSwiper) this._initMainSwiper();
+      this._initMainSwiper();
     };
     defaultImg.src = 'https://images.unsplash.com/photo-1604004555489-723a93d6ce74?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
     this.defaultPreviewImages.push(defaultImg);

@@ -379,8 +379,6 @@ export const UIStepsMixin = {
           : '✨ Xin chúc mừng bạn đã hoàn thành! Vui lòng quét mã QR để tải bộ ảnh về điện thoại nhé.';
 
         
-        if (mainSwiper) mainSwiper.style.display = 'none';
-
         if (isStaffMode) {
           setTimeout(() => this._renderCanvas(), 500);
         }
