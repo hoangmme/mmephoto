@@ -52,14 +52,6 @@
           <div id="countdownTimer"
             style="display:none; font-variant-numeric: tabular-nums; font-weight:700; color:var(--pl-accent); background:var(--pl-bg-section); border:1px solid var(--pl-border); padding:4px 10px; border-radius:var(--pl-radius-sm); font-size:14px;">
             03:00</div>
-          <a href="template-builder.html" target="_blank" class="pl-btn" id="btnBuilder" title="Tạo Template mới"
-            style="display:none;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <path d="M3 9h18M9 21V9" />
-            </svg>
-            Builder
-          </a>
           <button id="btnQueueManager" class="pl-btn pl-btn-secondary" title="Quản lý Hàng chờ"
             style="font-weight: 600; display:none;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -223,8 +215,38 @@
           </div>
         </div>
 
-        <div class="pl-swiper-container" id="mainSwiper">
-          <!-- Slides injected by JS -->
+        <div class="pl-layout-selector" id="layoutSelector">
+          <div class="pl-layout-option active" data-layout="1" id="layoutOpt1">
+            <div class="pl-layout-preview layout-a4" data-frame-type="a4" data-frame-index="0" title="Click để đổi Template">
+              <img src="" id="imgLayout1_0" />
+            </div>
+            <div class="pl-layout-label">1 ảnh</div>
+          </div>
+          
+          <div class="pl-layout-option" data-layout="2" id="layoutOpt2">
+            <div class="pl-layout-preview layout-a5-stack">
+              <div class="pl-frame-a5 top" data-frame-type="a5" data-frame-index="0" title="Click để đổi Template">
+                <img src="" id="imgLayout2_0" />
+              </div>
+              <div class="pl-frame-a5 bottom" data-frame-type="a5" data-frame-index="1" title="Click để đổi Template">
+                <img src="" id="imgLayout2_1" />
+              </div>
+            </div>
+            <div class="pl-layout-label">2 ảnh</div>
+          </div>
+        </div>
+
+        <!-- Template Selection Modal -->
+        <div id="templateModal" class="pl-modal" style="display:none;">
+          <div class="pl-modal-content">
+            <div class="pl-modal-header">
+              <h3>Chọn Template</h3>
+              <button id="btnCloseModal" class="pl-modal-close">&times;</button>
+            </div>
+            <div class="pl-modal-body">
+              <div class="pl-template-grid" id="modalTemplateGrid"></div>
+            </div>
+          </div>
         </div>
 
         <div class="pl-canvas-info" id="canvasInfo">A5 — 1748 × 2480 px — 300 DPI</div>

@@ -25,6 +25,9 @@ Create a high-performance, real-time sync Photobooth management platform. Provid
     - Switching room tabs (Room 1 ↔ Room 2 ↔ Room 3) preserves each room's isolated Staff Draft.
     - Staff clicking Step 4 renders a Read-Only Preview of the committed session WITHOUT committing Staff Draft.
     - ONLY when Staff explicitly clicks "Gửi cho User" (or "Hoàn tất" in Step 3) is Staff Draft committed to the Official Session Component (Step 4) and broadcast to User.
+- **Auto-Trace Template Generation via Node.js Script**:
+  - For complex SVG masking templates (e.g., A5-1, A4-1, Template 3, Template 4), we use a standalone Node script.
+  - **Process**: Extract the embedded SVG base64 image -> Isolate LUMINANCE mask -> Apply `lum < 128` threshold to find transparent regions -> Use Marching Squares algorithm to trace hole boundaries -> Apply path simplification to create standard SVG `clipPath` vectors -> Filter out tiny artifact regions (e.g., `count > 50000`) to separate photo slots from decorative holes.
 
 ---
 

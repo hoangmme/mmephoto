@@ -32,8 +32,6 @@ export const UIInteractionsMixin = {
         const btnQueue = document.getElementById('btnQueueManager');
         if (btnQueue) btnQueue.style.display = isStaffMode ? 'inline-flex' : 'none';
 
-        const btnBuilder = document.getElementById('btnBuilder');
-        if (btnBuilder) btnBuilder.style.display = isStaffMode ? 'inline-flex' : 'none';
 
         if (this.activeRoom) {
           this._updateUIForRoom();
@@ -113,16 +111,37 @@ export const UIInteractionsMixin = {
         if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
         const cur = (isStaffMode && this.currentStep) ? this.currentStep : (this.rooms[this.activeRoom].step || 1);
         if (cur === 1) {
-          if (this._templatePicker) {
-            const confirmed = this._templatePicker._confirmSelection();
-            if (!confirmed) {
-              const req = this.paperSize === 'A4' ? '1' : '2';
-              alert(`Vui lòng chọn đủ ${req} mẫu khung in (Frame) để tiếp tục!`);
-              return;
-            }
+          
+          // Layout Selector Confirmation
+          if (this.selectedLayoutOption === 1) {
+            this.paperSize = 'A4';
+            this.selectedTemplates = [this.selectedLayoutTemplates.a4];
           } else {
-            this._setStep(this.activeRoom, 2);
+            this.paperSize = 'A5';
+            this.selectedTemplates = [this.selectedLayoutTemplates.a5_top, this.selectedLayoutTemplates.a5_bottom];
           }
+          this.currentTemplate = this.selectedTemplates[0];
+
+          this.canvasesState = this.selectedTemplates.map(t => {
+            const tmpl = window.ALL_TEMPLATES[t];
+            const numSlots = tmpl && tmpl.slots ? tmpl.slots.length : 0;
+            return {
+              templateId: t,
+              slots: Array(numSlots).fill(null).map(() => ({ imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: 0 })),
+              selectedSlotIndex: -1
+            };
+          });
+          this.activeCanvasIndex = 0;
+          this.slots = [];
+          this.selectedPhotos.clear();
+
+          if (this._syncStaffDraftState) this._syncStaffDraftState();
+          this._loadTemplateImages();
+
+          this._setStep(this.activeRoom, 2);
+          this._updateUIForRoom();
+          this._renderCanvas();
+
         } else if (cur === 2) {
           const maxSlots = this._getMaxSlots();
           let selectedCount = this.selectedPhotos ? this.selectedPhotos.size : 0;

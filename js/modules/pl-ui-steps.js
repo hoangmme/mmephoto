@@ -59,8 +59,6 @@ export const UIStepsMixin = {
 
     const btnQueue = document.getElementById('btnQueueManager');
     if (btnQueue) btnQueue.style.display = isStaffMode ? 'inline-flex' : 'none';
-    const btnBuilder = document.getElementById('btnBuilder');
-    if (btnBuilder) btnBuilder.style.display = isStaffMode ? 'inline-flex' : 'none';
 
     const btnStaffDownload = document.getElementById('btnStaffDownload');
     const btnNext = document.getElementById('btnNextCustomer');

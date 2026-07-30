@@ -1564,3 +1564,183 @@ body.pl-mode-staff #startSessionOverlay {
 }
 . p l - c a n v a s - o v e r l a y   {   p o i n t e r - e v e n t s :   n o n e ;   }  
  
+/* Layout Selector */
+.pl-layout-selector {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  padding: 24px;
+}
+
+.pl-layout-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+
+.pl-layout-option:hover {
+  opacity: 0.8;
+  transform: translateY(-2px);
+}
+
+.pl-layout-option.active {
+  opacity: 1;
+}
+
+.pl-layout-option.active .pl-layout-label {
+  color: var(--pl-primary, #6366f1);
+  font-weight: 700;
+}
+
+.pl-layout-preview {
+  background: white;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  overflow: hidden;
+  width: 140px; /* Base width */
+}
+
+.pl-layout-option.active .pl-layout-preview {
+  border-color: var(--pl-primary, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.pl-layout-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pl-text-muted);
+}
+
+/* Specific Frame Dimensions (Scaled down A4/A5 ratios) */
+/* A4 Ratio is 1:1.414 */
+.layout-a4 {
+  height: 198px; 
+  position: relative;
+  background: #f8fafc;
+}
+
+.layout-a4 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Two A5s stacked vertically = A4 */
+.layout-a5-stack {
+  height: 198px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* Gap between the two A5 pages */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.layout-a5-stack .pl-frame-a5 {
+  flex: 1;
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.pl-layout-option.active .layout-a5-stack .pl-frame-a5 {
+  border: 2px solid var(--pl-primary, #6366f1);
+}
+
+.layout-a5-stack img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Modal */
+.pl-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.pl-modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.pl-modal-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--pl-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pl-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--pl-text);
+}
+
+.pl-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--pl-text-muted);
+}
+
+.pl-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.pl-template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.pl-template-card {
+  background: white;
+  border-radius: 8px;
+  border: 2px solid var(--pl-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.pl-template-card:hover {
+  border-color: var(--pl-primary);
+  transform: translateY(-2px);
+}
+
+.pl-template-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.pl-template-card .pl-template-name {
+  padding: 8px;
+  font-size: 13px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--pl-text);
+  border-top: 1px solid var(--pl-border);
+}
