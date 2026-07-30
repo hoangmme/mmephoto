@@ -512,8 +512,8 @@ _renderCanvas() {
     // Manage visibility of canvas columns based on number of templates
     const col0 = document.getElementById('canvasWrapper0')?.parentElement;
     const col1 = document.getElementById('colCanvas1');
-    if (col0) col0.style.setProperty('display', 'flex', 'important');
-    if (col1) col1.style.setProperty('display', maxCanvases > 1 ? 'flex' : 'none', 'important');
+    if (col0) col0.style.display = 'flex';
+    if (col1) col1.style.display = maxCanvases > 1 ? 'flex' : 'none';
 
     const label0 = document.getElementById('canvasLabel0');
     const label1 = document.getElementById('canvasLabel1');

@@ -10,7 +10,7 @@ export class TemplatePicker {
     if (!modal || !grid) return;
 
     const closeModal = () => {
-      modal.style.setProperty('display', 'none', 'important');
+      modal.style.display = 'none';
       modal.classList.remove('active');
     };
 
@@ -37,7 +37,8 @@ export class TemplatePicker {
       const img = document.createElement('img');
       img.src = tmpl.frame_url || 'templates/default.png';
       if (allowedType === 'a5') {
-        img.style.cssText = "transform: rotate(-90deg) scale(1.1) !important; margin: 15px auto !important;";
+        img.style.transform = 'rotate(-90deg) scale(1.1)';
+        img.style.margin = '15px auto';
       }
       
       const title = document.createElement('div');
@@ -56,7 +57,7 @@ export class TemplatePicker {
       grid.appendChild(card);
     });
 
-    modal.style.setProperty('display', 'flex', 'important');
+    modal.style.display = 'flex';
     modal.classList.add('active');
 
     if (btnClose) {
