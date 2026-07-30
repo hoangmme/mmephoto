@@ -316,26 +316,13 @@ export const UIStepsMixin = {
       }
     }
 
-    // Control swiperArea / mainSwiper / canvasContainer visibility
-    if (step === 4 && !isStaffMode) {
-      if (mainSwiperArea) mainSwiperArea.style.display = 'flex';
-      if (mainSwiper) mainSwiper.style.display = 'none';
-      if (qrOverlay) qrOverlay.style.display = 'flex';
-      if (crossSell) crossSell.style.display = 'flex';
-      if (canvasContainer) {
-        canvasContainer.style.display = 'flex';
-        if (mainSwiperArea && canvasContainer.parentElement !== mainSwiperArea) {
-          mainSwiperArea.appendChild(canvasContainer);
-        }
-      }
-    } else {
-      if (mainSwiperArea && canvasContainer && canvasContainer.parentElement === mainSwiperArea) {
-        mainSwiperArea.after(canvasContainer);
-      }
-      if (mainSwiperArea) mainSwiperArea.style.display = (step === 1) ? 'flex' : 'none';
-      if (mainSwiper) mainSwiper.style.display = (step === 1) ? 'flex' : 'none';
-      if (canvasContainer) canvasContainer.style.display = (step === 3 || step === 4) ? 'flex' : 'none';
+    // Ensure canvasContainer is in its default place
+    if (mainSwiperArea && canvasContainer && canvasContainer.parentElement === mainSwiperArea) {
+      mainSwiperArea.after(canvasContainer);
     }
+    if (mainSwiperArea) mainSwiperArea.style.display = (step === 1) ? 'flex' : 'none';
+    if (mainSwiper) mainSwiper.style.display = (step === 1) ? 'flex' : 'none';
+    if (canvasContainer) canvasContainer.style.display = (step === 3 || step === 4) ? 'flex' : 'none';
 
     // Instruction text & buttons based on step
     if (instructionText && btnStepPrev && btnStepNext) {
