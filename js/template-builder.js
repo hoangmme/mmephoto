@@ -309,6 +309,113 @@ class TemplateBuilderApp {
     return { cx, cy, w, h, rotation: theta };
   }
 
+  // ── Custom Clip Path Generation (Contour Tracing) ──
+  _generateClipPath(pixels, cx, cy) {
+    if (pixels.length === 0) return null;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (let p of pixels) {
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    }
+    
+    minX -= 1; minY -= 1;
+    maxX += 1; maxY += 1;
+    
+    const bw = maxX - minX + 1;
+    const bh = maxY - minY + 1;
+    const grid = new Uint8Array(bw * bh);
+    
+    let startX = -1, startY = -1;
+    for (let p of pixels) {
+      const lx = p.x - minX;
+      const ly = p.y - minY;
+      grid[ly * bw + lx] = 1;
+    }
+    
+    outer: for (let y = 0; y < bh; y++) {
+      for (let x = 0; x < bw; x++) {
+        if (grid[y * bw + x]) {
+          startX = x; startY = y;
+          break outer;
+        }
+      }
+    }
+    
+    if (startX === -1) return null;
+    
+    const boundary = [];
+    const dirs = [
+      {x: 0, y: -1}, {x: 1, y: -1}, {x: 1, y: 0}, {x: 1, y: 1},
+      {x: 0, y: 1}, {x: -1, y: 1}, {x: -1, y: 0}, {x: -1, y: -1}
+    ];
+    
+    let p = {x: startX, y: startY};
+    let backtrack = 7; 
+    let attempts = 0;
+    
+    do {
+      boundary.push({x: p.x + minX, y: p.y + minY}); 
+      let found = false;
+      let b = (backtrack + 2) % 8;
+      for (let i = 0; i < 8; i++) {
+        let dir = dirs[(b + i) % 8];
+        let nx = p.x + dir.x;
+        let ny = p.y + dir.y;
+        if (nx >= 0 && nx < bw && ny >= 0 && ny < bh && grid[ny * bw + nx]) {
+          p = {x: nx, y: ny};
+          backtrack = (b + i + 4) % 8;
+          found = true;
+          break;
+        }
+      }
+      if (!found) break;
+      attempts++;
+    } while ((p.x !== startX || p.y !== startY) && attempts < pixels.length * 4);
+    
+    const simplified = this._simplifyPath(boundary, 2.5); // epsilon
+    
+    if (simplified.length < 3) return null;
+    
+    let pathStr = '';
+    for (let i = 0; i < simplified.length; i++) {
+      const rx = (simplified[i].x - cx).toFixed(1);
+      const ry = (simplified[i].y - cy).toFixed(1);
+      if (i === 0) pathStr += `M ${rx} ${ry} `;
+      else pathStr += `L ${rx} ${ry} `;
+    }
+    pathStr += 'Z';
+    return pathStr;
+  }
+
+  _simplifyPath(points, epsilon) {
+    if (points.length <= 2) return points;
+    let dmax = 0;
+    let index = 0;
+    const end = points.length - 1;
+    for (let i = 1; i < end; i++) {
+      let d = this._perpendicularDistance(points[i], points[0], points[end]);
+      if (d > dmax) {
+        index = i;
+        dmax = d;
+      }
+    }
+    if (dmax > epsilon) {
+      let recResults1 = this._simplifyPath(points.slice(0, index + 1), epsilon);
+      let recResults2 = this._simplifyPath(points.slice(index), epsilon);
+      return recResults1.slice(0, -1).concat(recResults2);
+    } else {
+      return [points[0], points[end]];
+    }
+  }
+
+  _perpendicularDistance(p, p1, p2) {
+    const num = Math.abs((p2.y - p1.y) * p.x - (p2.x - p1.x) * p.y + p2.x * p1.y - p2.y * p1.x);
+    const den = Math.sqrt(Math.pow(p2.y - p1.y, 2) + Math.pow(p2.x - p1.x, 2));
+    return den === 0 ? 0 : num / den;
+  }
+
   _autoScanAndPunch() {
     if (!this.template.frame_url) {
       alert("Vui lòng tải lên ảnh khung trước!");
@@ -375,6 +482,15 @@ class TemplateBuilderApp {
             slot.w = Math.round(pca.w);
             slot.h = Math.round(pca.h);
             slot.rotation = pca.rotation;
+            
+            // Generate custom clip path from contour
+            const pathStr = this._generateClipPath(pixels, slot.cx, slot.cy);
+            if (pathStr) {
+              slot.clipPath = pathStr;
+            } else {
+              delete slot.clipPath;
+            }
+            
             updatedCount++;
           }
         }

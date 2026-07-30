@@ -48,9 +48,15 @@ export class CanvasRenderer {
     const { drawW, drawH } = this.calcCover(img.naturalWidth, img.naturalHeight, slotDef.w, slotDef.h, zoom, rotation);
 
     ctx.save();
-    ctx.beginPath();
-    ctx.rect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
-    ctx.clip();
+    
+    if (slotDef.clipPath) {
+      const p = new Path2D(slotDef.clipPath);
+      ctx.clip(p);
+    } else {
+      ctx.beginPath();
+      ctx.rect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
+      ctx.clip();
+    }
 
     if (slotData) {
       ctx.translate(slotData.panX || 0, slotData.panY || 0);
@@ -116,7 +122,8 @@ export class CanvasRenderer {
           this.drawImageInSlot(ctx, cachedImg, slotDef, slotData);
         } else {
           ctx.fillStyle = '#e4e4e7';
-          ctx.fillRect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
+          if (slotDef.clipPath) ctx.fill(new Path2D(slotDef.clipPath));
+          else ctx.fillRect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
         }
       } else if (currentStep === 1 || isPreviewSwiper) {
         let defaultImg = defaultPreviewImages[i % Math.max(1, defaultPreviewImages.length)];
@@ -124,15 +131,25 @@ export class CanvasRenderer {
           this.drawImageInSlot(ctx, defaultImg, slotDef, { zoom: 1.0, panX: 0, panY: 0, rotation: 0 });
         } else {
           ctx.fillStyle = '#e4e4e7';
-          ctx.fillRect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
+          if (slotDef.clipPath) ctx.fill(new Path2D(slotDef.clipPath));
+          else ctx.fillRect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
         }
       } else {
         ctx.fillStyle = '#f4f4f5';
-        ctx.fillRect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
-        ctx.strokeStyle = '#d4d4d8';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([8, 4]);
-        ctx.strokeRect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
+        if (slotDef.clipPath) {
+          const p = new Path2D(slotDef.clipPath);
+          ctx.fill(p);
+          ctx.strokeStyle = '#d4d4d8';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([8, 4]);
+          ctx.stroke(p);
+        } else {
+          ctx.fillRect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
+          ctx.strokeStyle = '#d4d4d8';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([8, 4]);
+          ctx.strokeRect(-slotDef.w / 2, -slotDef.h / 2, slotDef.w, slotDef.h);
+        }
         ctx.setLineDash([]);
         ctx.fillStyle = '#a1a1aa';
         ctx.font = '32px Inter, sans-serif';
