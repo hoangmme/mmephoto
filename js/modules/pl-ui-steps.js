@@ -448,9 +448,11 @@ export const UIStepsMixin = {
     const panelHeader = panelLeft.querySelector('.pl-panel-header');
     const imageList = document.getElementById('imageList');
     const panelFooter = document.getElementById('panelLeftFooter');
+    const panelActions = panelLeft.querySelector('.pl-actions');
     if (panelHeader) panelHeader.style.display = 'none';
     if (imageList) imageList.style.display = 'none';
     if (panelFooter) panelFooter.style.display = 'none';
+    if (panelActions) panelActions.style.display = 'none';
 
     // Create or reuse step4 bottom container
     let step4Bottom = document.getElementById('step4BottomContainer');
@@ -484,9 +486,11 @@ export const UIStepsMixin = {
     const panelHeader = panelLeft.querySelector('.pl-panel-header');
     const imageList = document.getElementById('imageList');
     const panelFooter = document.getElementById('panelLeftFooter');
+    const panelActions = panelLeft.querySelector('.pl-actions');
     if (panelHeader) panelHeader.style.display = '';
     if (imageList) imageList.style.display = '';
     if (panelFooter) panelFooter.style.display = '';
+    if (panelActions) panelActions.style.display = '';
 
     // Move QR and CrossSell back to mainSwiperArea
     const mainSwiperArea = document.getElementById('mainSwiperArea');
