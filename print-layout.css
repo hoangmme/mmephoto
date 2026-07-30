@@ -772,7 +772,7 @@ body.pl-mode-staff #roomTabs {
   width: 100%;
   min-height: 0;
   order: 1;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   overflow-y: auto;
   overflow-x: hidden;
@@ -1489,6 +1489,16 @@ body.pl-mode-staff #startSessionOverlay {
   justify-content: center;
   width: 50%;
   max-width: 380px;
+}
+
+div#multiCanvasWrapper > .pl-canvas-col:last-child{
+  width: 80%;
+  max-width: 450px;
+}
+
+div#multiCanvasWrapper > .pl-canvas-col + .pl-canvas-col{
+  width: 50% !important;
+  max-width: 380px !important;
 }
 
 .pl-canvas-label {
