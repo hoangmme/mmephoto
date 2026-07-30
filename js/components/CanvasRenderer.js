@@ -6,8 +6,17 @@
 import { ALL_TEMPLATES, A5_WIDTH, A5_HEIGHT } from '../modules/pl-globals.js?v=175';
 
 export class CanvasRenderer {
-  static calcCover(imgW, imgH, slotW, slotH, zoom = 1.0) {
-    const imgRatio = imgW / imgH;
+  static calcCover(imgW, imgH, slotW, slotH, zoom = 1.0, rotation = 0) {
+    let effectiveImgW = imgW;
+    let effectiveImgH = imgH;
+    
+    // If rotated 90 or 270 degrees, swap the image width and height for cover calculations
+    if (Math.abs(rotation) === 90 || Math.abs(rotation) === 270) {
+      effectiveImgW = imgH;
+      effectiveImgH = imgW;
+    }
+
+    const imgRatio = effectiveImgW / effectiveImgH;
     const slotRatio = slotW / slotH;
     let baseW, baseH;
 
@@ -19,6 +28,14 @@ export class CanvasRenderer {
       baseH = slotW / imgRatio;
     }
 
+    // If we swapped for calculations, swap the output back so drawImage uses original image orientation
+    if (Math.abs(rotation) === 90 || Math.abs(rotation) === 270) {
+      return {
+        drawW: baseH * zoom,
+        drawH: baseW * zoom
+      };
+    }
+
     return {
       drawW: baseW * zoom,
       drawH: baseH * zoom
@@ -27,7 +44,8 @@ export class CanvasRenderer {
 
   static drawImageInSlot(ctx, img, slotDef, slotData) {
     const zoom = slotData ? (slotData.zoom || 1.0) : 1.0;
-    const { drawW, drawH } = this.calcCover(img.naturalWidth, img.naturalHeight, slotDef.w, slotDef.h, zoom);
+    const rotation = slotData ? (slotData.rotation || 0) : 0;
+    const { drawW, drawH } = this.calcCover(img.naturalWidth, img.naturalHeight, slotDef.w, slotDef.h, zoom, rotation);
 
     ctx.save();
     ctx.beginPath();
@@ -151,7 +169,7 @@ export class CanvasRenderer {
           if (slotData.imageId && imageCache && imageCache[slotData.imageId]) {
             const cachedImg = imageCache[slotData.imageId];
             if (cachedImg && cachedImg.naturalWidth && cachedImg.naturalHeight) {
-              const cover = this.calcCover(cachedImg.naturalWidth, cachedImg.naturalHeight, s.w, s.h, slotData.zoom || 1.0);
+              const cover = this.calcCover(cachedImg.naturalWidth, cachedImg.naturalHeight, s.w, s.h, slotData.zoom || 1.0, slotData.rotation || 0);
               slotW = cover.drawW;
               slotH = cover.drawH;
             }

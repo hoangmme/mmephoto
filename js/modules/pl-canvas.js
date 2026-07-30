@@ -178,7 +178,7 @@ _loadTemplateImages() {
 
   // ── Auto Fill ──
 
-  _autoFill(skipSync = false) {
+  _autoFill(forceFill = false) {
     const roomData = this.activeRoom && this.rooms[this.activeRoom];
     const currentImages = (this.images && this.images.length > 0) ? this.images : (roomData && roomData.images ? roomData.images : []);
     if (currentImages.length === 0) return;
@@ -233,6 +233,17 @@ _loadTemplateImages() {
 
     const selectedArr = Array.from(this.selectedPhotos);
     let globalIndex = 0;
+
+    // Check if ALL canvases are completely empty
+    const isCanvasEmpty = this.canvasesState.every(cState => {
+      if (!cState || !cState.slots) return true;
+      return cState.slots.every(slot => !slot.imageId);
+    });
+
+    if (!isCanvasEmpty && !forceFill) {
+      if (this._syncStaffDraftState) this._syncStaffDraftState();
+      return;
+    }
 
     // Gán ảnh vào từng canvas (không tự lặp lại nếu người dùng đã tự chọn số lượng ảnh mong muốn)
     this.canvasesState.forEach((cState, cIdx) => {
