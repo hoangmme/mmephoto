@@ -86,8 +86,8 @@ export const UIMediaMixin = {
           } else {
             const maxSlots = this._getMaxSlots();
             if (maxSlots > 0 && this.selectedPhotos.size >= maxSlots) {
-              alert(`Bạn chỉ được chọn tối đa ${maxSlots} ảnh cho khung này.`);
-              return;
+              const firstItem = this.selectedPhotos.values().next().value;
+              if (firstItem) this.selectedPhotos.delete(firstItem);
             }
             this.selectedPhotos.add(imgObj.id);
           }

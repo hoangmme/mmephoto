@@ -225,7 +225,7 @@ _loadTemplateImages() {
       });
     }
     
-    const maxSlotsTotal = this.paperSize === 'A4' ? 6 : 4;
+    const maxSlotsTotal = this._getMaxSlots ? this._getMaxSlots() : 6;
 
     // Ensure all current images are preloaded in imageCache
     currentImages.forEach(img => {
