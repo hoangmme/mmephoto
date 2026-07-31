@@ -178,6 +178,21 @@ _initSSE(branch) {
             }
           }
         }
+      } else if (data.type === 'session_reopened') {
+        const room = data.room;
+        if (this.rooms[room]) {
+          const sess = (this.rooms[room].queue || []).find(s => s.id === data.session);
+          if (sess) {
+            sess.finished = false;
+            sess.step = 1;
+          }
+          this._updateActiveSession(room);
+          if (this.activeRoom === room) {
+            this._updateUIForRoom();
+            if (this._renderQueueModal) this._renderQueueModal();
+          }
+          this._renderTabs();
+        }
       } else if (data.type === 'session_finished') {
         const room = data.room;
         if (this.rooms[room]) {

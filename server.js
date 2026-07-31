@@ -577,6 +577,31 @@ app.post('/api/delete-session/:branch/:room/:session', (req, res) => {
   res.json({ success: true });
 });
 
+app.post('/api/reopen-session/:branch/:room/:session', (req, res) => {
+  const { branch, room, session } = req.params;
+  
+  if (roomState[branch] && roomState[branch][room]) {
+    const roomD = roomState[branch][room];
+    const sess = (roomD.sessions || []).find(s => s.id === session);
+    if (sess) {
+      sess.finished = false;
+      sess.step = 1;
+      sess.sessionStartedAt = null;
+    }
+    if (!roomD.activeSessionId) {
+      roomD.activeSessionId = session;
+    }
+    saveRoomState();
+  }
+  
+  if (clients[branch]) {
+    clients[branch].forEach(client => {
+      client.write(`data: ${JSON.stringify({ type: 'session_reopened', room, session })}\n\n`);
+    });
+  }
+  res.json({ success: true });
+});
+
 app.post('/api/reset-session-timer/:branch/:room/:session', (req, res) => {
   const { branch, room, session } = req.params;
   const now = Date.now();

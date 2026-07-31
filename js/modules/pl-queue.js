@@ -80,6 +80,12 @@ export const QueueMixin = {
                   Chọn
                 </button>
               ` : (isActive ? '<span style="font-size:11px; font-weight:bold; color:var(--pl-accent); padding:4px 8px; background:rgba(79,50,25,0.1); border-radius:4px;">ĐANG CHỌN</span>' : '')}
+              ${sess.finished ? `
+                <button class="pl-btn" style="padding: 6px 12px; font-size: 12px; background: #3b82f6; color: #fff; border: none; font-weight: 600; cursor: pointer; display:inline-flex; align-items:center; gap:4px; border-radius: 6px;" title="Đưa phiên này quay lại hàng chờ Active" onclick="window.printApp._reopenSession('${sess.id}')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                  Khôi Phục
+                </button>
+              ` : ''}
               <a href="${qrUrl}" target="_blank" class="pl-btn" style="padding: 6px 10px; font-size: 12px; background: var(--pl-bg-section); color: var(--pl-text); border: 1px solid var(--pl-border); font-weight: 500; text-decoration:none; display:inline-flex; align-items:center; gap:4px; border-radius: 6px;" title="Xem QR code & Tải ảnh phiên này">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                 Xem QR
@@ -131,6 +137,28 @@ export const QueueMixin = {
       }
     } catch (err) {
       console.error('Failed to set active session:', err);
+    }
+  },
+
+  async _reopenSession(sessionId) {
+    if (!this.activeRoom || !this.branch) return;
+    try {
+      const res = await fetch(`/api/reopen-session/${encodeURIComponent(this.branch)}/${encodeURIComponent(this.activeRoom)}/${encodeURIComponent(sessionId)}`, { method: 'POST' });
+      if (res.ok) {
+        if (this.rooms[this.activeRoom]) {
+          const roomData = this.rooms[this.activeRoom];
+          const sess = (roomData.queue || []).find(s => s.id === sessionId);
+          if (sess) {
+            sess.finished = false;
+            sess.step = 1;
+          }
+          this._updateActiveSession(this.activeRoom);
+          this._renderTabs();
+          if (this._renderQueueModal) this._renderQueueModal();
+        }
+      }
+    } catch (err) {
+      console.error('Failed to reopen session:', err);
     }
   },
 
