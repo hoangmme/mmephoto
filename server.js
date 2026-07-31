@@ -497,9 +497,7 @@ app.post('/api/set-active-session/:branch/:room/:session', (req, res) => {
     roomState[branch][room].activeSessionId = session;
     const sessObj = roomState[branch][room].sessions.find(s => s.id === session);
     if (sessObj) {
-      if (!sessObj.sessionStartedAt) {
-        sessObj.sessionStartedAt = Date.now();
-      }
+      // Do not auto-start timer on active session
     }
     saveRoomState();
   }
@@ -591,7 +589,7 @@ app.post('/api/reset-session-timer/:branch/:room/:session', (req, res) => {
     if (sess) {
       sess.finished = false;
       sess.step = 1;
-      sess.sessionStartedAt = now;
+      sess.sessionStartedAt = null;
     }
     roomD.activeSessionId = session;
     saveRoomState();
@@ -599,10 +597,10 @@ app.post('/api/reset-session-timer/:branch/:room/:session', (req, res) => {
   
   if (clients[branch]) {
     clients[branch].forEach(client => {
-      client.write(`data: ${JSON.stringify({ type: 'session_reset', room, session, sessionStartedAt: now })}\n\n`);
+      client.write(`data: ${JSON.stringify({ type: 'session_reset', room, session, sessionStartedAt: null })}\n\n`);
     });
   }
-  res.json({ success: true, sessionStartedAt: now });
+  res.json({ success: true, sessionStartedAt: null });
 });
 
 app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) => {
@@ -623,7 +621,7 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
   
 
   if (step !== undefined) {
-    if (!sessionObj.sessionStartedAt) {
+    if (step >= 3 && !sessionObj.sessionStartedAt) {
       sessionObj.sessionStartedAt = Date.now();
     }
     sessionObj.step = step;
