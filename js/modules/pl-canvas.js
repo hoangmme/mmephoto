@@ -1,6 +1,6 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=230';
-import { CanvasRenderer } from '../components/CanvasRenderer.js?v=230';
-import { CanvasExporter } from '../components/CanvasExporter.js?v=230';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=232';
+import { CanvasRenderer } from '../components/CanvasRenderer.js?v=232';
+import { CanvasExporter } from '../components/CanvasExporter.js?v=232';
 
 export const CanvasMixin = {
 _preloadImage(id, url) {
