@@ -127,7 +127,16 @@ export const UIStepsMixin = {
     const roomData = this.rooms[this.activeRoom];
     const step = (isStaffMode && this.currentStep) ? this.currentStep : (roomData.step || 1);
     this.images = roomData.images || [];
-    if (this.imageCount) this.imageCount.textContent = `${this.images.length} ảnh`;
+    if (this.imageCount) {
+      const isWaiting = (step === 1 || step === 2) && roomData.lastImageTime && (Date.now() - roomData.lastImageTime < 30000);
+      if (step === 2) {
+        this.imageCount.textContent = isWaiting 
+          ? `${this.images.length} ảnh (Đang tải...)` 
+          : `${this.images.length} ảnh (Đã tải xong)`;
+      } else {
+        this.imageCount.textContent = `${this.images.length} ảnh`;
+      }
+    }
 
     // Update main mode class
     if (mainContainer) mainContainer.className = `pl-main pl-step-mode-${step}`;
