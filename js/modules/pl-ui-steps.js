@@ -360,23 +360,23 @@ export const UIStepsMixin = {
 
       if (step === 1) {
         instructionText.textContent = isWaitingForPhotos
-          ? '👉 Bước 1: Chọn Khổ In và Mẫu Khung In trong khi đợi tải full ảnh từ máy ảnh...'
-          : '👉 Bước 1: Chọn Khổ In (A4 hoặc A5) và chạm chọn Mẫu Khung In (Frame) yêu thích của bạn';
+          ? 'Bước 1: Chọn Khổ In và Mẫu Khung In trong khi đợi tải full ảnh từ máy ảnh...'
+          : 'Bước 1: Chọn Khổ In (A4 hoặc A5) và chạm chọn Mẫu Khung In (Frame) yêu thích của bạn';
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Chọn Ảnh <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
       } else if (step === 2) {
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
         const maxSlots = this._getMaxSlots();
-        instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
+        instructionText.textContent = `Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
         btnStepNext.innerHTML = 'Tiếp theo: Sắp Xếp <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
       } else if (step === 3) {
-        instructionText.textContent = '👉 Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
+        instructionText.textContent = 'Bước 3: Dùng 2 ngón tay chạm lên canvas để kéo ra/vào phóng to hoặc xoay căn chỉnh ảnh';
         btnStepPrev.style.display = 'none';
         btnStepNext.style.display = 'inline-flex';
-        btnStepNext.innerHTML = isStaffMode ? '✅ Hoàn Tất (Gửi cho User)' : '✅ Hoàn Tất (Gửi cho Nhân Viên)';
+        btnStepNext.innerHTML = isStaffMode ? 'Hoàn Tất (Gửi cho User)' : 'Hoàn Tất (Gửi cho Nhân Viên)';
       } else if (step === 4) {
         instructionText.textContent = isStaffMode
           ? '🔔 Khách đã chỉnh xong! Nhân viên vui lòng kiểm tra lại bố cục, bấm "Tải Ảnh Layout" để in cho khách và bấm "Next Customer" để đón lượt tiếp theo.'
