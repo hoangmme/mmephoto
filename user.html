@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
@@ -28,9 +28,12 @@
     <!-- User Header -->
     <header class="pl-user-header" id="userHeader">
       <div class="pl-user-header-logo-container" style="height: 40px; overflow: hidden;">
-        <img class="pl-user-header-logo" src="https://llphotobooth.vn/uploads/images/logo.webp" alt="LL Photobooth" style="height: 100px;">
+        <img class="pl-user-header-logo" src="https://llphotobooth.vn/uploads/images/logo.webp" alt="LL Photobooth"
+          style="height: 100px;">
       </div>
-      <div id="globalTimer" style="font-size: 16px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 6px;">07:00</div>
+      <div id="globalTimer"
+        style="font-size: 16px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 6px;">
+        07:00</div>
     </header>
 
     <!-- Top Navigation & Step Wizard -->
@@ -120,39 +123,48 @@
       <div class="pl-main-swiper-area" id="mainSwiperArea">
 
         <!-- QR CODE OVERLAY (Bước 4 hoàn tất) -->
-        <div id="qrOverlay" class="pl-qr-overlay" style="display:none; text-align:center; margin: 16px auto 12px auto; cursor:default; pointer-events:auto; user-select:none;width: auto;">
-          <div style="font-weight:700; font-size:15px; color:var(--pl-accent, #4f3219); margin-bottom:6px;">📱 QUÉT MÃ QR ĐỂ TẢI BỘ ẢNH VỀ MÁY</div>
-          <img id="qrImage" width="130" height="130" style="cursor:default; pointer-events:auto; user-select:none; border-radius:8px; border:2px solid var(--pl-border); padding:4px; background:#fff;" />
-          <div class="pl-qr-title" style="font-size:12px; color:var(--pl-text-muted); margin-top:4px; line-height: 1.5;">
+        <div id="qrOverlay" class="pl-qr-overlay"
+          style="display:none; text-align:center; margin: 16px auto 12px auto; cursor:default; pointer-events:auto; user-select:none;width: auto;">
+          <div style="font-weight:700; font-size:15px; color:var(--pl-accent, #4f3219); margin-bottom:6px;">QUÉT MÃ QR
+            ĐỂ TẢI BỘ ẢNH VỀ MÁY</div>
+          <img id="qrImage" width="130" height="130"
+            style="cursor:default; pointer-events:auto; user-select:none; border-radius:8px; border:2px solid var(--pl-border); padding:4px; background:#fff;" />
+          <div class="pl-qr-title"
+            style="font-size:12px; color:var(--pl-text-muted); margin-top:4px; line-height: 1.5;">
             Dùng camera điện thoại để mở link tải bộ ảnh<br>
             <span style="color:var(--pl-accent); font-weight:700;">(Lưu ý: Ảnh trong QR chỉ tồn tại 48h)</span>
           </div>
         </div>
 
         <!-- BANNER SẢN PHẨM BÁN KÈM -->
-        <div id="crossSellBanner" class="pl-cross-sell-banner" style="display:none; width: 100%; box-sizing: border-box; padding: 0 16px;">
+        <div id="crossSellBanner" class="pl-cross-sell-banner"
+          style="display:none; width: 100%; box-sizing: border-box; padding: 0 16px;">
           <div style="font-weight:700; font-size:15px; color:var(--pl-accent); margin-bottom:12px; text-align:center;">
             Danh sách sản phẩm
           </div>
-          <div style="text-align:center; font-size: 20px; font-weight: 700; color: var(--pl-accent); padding: 40px 0; border: 2px dashed rgba(79, 50, 25, 0.3); border-radius: 12px; text-transform: uppercase; letter-spacing: 2px; width: 100%; background: var(--pl-bg-section);">
+          <div
+            style="text-align:center; font-size: 20px; font-weight: 700; color: var(--pl-accent); padding: 40px 0; border: 2px dashed rgba(79, 50, 25, 0.3); border-radius: 12px; text-transform: uppercase; letter-spacing: 2px; width: 100%; background: var(--pl-bg-section);">
             Coming Soon
           </div>
         </div>
 
         <div class="pl-layout-selector" id="layoutSelector">
           <div class="pl-layout-option active" data-layout="1" id="layoutOpt1">
-            <div class="pl-layout-preview layout-a4" id="previewLayout1" data-frame-type="a4" data-frame-index="0" title="Click để đổi Template">
+            <div class="pl-layout-preview layout-a4" id="previewLayout1" data-frame-type="a4" data-frame-index="0"
+              title="Click để đổi Template">
               <img src="" id="imgLayout1_0" />
             </div>
             <div class="pl-layout-label">1 Khung A4</div>
           </div>
-          
+
           <div class="pl-layout-option" data-layout="2" id="layoutOpt2">
             <div class="pl-layout-preview layout-a5-stack">
-              <div class="pl-frame-a5 top" id="previewLayout2_0" data-frame-type="a5" data-frame-index="1" title="Click để đổi Template">
+              <div class="pl-frame-a5 top" id="previewLayout2_0" data-frame-type="a5" data-frame-index="1"
+                title="Click để đổi Template">
                 <img src="" id="imgLayout2_0" />
               </div>
-              <div class="pl-frame-a5 bottom" id="previewLayout2_1" data-frame-type="a5" data-frame-index="1" title="Click để đổi Template">
+              <div class="pl-frame-a5 bottom" id="previewLayout2_1" data-frame-type="a5" data-frame-index="1"
+                title="Click để đổi Template">
                 <img src="" id="imgLayout2_1" />
               </div>
             </div>
@@ -174,12 +186,14 @@
         </div>
 
         <!-- Note giải thích khổ giấy A4 & A5 cho khách -->
-        <div id="paperInfoNote" class="pl-paper-info-note" style="margin: 6px auto 0 auto; max-width: 650px; padding: 6px 12px; background: rgba(79, 50, 25, 0.08); border: 1px dashed var(--pl-border); border-radius: 10px; font-size: 11px; color: var(--pl-text); text-align: center; line-height: 1.4;">
+        <div id="paperInfoNote" class="pl-paper-info-note"
+          style="margin: 6px auto 0 auto; max-width: 650px; padding: 6px 12px; background: rgba(79, 50, 25, 0.08); border: 1px dashed var(--pl-border); border-radius: 10px; font-size: 11px; color: var(--pl-text); text-align: center; line-height: 1.4;">
           <strong>Lưu ý quy cách khổ giấy in:</strong><br>
-          <strong>Khổ A4:</strong> Chọn được 1 Frame | <strong>Khổ A5:</strong> Chọn được 1 Frame và 1 Frame đính kèm.<br>
+          <strong>Khổ A4:</strong> Chọn được 1 Frame | <strong>Khổ A5:</strong> Chọn được 1 Frame và 1 Frame đính
+          kèm.<br>
         </div>
       </div>
-      
+
       <div class="pl-canvas-container-area" id="canvasContainer" style="display:none; min-height: 350px;">
         <div class="pl-multi-canvas-wrapper" id="multiCanvasWrapper">
           <div class="pl-canvas-col">
@@ -190,7 +204,8 @@
                 <button class="pl-btn-reset-0" id="btnReset0_0">↺ Reset 0°</button>
               </div>
             </div>
-            <div class="pl-canvas-wrapper-box" id="canvasWrapper0" style="width: 100%; aspect-ratio: 1748 / 2480; position: relative;">
+            <div class="pl-canvas-wrapper-box" id="canvasWrapper0"
+              style="width: 100%; aspect-ratio: 1748 / 2480; position: relative;">
               <canvas id="printCanvas0" class="pl-print-canvas active" width="1748" height="2480"></canvas>
             </div>
           </div>
@@ -202,7 +217,8 @@
                 <button class="pl-btn-reset-0" id="btnReset0_1">↺ Reset 0°</button>
               </div>
             </div>
-            <div class="pl-canvas-wrapper-box" id="canvasWrapper1" style="width: 100%; aspect-ratio: 1748 / 2480; position: relative;">
+            <div class="pl-canvas-wrapper-box" id="canvasWrapper1"
+              style="width: 100%; aspect-ratio: 1748 / 2480; position: relative;">
               <canvas id="printCanvas1" class="pl-print-canvas" width="1748" height="2480"></canvas>
             </div>
           </div>
@@ -236,7 +252,7 @@
       <p class="pl-start-desc">Vui lòng chạm nút bên dưới để bắt đầu chọn ảnh & bố cục khung in</p>
       <button id="btnStartSession" class="pl-start-btn" type="button">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M8 5v14l11-7z"/>
+          <path d="M8 5v14l11-7z" />
         </svg>
         Bắt Đầu Ngay
       </button>
@@ -245,7 +261,7 @@
 
 
 
-<!-- LOCK OVERLAY -->
+  <!-- LOCK OVERLAY -->
   <div id="lockOverlay"
     style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9998; display:none; align-items:center; justify-content:center; flex-direction:column; text-align:center;">
     <h1 style="color:#ef4444; font-size:32px; margin-bottom:10px;">HẾT THỜI GIAN THAO TÁC</h1>
@@ -292,16 +308,23 @@
     </div>
     <div class="pl-lightbox-container">
       <button id="btnLightboxPrev" class="pl-lightbox-nav pl-lightbox-prev" title="Ảnh trước">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
       </button>
       <img id="lightboxImg" class="pl-lightbox-img" src="" alt="Preview Photo">
       <button id="btnLightboxNext" class="pl-lightbox-nav pl-lightbox-next" title="Ảnh tiếp">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M9 18l6-6-6-6" />
+        </svg>
       </button>
     </div>
     <div class="pl-lightbox-actions">
       <button id="btnLightboxSelect" class="pl-btn pl-btn-primary" style="padding: 10px 20px; font-size: 14px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><path d="M20 6L9 17l-5-5"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          style="margin-right: 6px;">
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
         <span id="lightboxSelectText">Chọn Ảnh Này</span>
       </button>
     </div>
