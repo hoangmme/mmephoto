@@ -618,7 +618,7 @@ _renderCanvas() {
     this.slots = (this.canvasesState && this.canvasesState[activeIdx]) ? (this.canvasesState[activeIdx].slots || []) : backupSlots;
   },
 
-  _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = false) {
+  _drawToCanvas(canvas, isPreview, overrideTemplate = null, isPreviewSwiper = false, targetWidth = null) {
     const currentStep = (this.activeRoom && this.rooms && this.rooms[this.activeRoom])
       ? (this.rooms[this.activeRoom].step || 1)
       : (this.currentStep || 1);
@@ -637,7 +637,8 @@ _renderCanvas() {
       defaultPreviewImages: this.defaultPreviewImages || [],
       isPreview: isPreview,
       currentStep: currentStep,
-      isPreviewSwiper: isPreviewSwiper
+      isPreviewSwiper: isPreviewSwiper,
+      targetWidth: targetWidth
     });
   },
 

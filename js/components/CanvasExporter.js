@@ -24,7 +24,7 @@ export class CanvasExporter {
           appInstance.selectedSlotIndex = -1;
         }
         await appInstance._loadTemplateImages();
-        appInstance._drawToCanvas(exportCanvas, false);
+        appInstance._drawToCanvas(exportCanvas, false, null, false, 4000);
 
         const dataUrl = exportCanvas.toDataURL('image/jpeg', 1.0);
         const link = document.createElement('a');
@@ -74,7 +74,7 @@ export class CanvasExporter {
           appInstance.selectedSlotIndex = -1;
         }
         await appInstance._loadTemplateImages();
-        appInstance._drawToCanvas(exportCanvas, false);
+        appInstance._drawToCanvas(exportCanvas, false, null, false, 4000);
 
         const dataUrl = exportCanvas.toDataURL('image/jpeg', 1.0);
         if (i > 0) pdf.addPage();
@@ -124,7 +124,7 @@ export class CanvasExporter {
           appInstance.selectedSlotIndex = -1;
         }
         await appInstance._loadTemplateImages();
-        appInstance._drawToCanvas(exportCanvas, false);
+        appInstance._drawToCanvas(exportCanvas, false, null, false, 4000);
 
         const blob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/jpeg', 1.0));
         if (blob) {

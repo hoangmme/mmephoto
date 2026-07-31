@@ -106,9 +106,17 @@ export class CanvasRenderer {
 
     const w = tmpl.canvas_width || A5_WIDTH;
     const h = tmpl.canvas_height || A5_HEIGHT;
-    canvas.width = w;
-    canvas.height = h;
+    const targetW = state.targetWidth || w;
+    const scale = targetW / w;
+    const targetH = Math.round(h * scale);
+
+    canvas.width = targetW;
+    canvas.height = targetH;
     const ctx = canvas.getContext('2d');
+
+    if (scale !== 1) {
+      ctx.scale(scale, scale);
+    }
 
     // Layer 1: Background
     ctx.fillStyle = tmpl.background_color || '#ffffff';
