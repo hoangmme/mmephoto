@@ -26,7 +26,7 @@ export class CanvasExporter {
         await appInstance._loadTemplateImages();
         appInstance._drawToCanvas(exportCanvas, false);
 
-        const dataUrl = exportCanvas.toDataURL('image/jpeg', 0.95);
+        const dataUrl = exportCanvas.toDataURL('image/jpeg', 1.0);
         const link = document.createElement('a');
         link.download = `MME_${appInstance.paperSize || 'Print'}_${Date.now()}_P${i + 1}.jpg`;
         link.href = dataUrl;
@@ -76,7 +76,7 @@ export class CanvasExporter {
         await appInstance._loadTemplateImages();
         appInstance._drawToCanvas(exportCanvas, false);
 
-        const dataUrl = exportCanvas.toDataURL('image/jpeg', 0.95);
+        const dataUrl = exportCanvas.toDataURL('image/jpeg', 1.0);
         if (i > 0) pdf.addPage();
 
         const width = formatStr === 'a4' ? 210 : 148;
@@ -126,7 +126,7 @@ export class CanvasExporter {
         await appInstance._loadTemplateImages();
         appInstance._drawToCanvas(exportCanvas, false);
 
-        const blob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/jpeg', 0.95));
+        const blob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/jpeg', 1.0));
         if (blob) {
           const formData = new FormData();
           const filename = `00_frame_P${i + 1}.jpg`;
