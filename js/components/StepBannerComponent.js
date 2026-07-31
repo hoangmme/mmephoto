@@ -3,7 +3,7 @@
  * Controls step indicator banner (B1 -> B2 -> B3 -> B4) and navigation clicks.
  */
 
-import { isStaffMode } from '../modules/pl-globals.js?v=236';
+import { isStaffMode } from '../modules/pl-globals.js?v=240';
 
 export class StepBannerComponent {
   constructor(bannerId = 'stepBanner', options = {}) {
