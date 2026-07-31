@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="print-layout.css?v=218">
+  <link rel="stylesheet" href="print-layout.css?v=219">
   <style>
     body {
       background: var(--pl-bg);
@@ -22,6 +23,7 @@
       margin: 0;
       font-family: 'Inter', sans-serif;
     }
+
     .portal-container {
       background: var(--pl-bg-panel);
       padding: 40px;
@@ -30,12 +32,14 @@
       width: 100%;
       max-width: 400px;
       text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     }
+
     .portal-logo {
       height: 60px;
       margin-bottom: 24px;
     }
+
     .input-field {
       width: 100%;
       padding: 12px;
@@ -47,6 +51,7 @@
       font-size: 15px;
       box-sizing: border-box;
     }
+
     .btn-portal {
       width: 100%;
       padding: 14px;
@@ -62,31 +67,39 @@
       gap: 8px;
       margin-bottom: 12px;
     }
+
     .btn-portal:active {
       transform: scale(0.98);
     }
+
     .btn-primary {
       background: var(--pl-accent);
       color: #fff;
     }
+
     .btn-secondary {
       background: var(--pl-bg-section);
       color: var(--pl-text);
       border: 1px solid var(--pl-border);
     }
+
     .btn-secondary:hover {
       background: #2a2a2a;
       color: #fff;
     }
+
     #errorMsg {
       color: #ef4444;
       margin-top: 10px;
       font-size: 14px;
       display: none;
     }
-    #loginSection, #actionSection {
+
+    #loginSection,
+    #actionSection {
       display: none;
     }
+
     .branch-badge {
       display: inline-block;
       background: rgba(217, 119, 6, 0.2);
@@ -99,11 +112,12 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="portal-container">
     <img class="portal-logo" src="https://llphotobooth.vn/uploads/images/logo.webp" alt="LL Photobooth">
-    
+
     <!-- LOGIN SECTION -->
     <div id="loginSection">
       <h2 style="margin-top: 0; margin-bottom: 24px;">Đăng Nhập</h2>
@@ -119,17 +133,32 @@
       <div class="branch-badge" id="lblBranch">Chi nhánh: CN01</div>
 
       <button id="btnGoUser" class="btn-portal btn-primary">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+          <rect x="9" y="9" width="6" height="6"></rect>
+          <line x1="9" y1="1" x2="9" y2="4"></line>
+          <line x1="15" y1="1" x2="15" y2="4"></line>
+          <line x1="9" y1="20" x2="9" y2="23"></line>
+          <line x1="15" y1="20" x2="15" y2="23"></line>
+          <line x1="20" y1="9" x2="23" y2="9"></line>
+          <line x1="20" y1="14" x2="23" y2="14"></line>
+          <line x1="1" y1="9" x2="4" y2="9"></line>
+          <line x1="1" y1="14" x2="4" y2="14"></line>
+        </svg>
         Màn hình cho Khách (iPad)
       </button>
 
       <button id="btnGoStaff" class="btn-portal btn-secondary" style="margin-top: 16px;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
         Màn hình Nhân Viên (Staff)
       </button>
 
       <div style="margin-top: 32px; border-top: 1px solid var(--pl-border); padding-top: 16px;">
-        <button id="btnLogout" class="btn-portal" style="background: transparent; color: var(--pl-text-muted); padding: 8px;">Đăng Xuất</button>
+        <button id="btnLogout" class="btn-portal"
+          style="background: transparent; color: var(--pl-text-muted); padding: 8px;">Đăng Xuất</button>
       </div>
     </div>
   </div>
@@ -139,7 +168,7 @@
       const loginSection = document.getElementById('loginSection');
       const actionSection = document.getElementById('actionSection');
       const lblBranch = document.getElementById('lblBranch');
-      
+
       const loginBranch = document.getElementById('loginBranch');
       const loginPassword = document.getElementById('loginPassword');
       const btnLogin = document.getElementById('btnLogin');
@@ -206,7 +235,7 @@
       btnGoUser.addEventListener('click', () => { window.location.href = 'user.html'; });
       btnGoStaff.addEventListener('click', () => { window.location.href = 'staff.html'; });
       btnLogout.addEventListener('click', () => {
-        if(confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+        if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
           localStorage.removeItem('branchId');
           localStorage.removeItem('branchPass');
           checkAuth();
@@ -217,4 +246,5 @@
     });
   </script>
 </body>
+
 </html>
