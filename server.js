@@ -218,15 +218,9 @@ app.post('/api/sessions/upload', upload.array('images', 20), async (req, res) =>
 
     for (let i = 0; i < req.files.length; i++) {
       const file = req.files[i];
-      console.log(`Processing ${file.originalname}...`);
-      
-      const processedBuffer = await processImageBuffer(file.buffer);
-      
-      // Save to disk
-      const filename = `processed_${i+1}.jpg`;
+      const filename = file.originalname || `photo_${i+1}.jpg`;
       const filepath = path.join(sessionDir, filename);
-      fs.writeFileSync(filepath, processedBuffer);
-      
+      fs.writeFileSync(filepath, file.buffer);
       processedImages.push(`/uploads/${sessionId}/${filename}`);
     }
 
