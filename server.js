@@ -471,7 +471,10 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (r
   } else if (sessionObj.finished) {
     sessionObj.finished = false;
   }
-  sessionObj.images.push(imageUrl);
+
+  if (!sessionObj.images.includes(imageUrl)) {
+    sessionObj.images.push(imageUrl);
+  }
   saveRoomState();
   
   // Notify SSE clients
