@@ -476,6 +476,36 @@ export const UIStepsMixin = {
         lockOverlay.style.display = 'none';
       }
     }
+
+    // Dynamically update UI text depending on 30s quiet period
+    if (step === 1 || step === 2) {
+      const isWaitingForPhotos = roomData.lastImageTime && (Date.now() - roomData.lastImageTime < 30000);
+      const imagesLen = roomData.images ? roomData.images.length : 0;
+      
+      if (this.imageCount) {
+        if (step === 2) {
+          this.imageCount.textContent = isWaitingForPhotos 
+            ? `${imagesLen} ảnh (Đang tải...)` 
+            : `${imagesLen} ảnh (Đã tải xong)`;
+        } else {
+          this.imageCount.textContent = `${imagesLen} ảnh`;
+        }
+      }
+      
+      const uploadBadge = document.getElementById('uploadBadge');
+      if (uploadBadge) {
+        uploadBadge.style.display = isWaitingForPhotos ? 'inline-flex' : 'none';
+        const uploadText = document.getElementById('uploadText');
+        if (uploadText) uploadText.textContent = `${imagesLen}`;
+      }
+      
+      const instructionText = document.getElementById('instructionText');
+      if (instructionText && step === 1) {
+        instructionText.textContent = isWaitingForPhotos
+          ? 'Bước 1: Chọn Khổ In và Mẫu Khung In trong khi đợi tải full ảnh từ máy ảnh...'
+          : 'Bước 1: Chọn Khổ In (A4 hoặc A5) và chạm chọn Mẫu Khung In (Frame) yêu thích của bạn';
+      }
+    }
   },
 
   // ── Event Bindings ──
