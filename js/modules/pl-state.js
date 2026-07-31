@@ -254,42 +254,32 @@ _updateActiveSession(room, onlyBadge = false) {
     
     if (!roomData.queue) roomData.queue = [];
     
+    let active = null;
     if (roomData.queue && roomData.queue.length > 0) {
       const unfinished = roomData.queue.filter(s => !s.finished);
       const activeSessionId = roomData.activeSessionId;
-      let active = roomData.queue.find(s => s.id === activeSessionId && !s.finished);
+      active = roomData.queue.find(s => s.id === activeSessionId && !s.finished);
       if (!active && unfinished.length > 0) {
         active = unfinished[0];
         roomData.activeSessionId = active.id;
       }
-      
-      if (active) {
-        if (roomData.session !== active.id) {
-          roomData.session = active.id;
-          // User & Staff: always start at step 1.
-          roomData.step = 1;
-          this.currentStep = 1;
-          if (this.activeRoom === room) {
-            this.slots = [];
-            this.selectedPhotos = new Set();
-          }
-        } else {
-          if (roomData.step === undefined || roomData.step === null) {
-            roomData.step = 1;
-          } else {
-            active.step = roomData.step;
-          }
-        }
-      } else {
-        roomData.session = null;
-        roomData.activeSessionId = null;
+    }
+
+    if (active) {
+      if (roomData.session !== active.id) {
+        roomData.session = active.id;
+        // User & Staff: always start at step 1.
         roomData.step = 1;
         this.currentStep = 1;
-        this._staffEditingOverride = false;
         if (this.activeRoom === room) {
           this.slots = [];
           this.selectedPhotos = new Set();
-          this.canvasesState = null;
+        }
+      } else {
+        if (roomData.step === undefined || roomData.step === null) {
+          roomData.step = 1;
+        } else {
+          active.step = roomData.step;
         }
       }
     } else {
@@ -406,13 +396,12 @@ _updateActiveSession(room, onlyBadge = false) {
         }
         
 
-      }
-    } else if (!onlyBadge) {
+    } else if (!onlyBadge && !active) {
       roomData.session = null;
       roomData.images = [];
       roomData.step = 1;
       roomData.timerStarted = false;
-      this.selectedPhotos.clear();
+      if (this.selectedPhotos) this.selectedPhotos.clear();
       this._stopTimer(room);
     }
     
