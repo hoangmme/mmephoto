@@ -1521,3 +1521,37 @@ body.pl-mode-staff .pl-start-overlay {
 .pl-start-btn:active {
   transform: translateY(0) scale(0.98);
 }
+/* ============================================
+   Strict Step-Mode Component Isolation Rules
+   ============================================ */
+
+.pl-main.pl-step-mode-1 #mainSwiperArea {
+  display: flex !important;
+}
+.pl-main.pl-step-mode-1 #canvasContainer,
+.pl-main.pl-step-mode-1 .pl-image-list-wrapper,
+.pl-main.pl-step-mode-1 .pl-image-list-container {
+  display: none !important;
+}
+
+.pl-main.pl-step-mode-2 .pl-image-list-wrapper,
+.pl-main.pl-step-mode-2 .pl-image-list-container {
+  display: flex !important;
+}
+.pl-main.pl-step-mode-2 #mainSwiperArea,
+.pl-main.pl-step-mode-2 #canvasContainer {
+  display: none !important;
+}
+
+.pl-main.pl-step-mode-3 #canvasContainer,
+.pl-main.pl-step-mode-4 #canvasContainer {
+  display: flex !important;
+}
+.pl-main.pl-step-mode-3 #mainSwiperArea,
+.pl-main.pl-step-mode-3 .pl-image-list-wrapper,
+.pl-main.pl-step-mode-3 .pl-image-list-container,
+.pl-main.pl-step-mode-4 #mainSwiperArea,
+.pl-main.pl-step-mode-4 .pl-image-list-wrapper,
+.pl-main.pl-step-mode-4 .pl-image-list-container {
+  display: none !important;
+}

@@ -551,6 +551,11 @@ _renderCanvas() {
         ? this.selectedTemplates 
         : (this.currentTemplate ? [this.currentTemplate] : []);
         
+    const currentStepNum = (this.rooms && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].step) || this.currentStep || 1;
+    const canvasCont = document.getElementById('canvasContainer');
+    if (canvasCont && (currentStepNum === 1 || currentStepNum === 2)) {
+      canvasCont.style.display = 'none';
+    }
     if (templatesToRender.length === 0) return;
     
     // Backup active state to restore later
