@@ -138,6 +138,13 @@ export const UIInteractionsMixin = {
           if (this._syncStaffDraftState) this._syncStaffDraftState();
           this._loadTemplateImages();
 
+          // Reset 7-minute timer start time when user proceeds to Step 2 ("Chọn Ảnh")
+          const roomD = this.rooms[this.activeRoom];
+          const activeSess = roomD && roomD.queue ? roomD.queue.find(s => s.id === roomD.session) : null;
+          if (activeSess) {
+            activeSess.sessionStartedAt = Date.now();
+          }
+
           this._setStep(this.activeRoom, 2);
           this._updateUIForRoom();
           this._renderCanvas();

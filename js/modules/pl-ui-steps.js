@@ -301,7 +301,7 @@ export const UIStepsMixin = {
 
 
     // Check if waiting for quiet period (full images uploaded)
-    const isWaitingForPhotos = !roomData.timerStarted && (step === 1 || step === 2) && roomData.lastImageTime && (Date.now() - roomData.lastImageTime < 30000);
+    const isWaitingForPhotos = (step === 1 || step === 2) && roomData.lastImageTime && (Date.now() - roomData.lastImageTime < 30000);
     if (uploadBadge && uploadText) {
       if (isWaitingForPhotos) {
         uploadBadge.style.display = 'inline-flex';

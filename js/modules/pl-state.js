@@ -66,6 +66,10 @@ _initSSE(branch) {
         // If this is the active session
         if (this.rooms[room].session === data.session) {
             this.rooms[room].lastImageTime = Date.now();
+            // Refresh timer start time while images are still uploading in Step 1 or 2
+            if (sessionObj && (sessionObj.step || 1) <= 2) {
+              sessionObj.sessionStartedAt = Date.now();
+            }
             if (this.rooms[room].images.length === 0 && this.rooms[room].step === 1) {
               this._setStep(room, 1);
             }
@@ -459,6 +463,9 @@ async _syncStateDirect(room) {
         payload.canvasesState = activeSess.canvasesState || [];
         payload.selectedImages = activeSess.selectedImages || [];
         payload.slots = activeSess.slots || [];
+        if (activeSess.sessionStartedAt) {
+          payload.sessionStartedAt = activeSess.sessionStartedAt;
+        }
       }
 
       const res = await fetch(`/api/sync-state/${encodeURIComponent(this.branch)}/${encodeURIComponent(room)}/${encodeURIComponent(roomData.session)}`, {
@@ -515,9 +522,22 @@ _startStepTimer(room, step) {
 
     const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
     const updateTimeLeft = () => {
-      if (activeSess && activeSess.sessionStartedAt) {
-        const elapsed = Math.floor((Date.now() - activeSess.sessionStartedAt) / 1000);
-        roomData.timeLeft = Math.max(0, duration - elapsed);
+      let effectiveStart = null;
+      if (roomData.lastImageTime) {
+        effectiveStart = roomData.lastImageTime + 30000;
+      } else if (activeSess && activeSess.sessionStartedAt) {
+        effectiveStart = activeSess.sessionStartedAt + 30000;
+      }
+
+      if (effectiveStart) {
+        if (Date.now() < effectiveStart) {
+          // Trong vòng 30s kể từ khi có ảnh mới tải lên, giữ nguyên 7:00 (chưa đếm giây)
+          roomData.timeLeft = duration;
+        } else {
+          // Đã trôi qua 30s không có ảnh mới -> bắt đầu đếm lùi giây từ 07:00
+          const elapsed = Math.floor((Date.now() - effectiveStart) / 1000);
+          roomData.timeLeft = Math.max(0, duration - elapsed);
+        }
       } else {
         roomData.timeLeft = duration;
       }

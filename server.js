@@ -628,7 +628,7 @@ app.post('/api/reset-session-timer/:branch/:room/:session', (req, res) => {
 
 app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) => {
   const { branch, room, session } = req.params;
-  const { step, currentTemplate, selectedTemplates, paperSize, canvasesState, selectedImages, slots, clientId } = req.body;
+  const { step, currentTemplate, selectedTemplates, paperSize, canvasesState, selectedImages, slots, clientId, sessionStartedAt } = req.body;
   
   if (!roomState[branch]) roomState[branch] = {};
   if (!roomState[branch][room]) roomState[branch][room] = { sessions: [], activeSessionId: null };
@@ -643,6 +643,9 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
   }
   
 
+  if (sessionStartedAt !== undefined) {
+    sessionObj.sessionStartedAt = sessionStartedAt;
+  }
   if (step !== undefined) {
     if (step >= 3 && !sessionObj.sessionStartedAt) {
       sessionObj.sessionStartedAt = Date.now();
