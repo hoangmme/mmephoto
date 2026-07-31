@@ -26,9 +26,9 @@ export class CanvasExporter {
         await appInstance._loadTemplateImages();
         appInstance._drawToCanvas(exportCanvas, false, null, false, 4000);
 
-        const dataUrl = exportCanvas.toDataURL('image/jpeg', 1.0);
+        const dataUrl = exportCanvas.toDataURL('image/png');
         const link = document.createElement('a');
-        link.download = `MME_${appInstance.paperSize || 'Print'}_${Date.now()}_P${i + 1}.jpg`;
+        link.download = `MME_${appInstance.paperSize || 'Print'}_${Date.now()}_P${i + 1}.png`;
         link.href = dataUrl;
         document.body.appendChild(link);
         link.click();
@@ -126,10 +126,10 @@ export class CanvasExporter {
         await appInstance._loadTemplateImages();
         appInstance._drawToCanvas(exportCanvas, false, null, false, 4000);
 
-        const blob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/jpeg', 1.0));
+        const blob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/png'));
         if (blob) {
           const formData = new FormData();
-          const filename = `00_frame_P${i + 1}.jpg`;
+          const filename = `00_frame_P${i + 1}.png`;
           formData.append('image', blob, filename);
           await fetch(`/api/stream-upload/${branch}/${room}/${session}`, {
             method: 'POST',
