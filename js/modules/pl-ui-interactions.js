@@ -290,18 +290,48 @@ export const UIInteractionsMixin = {
       };
 
       let activePointers = new Set();
+      let lastTapTime = 0;
+      
       canvasEl.addEventListener('pointerdown', (e) => {
         activePointers.add(e.pointerId);
         if (e.pointerType === 'touch' || e.pointerType === 'pen') {
           // Bỏ qua chọn slot nếu đang chạm 2 ngón tay (để zoom)
           if (activePointers.size > 1) return;
-          handleCanvasSlotClick(e);
+          
+          const roomData = this.activeRoom && this.rooms && this.rooms[this.activeRoom];
+          const step = roomData ? (roomData.step || 3) : (this.currentStep || 3);
+          
+          if (step === 3) {
+            // Bước 3: Yêu cầu chạm 2 lần (Double Tap) để đổi slot
+            const now = Date.now();
+            if (now - lastTapTime < 400) {
+              handleCanvasSlotClick(e);
+              lastTapTime = 0;
+            } else {
+              lastTapTime = now;
+            }
+          } else {
+            // Bước 2: Chạm 1 lần bình thường
+            handleCanvasSlotClick(e);
+          }
         }
       });
+      
       canvasEl.addEventListener('pointerup', (e) => activePointers.delete(e.pointerId));
       canvasEl.addEventListener('pointercancel', (e) => activePointers.delete(e.pointerId));
       canvasEl.addEventListener('pointerout', (e) => activePointers.delete(e.pointerId));
-      canvasEl.addEventListener('click', handleCanvasSlotClick);
+      
+      canvasEl.addEventListener('click', (e) => {
+        const roomData = this.activeRoom && this.rooms && this.rooms[this.activeRoom];
+        const step = roomData ? (roomData.step || 3) : (this.currentStep || 3);
+        if (step !== 3) handleCanvasSlotClick(e);
+      });
+      
+      canvasEl.addEventListener('dblclick', (e) => {
+        const roomData = this.activeRoom && this.rooms && this.rooms[this.activeRoom];
+        const step = roomData ? (roomData.step || 3) : (this.currentStep || 3);
+        if (step === 3) handleCanvasSlotClick(e);
+      });
 
     // Desktop Mouse Drag & Rotate
     canvasEl.addEventListener('mousedown', (e) => {
