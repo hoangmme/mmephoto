@@ -90,8 +90,8 @@ export const UIMediaMixin = {
           } else {
             const maxSlots = this._getMaxSlots();
             if (maxSlots > 0 && this.selectedPhotos.size >= maxSlots) {
-              const firstItem = this.selectedPhotos.values().next().value;
-              if (firstItem) this.selectedPhotos.delete(firstItem);
+              alert(`Bạn đã chọn đủ ${maxSlots} bức ảnh cho bố cục khung in này. Vui lòng bỏ chọn bớt ảnh trước khi chọn ảnh mới!`);
+              return;
             }
             this.selectedPhotos.add(imgObj.id);
           }
@@ -229,8 +229,8 @@ this._syncLayoutSelection = () => {
             } else {
               const maxSlots = this._getMaxSlots();
               if (maxSlots > 0 && this.selectedPhotos.size >= maxSlots) {
-                const firstItem = this.selectedPhotos.values().next().value;
-                if (firstItem) this.selectedPhotos.delete(firstItem);
+                alert(`Bạn đã chọn đủ ${maxSlots} bức ảnh cho bố cục khung in này. Vui lòng bỏ chọn bớt ảnh nếu muốn chọn ảnh khác!`);
+                return;
               }
               this.selectedPhotos.add(img.id);
             }
