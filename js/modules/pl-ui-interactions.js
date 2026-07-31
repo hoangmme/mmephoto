@@ -289,11 +289,18 @@ export const UIInteractionsMixin = {
         this._onCanvasClick(e);
       };
 
+      let activePointers = new Set();
       canvasEl.addEventListener('pointerdown', (e) => {
+        activePointers.add(e.pointerId);
         if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+          // Bỏ qua chọn slot nếu đang chạm 2 ngón tay (để zoom)
+          if (activePointers.size > 1) return;
           handleCanvasSlotClick(e);
         }
       });
+      canvasEl.addEventListener('pointerup', (e) => activePointers.delete(e.pointerId));
+      canvasEl.addEventListener('pointercancel', (e) => activePointers.delete(e.pointerId));
+      canvasEl.addEventListener('pointerout', (e) => activePointers.delete(e.pointerId));
       canvasEl.addEventListener('click', handleCanvasSlotClick);
 
     // Desktop Mouse Drag & Rotate
