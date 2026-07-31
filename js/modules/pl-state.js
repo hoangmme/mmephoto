@@ -330,7 +330,6 @@ _updateActiveSession(room, onlyBadge = false) {
         roomData.timerStarted = false;
         roomData.sessionStarted = false;
       }
-      roomData.lastImageTime = Date.now();
       
       if (!onlyBadge && active) {
         if (this.activeRoom === room) {
