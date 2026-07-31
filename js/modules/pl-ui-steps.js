@@ -454,7 +454,7 @@ export const UIStepsMixin = {
         globalTimerEl.style.display = 'none';
       } else {
         globalTimerEl.style.display = 'block';
-        globalTimerEl.textContent = `⏱ ${m}:${s}`;
+        globalTimerEl.textContent = `${m}:${s}`;
         globalTimerEl.style.color = (roomData.timeLeft <= 60) ? '#ef4444' : '#fff';
       }
     }

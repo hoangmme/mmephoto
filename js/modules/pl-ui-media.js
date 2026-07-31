@@ -300,7 +300,7 @@ this._syncLayoutSelection = () => {
       if (instructionText) {
         const maxSlots = this._getMaxSlots() || (this.slots ? this.slots.length : 0);
         const filledSlots = this.selectedPhotos ? this.selectedPhotos.size : 0;
-        instructionText.textContent = `👉 Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
+        instructionText.textContent = `Bước 2: Chạm vào các bức ảnh bên trái để điền vào khung in (${filledSlots}/${maxSlots} ô)`;
       }
     }
 
