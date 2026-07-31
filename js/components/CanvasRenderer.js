@@ -7,15 +7,12 @@ import { ALL_TEMPLATES, A5_WIDTH, A5_HEIGHT } from '../modules/pl-globals.js?v=2
 
 export class CanvasRenderer {
   static calcCover(imgW, imgH, slotW, slotH, zoom = 1.0, rotation = 0) {
-    let effectiveImgW = imgW;
-    let effectiveImgH = imgH;
+    const normRot = Math.round(((rotation % 360) + 360) % 360);
+    const isRotated90 = (normRot === 90 || normRot === 270);
     
-    // If rotated 90 or 270 degrees, swap the image width and height for cover calculations
-    if (Math.abs(rotation) === 90 || Math.abs(rotation) === 270) {
-      effectiveImgW = imgH;
-      effectiveImgH = imgW;
-    }
-
+    let effectiveImgW = isRotated90 ? imgH : imgW;
+    let effectiveImgH = isRotated90 ? imgW : imgH;
+    
     const imgRatio = effectiveImgW / effectiveImgH;
     const slotRatio = slotW / slotH;
     let baseW, baseH;
@@ -28,8 +25,7 @@ export class CanvasRenderer {
       baseH = slotW / imgRatio;
     }
 
-    // If we swapped for calculations, swap the output back so drawImage uses original image orientation
-    if (Math.abs(rotation) === 90 || Math.abs(rotation) === 270) {
+    if (isRotated90) {
       return {
         drawW: baseH * zoom,
         drawH: baseW * zoom
