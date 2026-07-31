@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=225';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=226';
 
 export const StateMixin = {
 _initSSE(branch) {
@@ -215,7 +215,7 @@ _initSSE(branch) {
           if (sessObj) {
             sessObj.finished = false;
             sessObj.step = 1;
-            sessObj.sessionStartedAt = data.sessionStartedAt || null;
+            sessObj.sessionStartedAt = data.sessionStartedAt || Date.now();
           }
 
           this._updateActiveSession(room);
@@ -496,19 +496,11 @@ _startStepTimer(room, step) {
 
     const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
     const updateTimeLeft = () => {
-      if ((roomData.step || 1) < 3) {
-        roomData.timeLeft = duration;
-        return;
-      }
       if (activeSess && activeSess.sessionStartedAt) {
         const elapsed = Math.floor((Date.now() - activeSess.sessionStartedAt) / 1000);
         roomData.timeLeft = Math.max(0, duration - elapsed);
       } else {
-        if (roomData.timeLeft === undefined || roomData.timeLeft > duration) {
-          roomData.timeLeft = duration;
-        } else {
-          roomData.timeLeft--;
-        }
+        roomData.timeLeft = duration;
       }
     };
 
