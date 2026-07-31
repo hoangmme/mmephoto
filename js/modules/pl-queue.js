@@ -125,7 +125,7 @@ export const QueueMixin = {
           const roomData = this.rooms[this.activeRoom];
           roomData.activeSessionId = sessionId;
           this._updateActiveSession(this.activeRoom);
-          this._startStepTimer(this.activeRoom, roomData.step || 1);
+          roomData.sessionStarted = false; roomData.timerStarted = false;
           if (this._renderQueueModal) this._renderQueueModal();
         }
       }

@@ -42,8 +42,9 @@ export const UIMediaMixin = {
 
     resetIdleTimer();
 
-    // 2. START SESSION OVERLAY (Click start.png to start 7-min timer)
+    // 2. START SESSION OVERLAY (Click start button to start 7-min timer)
     const startOverlay = document.getElementById('startSessionOverlay');
+    const startBtn = document.getElementById('btnStartSession') || startOverlay;
     if (startOverlay) {
       const handleStartClick = async (e) => {
         if (e) {
@@ -57,6 +58,7 @@ export const UIMediaMixin = {
         if (this.activeRoom && this.rooms[this.activeRoom]) {
           const roomData = this.rooms[this.activeRoom];
           roomData.sessionStarted = true;
+          roomData.timerStarted = true;
           const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
           if (activeSess) {
             activeSess.sessionStartedAt = Date.now();
@@ -68,8 +70,10 @@ export const UIMediaMixin = {
         }
       };
 
-      startOverlay.addEventListener('click', handleStartClick);
-      startOverlay.addEventListener('touchstart', handleStartClick, { passive: false });
+      if (startBtn) {
+        startBtn.addEventListener('click', handleStartClick);
+        startBtn.addEventListener('touchstart', handleStartClick, { passive: false });
+      }
     }
   }
   ,

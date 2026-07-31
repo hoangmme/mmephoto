@@ -230,12 +230,22 @@
 
   <!-- START SESSION OVERLAY -->
   <div id="startSessionOverlay" class="pl-start-overlay" style="display:none;">
-    <img src="images/start.png" alt="Bấm để bắt đầu" />
+    <div class="pl-start-card">
+      <div class="pl-start-icon">✨</div>
+      <h2 class="pl-start-title">CHÀO MỪNG BẠN ĐẾN VỚI LINHLINH PHOTO</h2>
+      <p class="pl-start-desc">Vui lòng chạm nút bên dưới để bắt đầu chọn ảnh & bố cục khung in</p>
+      <button id="btnStartSession" class="pl-start-btn" type="button">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        Bắt Đầu Ngay
+      </button>
+    </div>
   </div>
 
 
 
-  <!-- LOCK OVERLAY -->
+<!-- LOCK OVERLAY -->
   <div id="lockOverlay"
     style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9998; display:none; align-items:center; justify-content:center; flex-direction:column; text-align:center;">
     <h1 style="color:#ef4444; font-size:32px; margin-bottom:10px;">HẾT THỜI GIAN THAO TÁC</h1>
