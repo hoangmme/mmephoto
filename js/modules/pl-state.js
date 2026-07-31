@@ -282,13 +282,28 @@ _updateActiveSession(room, onlyBadge = false) {
         }
       } else {
         roomData.session = null;
+        roomData.activeSessionId = null;
         roomData.step = 1;
         this.currentStep = 1;
+        this._staffEditingOverride = false;
         if (this.activeRoom === room) {
           this.slots = [];
           this.selectedPhotos = new Set();
+          this.canvasesState = null;
         }
       }
+    } else {
+      roomData.session = null;
+      roomData.activeSessionId = null;
+      roomData.step = 1;
+      this.currentStep = 1;
+      this._staffEditingOverride = false;
+      if (this.activeRoom === room) {
+        this.slots = [];
+        this.selectedPhotos = new Set();
+        this.canvasesState = null;
+      }
+    }
       
       if (active) {
         if (active.sessionStartedAt) {

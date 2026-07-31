@@ -36,24 +36,29 @@ export const UICoreMixin = {
       if (!confirm('Chuyển qua lượt khách hàng tiếp theo? (Phiên hiện tại sẽ được đánh dấu hoàn thành)')) return;
       const b = localStorage.getItem('branchId') || 'CN01';
       const r = this.activeRoom;
-      if (b && r && this.rooms[r] && this.rooms[r].session) {
-        const sessId = this.rooms[r].session;
-        try {
-          const res = await fetch(`/api/finish-session/${b}/${r}/${encodeURIComponent(sessId)}`, { method: 'POST' });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.activeSessionId) {
-              this.rooms[r].activeSessionId = data.activeSessionId;
-            } else {
-              const remaining = (this.rooms[r].queue || []).filter(s => !s.finished && s.id !== sessId);
-              this.rooms[r].activeSessionId = remaining.length > 0 ? remaining[0].id : null;
+      if (b && r && this.rooms[r]) {
+        const sessId = this.rooms[r].session || this.rooms[r].activeSessionId;
+        if (sessId) {
+          try {
+            const res = await fetch(`/api/finish-session/${b}/${r}/${encodeURIComponent(sessId)}`, { method: 'POST' });
+            if (res.ok) {
+              const data = await res.json();
+              this.rooms[r].activeSessionId = data.activeSessionId || null;
             }
-          }
-        } catch (err) { }
+          } catch (err) { console.error(err); }
+        }
       }
       const lockOverlay = document.getElementById('lockOverlay');
       if (lockOverlay) lockOverlay.style.display = 'none';
-      if (r) {
+      if (r && this.rooms[r]) {
+        this.rooms[r].session = this.rooms[r].activeSessionId || null;
+        this.rooms[r].step = 1;
+        this.currentStep = 1;
+        this._staffEditingOverride = false;
+        this.slots = [];
+        this.selectedPhotos = new Set();
+        this.canvasesState = null;
+
         this._stopTimer(r);
         this._updateActiveSession(r);
         this._updateUIForRoom();
