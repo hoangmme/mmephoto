@@ -254,6 +254,7 @@
                 for (let i = 0; i < data.images.length; i++) {
                   const url = data.images[i];
                   const response = await fetch(url);
+                  if (!response.ok) throw new Error(`Lỗi tải ảnh #${i+1}`);
                   const blob = await response.blob();
                   const mimeType = blob.type || 'image/jpeg';
                   const ext = mimeType.includes('png') ? 'png' : (mimeType.includes('webp') ? 'webp' : 'jpg');
@@ -264,22 +265,34 @@
 
                 if (navigator.share && navigator.canShare && navigator.canShare({ files })) {
                   btnDownloadAll.innerText = 'Đang mở menu lưu ảnh...';
-                  await navigator.share({
-                    files: files,
-                    title: 'LL Photobooth'
-                  });
-                  btnDownloadAll.innerText = 'Lưu Tất Cả Vào Album Ảnh (iOS/iPad)';
+                  try {
+                    await navigator.share({
+                      files: files,
+                      title: 'LL Photobooth'
+                    });
+                  } catch (shareErr) {
+                    const isUserCancel = shareErr.name === 'AbortError' || 
+                                         shareErr.name === 'NotAllowedError' || 
+                                         (shareErr.message && /cancel|abort|denied/i.test(shareErr.message));
+                    if (!isUserCancel) {
+                      console.warn('Share API error, falling back to ZIP:', shareErr);
+                      btnDownloadZip.click();
+                    }
+                  }
                 } else {
-                  alert('Trình duyệt không hỗ trợ chia sẻ trực tiếp. Đang chuyển sang tải file ZIP...');
+                  console.warn('Direct file sharing not supported or files too large. Falling back to ZIP...');
                   btnDownloadZip.click();
                 }
               } catch (err) {
-                if (err.name !== 'AbortError') {
-                  console.error(err);
-                  alert('Có lỗi hoặc bạn đã hủy lưu ảnh.');
+                console.error('Download all error:', err);
+                const isUserCancel = err.name === 'AbortError' || 
+                                     err.name === 'NotAllowedError' || 
+                                     (err.message && /cancel|abort|denied/i.test(err.message));
+                if (!isUserCancel) {
+                  btnDownloadZip.click();
                 }
-                btnDownloadAll.innerText = 'Lưu Tất Cả Vào Album Ảnh (iOS/iPad)';
               } finally {
+                btnDownloadAll.innerText = 'Lưu Tất Cả Vào Album Ảnh (iOS/iPad)';
                 btnDownloadAll.disabled = false;
               }
             });
@@ -295,6 +308,7 @@
                   const url = data.images[i];
                   const filename = url.split('/').pop();
                   const response = await fetch(url);
+                  if (!response.ok) throw new Error(`Lỗi tải ảnh #${i+1}`);
                   const blob = await response.blob();
                   zip.file(filename, blob);
                   btnDownloadZip.innerText = `Đang nén file (${Math.round(((i + 1) / data.images.length) * 100)}%)...`;
@@ -313,8 +327,8 @@
                 btnDownloadZip.innerText = 'Tải File ZIP';
               } catch (err) {
                 console.error(err);
-                alert('Có lỗi xảy ra khi tạo file zip!');
-                btnDownloadZip.innerText = 'Tải File ZIP (Lỗi)';
+                alert('Có lỗi xảy ra khi tạo file ZIP. Vui lòng thử lại!');
+                btnDownloadZip.innerText = 'Tải File ZIP';
               } finally {
                 btnDownloadZip.disabled = false;
               }
