@@ -158,50 +158,24 @@ _loadTemplateImages() {
     let clickedSlot = -1;
     let smallestArea = Infinity;
 
-    // Ưu tiên kiểm tra xem người dùng có đang chạm vào slot đang được chọn không (giữ nguyên focus)
-    let activeSlotIdx = -1;
-    if (this.canvasesState && this.canvasesState[cIdx]) {
-      activeSlotIdx = this.canvasesState[cIdx].selectedSlotIndex;
-    } else {
-      activeSlotIdx = this.selectedSlotIndex;
-    }
-
-    if (activeSlotIdx >= 0 && tmpl.slots[activeSlotIdx]) {
-      const s = tmpl.slots[activeSlotIdx];
+    for (let i = 0; i < tmpl.slots.length; i++) {
+      const s = tmpl.slots[i];
+      // Convert to local space
       const dx = x - s.cx;
       const dy = y - s.cy;
       const rot = s.rotation || 0;
       const localX = dx * Math.cos(-rot) - dy * Math.sin(-rot);
       const localY = dx * Math.sin(-rot) + dy * Math.cos(-rot);
+
+      // Hit tolerance
       const padW = s.w * 0.08 + 15;
       const padH = s.h * 0.08 + 15;
 
       if (localX >= -s.w/2 - padW && localX <= s.w/2 + padW && localY >= -s.h/2 - padH && localY <= s.h/2 + padH) {
-        clickedSlot = activeSlotIdx;
-      }
-    }
-
-    // Nếu không chạm vào slot đang chọn, thì mới kiểm tra các slot khác
-    if (clickedSlot < 0) {
-      for (let i = 0; i < tmpl.slots.length; i++) {
-        const s = tmpl.slots[i];
-        // Convert to local space
-        const dx = x - s.cx;
-        const dy = y - s.cy;
-        const rot = s.rotation || 0;
-        const localX = dx * Math.cos(-rot) - dy * Math.sin(-rot);
-        const localY = dx * Math.sin(-rot) + dy * Math.cos(-rot);
-
-        // Hit tolerance
-        const padW = s.w * 0.08 + 15;
-        const padH = s.h * 0.08 + 15;
-
-        if (localX >= -s.w/2 - padW && localX <= s.w/2 + padW && localY >= -s.h/2 - padH && localY <= s.h/2 + padH) {
-          const area = s.w * s.h;
-          if (area < smallestArea) {
-            smallestArea = area;
-            clickedSlot = i;
-          }
+        const area = s.w * s.h;
+        if (area < smallestArea) {
+          smallestArea = area;
+          clickedSlot = i;
         }
       }
     }
