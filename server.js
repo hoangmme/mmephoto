@@ -526,9 +526,7 @@ app.post('/api/finish-session/:branch/:room/:session', (req, res) => {
     const remainingUnfinished = roomD.sessions.filter(s => !s.finished);
     if (remainingUnfinished.length > 0) {
       roomD.activeSessionId = remainingUnfinished[0].id;
-      if (!remainingUnfinished[0].step || remainingUnfinished[0].step === 4) {
-        remainingUnfinished[0].step = 1;
-      }
+      remainingUnfinished[0].step = 1;
     } else {
       roomD.activeSessionId = null;
     }

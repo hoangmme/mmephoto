@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=223';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=224';
 
 export const StateMixin = {
 _initSSE(branch) {
@@ -266,15 +266,15 @@ _updateActiveSession(room, onlyBadge = false) {
       if (active) {
         if (roomData.session !== active.id) {
           roomData.session = active.id;
-          // Staff: jump to step 4 to review. User: always start at step 1.
-          roomData.step = isStaffMode ? 4 : 1;
+          // User & Staff: always start at step 1.
+          roomData.step = 1;
           if (this.activeRoom === room) {
             this.slots = [];
             this.selectedPhotos = new Set();
           }
         } else {
           if (roomData.step === undefined || roomData.step === null) {
-            roomData.step = isStaffMode ? 4 : 1;
+            roomData.step = 1;
           } else {
             active.step = roomData.step;
           }
