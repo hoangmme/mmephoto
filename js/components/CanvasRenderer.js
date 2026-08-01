@@ -134,7 +134,7 @@ export class CanvasRenderer {
       ctx.save();
       ctx.translate(slotDef.cx, slotDef.cy);
       if (slotDef.rotation) {
-        ctx.rotate(slotDef.rotation);
+        ctx.rotate(slotDef.rotation * Math.PI / 180);
       }
 
       if (slotData && slotData.imageId) {
@@ -194,7 +194,7 @@ export class CanvasRenderer {
       if (s) {
         ctx.save();
         ctx.translate(s.cx, s.cy);
-        if (s.rotation) ctx.rotate(s.rotation);
+        if (s.rotation) ctx.rotate(s.rotation * Math.PI / 180);
 
         let slotW = s.w;
         let slotH = s.h;
