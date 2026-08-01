@@ -45,7 +45,14 @@ export class ImageListUI {
       thumb.dataset.id = img.id;
 
       const imgTag = document.createElement('img');
-      imgTag.src = img.url || img.objectUrl;
+      let thumbSrc = img.url || img.objectUrl;
+      if (typeof thumbSrc === 'string' && thumbSrc.includes('/uploads/') && !thumbSrc.includes('00_frame') && !thumbSrc.includes('_thumb.webp') && !thumbSrc.startsWith('data:')) {
+        const lastDot = thumbSrc.lastIndexOf('.');
+        if (lastDot !== -1) {
+          thumbSrc = thumbSrc.substring(0, lastDot) + '_thumb.webp';
+        }
+      }
+      imgTag.src = thumbSrc;
       imgTag.alt = 'Photo';
 
       const label = document.createElement('span');
