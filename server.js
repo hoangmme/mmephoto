@@ -51,7 +51,7 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 }
 
 // Serve the uploads directory with WebP On-Demand Thumbnail Middleware
-app.get('/uploads/*', async (req, res, next) => {
+app.get(/^\/uploads\/(.*)/, async (req, res, next) => {
   const reqPath = req.params[0];
   if (!reqPath.includes('_thumb.webp')) {
     return next();
@@ -145,6 +145,7 @@ function getAllImagesRecursive(dirPath, urlPrefix) {
   const items = fs.readdirSync(dirPath);
   for (const item of items) {
     if (item.startsWith('.')) continue;
+    if (item.includes('_thumb.webp')) continue;
     const fullPath = path.join(dirPath, item);
     try {
       const stat = fs.statSync(fullPath);
@@ -153,6 +154,17 @@ function getAllImagesRecursive(dirPath, urlPrefix) {
       } else {
         const ext = path.extname(item).toLowerCase();
         if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.cr2', '.raw'].includes(ext)) {
+          const baseName = path.basename(item, ext);
+          const thumbPath = path.join(dirPath, `${baseName}_thumb.webp`);
+          if (!fs.existsSync(thumbPath) && !item.startsWith('00_frame')) {
+            try {
+              sharp(fullPath)
+                .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+                .webp({ quality: 85 })
+                .toFile(thumbPath)
+                .catch(() => {});
+            } catch(e) {}
+          }
           results.push(`${urlPrefix}/${encodeURIComponent(item)}`);
         }
       }
@@ -172,15 +184,15 @@ function scanDiskSessions() {
       let branchKey = Object.keys(roomState).find(k => k.toLowerCase() === b.toLowerCase()) || b;
       if (!roomState[branchKey]) roomState[branchKey] = {};
       
+      const roomKey = 'Room1';
+      if (!roomState[branchKey][roomKey]) {
+        roomState[branchKey][roomKey] = { sessions: [], activeSessionId: null };
+      }
+
       const rooms = fs.readdirSync(bPath);
       rooms.forEach(r => {
         const rPath = path.join(bPath, r);
         if (!fs.statSync(rPath).isDirectory()) return;
-        
-        let roomKey = Object.keys(roomState[branchKey]).find(k => k.toLowerCase() === r.toLowerCase()) || r;
-        if (!roomState[branchKey][roomKey]) {
-          roomState[branchKey][roomKey] = { sessions: [], activeSessionId: null };
-        }
         
         const sessions = fs.readdirSync(rPath);
         sessions.forEach(s => {
@@ -485,7 +497,7 @@ app.post('/api/login', (req, res) => {
   res.json({ success: true, branchId: matchedId });
 });
 
-app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (req, res) => {
+app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), async (req, res) => {
   const { branch, room, session } = req.params;
   
   if (!req.file) return res.status(400).json({ error: 'No image' });
@@ -496,15 +508,17 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (r
   
   fs.mkdirSync(sessionDir, { recursive: true });
   
+  const filename = `${Date.now()}_${Math.random().toString(36).substr(2, 6)}.png`;
+  const filepath = path.join(sessionDir, filename);
   fs.writeFileSync(filepath, req.file.buffer);
 
-  // Pre-generate WebP thumbnail for lightning-fast UI canvas rendering
+  // Pre-generate WebP thumbnail for lightning-fast UI canvas rendering (AWAITED so thumb exists before SSE/REST)
   if (!filename.startsWith('00_frame')) {
     try {
       const ext = path.extname(filename);
       const baseName = path.basename(filename, ext);
       const thumbFilepath = path.join(sessionDir, `${baseName}_thumb.webp`);
-      sharp(req.file.buffer)
+      await sharp(req.file.buffer)
         .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
         .webp({ quality: 85 })
         .toFile(thumbFilepath)
