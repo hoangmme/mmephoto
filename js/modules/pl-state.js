@@ -12,11 +12,22 @@ _initSSE(branch) {
       branchNameEl.style.display = 'none';
     }
 
+    // Fallback timer: Render default room after 1.5s if server fetch hangs
+    const initFallbackTimeout = setTimeout(() => {
+      if (!this.rooms || Object.keys(this.rooms).length === 0) {
+        console.warn('Init state fetch timeout, rendering fallback Room1');
+        this.rooms = { 'Room1': { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false } };
+        this._renderTabs();
+        if (this.activeRoom) this._updateUIForRoom();
+      }
+    }, 1500);
+
     // Immediate REST fetch for initial state (works even if SSE is buffered)
     fetch(`/api/init-state/${encodeURIComponent(branch)}`)
       .then(res => res.json())
       .then(data => {
-        if (data.success && data.rooms) {
+        clearTimeout(initFallbackTimeout);
+        if (data.success && data.rooms && data.rooms.length > 0) {
           data.rooms.forEach(r => {
             const room = r.room;
             if (!this.rooms[room]) this.rooms[room] = { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false };
@@ -24,10 +35,22 @@ _initSSE(branch) {
             if (r.activeSessionId) this.rooms[room].activeSessionId = r.activeSessionId;
             this._updateActiveSession(room);
           });
-          this._renderTabs();
-          if (this.activeRoom) this._updateUIForRoom();
+        } else {
+          if (!this.rooms || Object.keys(this.rooms).length === 0) {
+            this.rooms = { 'Room1': { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false } };
+          }
         }
-      }).catch(err => console.error('Init REST fetch error:', err));
+        this._renderTabs();
+        if (this.activeRoom) this._updateUIForRoom();
+      }).catch(err => {
+        clearTimeout(initFallbackTimeout);
+        console.error('Init REST fetch error:', err);
+        if (!this.rooms || Object.keys(this.rooms).length === 0) {
+          this.rooms = { 'Room1': { images: [], timerInterval: null, timeLeft: 60, locked: false, hasNew: false, queue: [], step: 1, lastImageTime: null, timerStarted: false } };
+        }
+        this._renderTabs();
+        if (this.activeRoom) this._updateUIForRoom();
+      });
 
     if (this.sse) this.sse.close();
     this.sse = new EventSource(`/api/stream/${branch}`);
