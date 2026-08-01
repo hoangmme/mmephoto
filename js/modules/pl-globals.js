@@ -331,7 +331,7 @@ const TEMPLATES = {
                         "w": 626.0,
                         "h": 551.0,
                         "rotation": 0,
-                        "defaultRotation": 90
+                        "defaultRotation": 270
             },
             {
                         "id": "slot_a5_9",
