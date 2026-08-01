@@ -44,8 +44,9 @@ Create a high-performance, real-time sync Photobooth management platform. Provid
   - Phase 1: Root directory technical debt cleanup (Archived temporary scripts into `archive/scripts/`).
   - Phase 2: Modularized monolithic UI and canvas modules into sub-components (`TemplatePicker.js`, `LightboxComponent.js`, `HeaderActions.js`, `CrossSellBanner.js`, `CanvasRenderer.js`, `CanvasExporter.js`, `RoomTabsComponent.js`, `QueueModalComponent.js`, `StepBannerComponent.js`, `ImageListUI.js`).
   - A5-1 Slot 9 Heart Mask & Text Cutout fix (`slot_613278_17` bounds `cx: 1231.5, cy: 1524.5, w: 960, h: 340`, removed obsolete clipMatrix shift).
+  - Fixed vertical slot orientation in A4-1 (slots 1, 2, 4, 5) and A5-1 (slots 4, 9) by specifying `defaultRotation: 270` and ensuring `_assignImageToSlot` / `_autoFill` use `defaultRotation`.
   - WebP Thumbnail Server Integration (`sharp` pre-generation in `stream-upload`, fast WebP UI rendering, high-res 4000px export preloading).
-  - Cache versioning bumped to `v250`.
+  - Cache versioning bumped to `v251`.
 - **Current Focus**:
   - Verification & deployment.
 - **Next**:
