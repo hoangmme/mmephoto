@@ -14,15 +14,18 @@ export class CanvasRenderer {
     let effectiveImgH = isRotated90 ? imgW : imgH;
     
     const imgRatio = effectiveImgW / effectiveImgH;
-    const slotRatio = slotW / slotH;
+    const margin = 35;
+    const effSlotW = slotW + margin;
+    const effSlotH = slotH + margin;
+    const slotRatio = effSlotW / effSlotH;
     let baseW, baseH;
 
     if (imgRatio > slotRatio) {
-      baseH = slotH;
-      baseW = slotH * imgRatio;
+      baseH = effSlotH;
+      baseW = effSlotH * imgRatio;
     } else {
-      baseW = slotW;
-      baseH = slotW / imgRatio;
+      baseW = effSlotW;
+      baseH = effSlotW / imgRatio;
     }
 
     if (isRotated90) {
