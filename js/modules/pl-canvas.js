@@ -56,9 +56,8 @@ export const CanvasMixin = {
   },
 
   // ── Template ──
-,
 
-_loadTemplateImages() {
+  _loadTemplateImages() {
     return new Promise((resolve) => {
         this._templateImagesCache = this._templateImagesCache || {};
         
