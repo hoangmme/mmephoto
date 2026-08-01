@@ -1,19 +1,59 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=250';
-import { CanvasRenderer } from '../components/CanvasRenderer.js?v=250';
-import { CanvasExporter } from '../components/CanvasExporter.js?v=250';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=251';
+import { CanvasRenderer } from '../components/CanvasRenderer.js?v=251';
+import { CanvasExporter } from '../components/CanvasExporter.js?v=251';
 
 export const CanvasMixin = {
-_preloadImage(id, url) {
+  _preloadImage(id, url, useThumb = true) {
     return new Promise((resolve) => {
+      let targetUrl = url;
+      if (useThumb && typeof url === 'string' && url.includes('/uploads/') && !url.includes('00_frame') && !url.includes('_thumb.webp') && !url.startsWith('data:')) {
+        const lastDot = url.lastIndexOf('.');
+        if (lastDot !== -1) {
+          targetUrl = url.substring(0, lastDot) + '_thumb.webp';
+        }
+      }
+
       const img = new Image();
       img.onload = () => {
         this._imageCache[id] = img;
         resolve();
       };
-      img.onerror = () => resolve(); // Skip broken images
-      img.src = url;
+      img.onerror = () => {
+        if (targetUrl !== url) {
+          // Fallback to original full-res image if thumbnail fails
+          const fallbackImg = new Image();
+          fallbackImg.onload = () => {
+            this._imageCache[id] = fallbackImg;
+            resolve();
+          };
+          fallbackImg.onerror = () => resolve();
+          fallbackImg.src = url;
+        } else {
+          resolve();
+        }
+      };
+      img.src = targetUrl;
     });
-  }
+  },
+
+  async _preloadFullResImages() {
+    this._imageCache = this._imageCache || {};
+    const allSlots = [];
+    if (this.canvasesState && Array.isArray(this.canvasesState)) {
+      this.canvasesState.forEach(c => {
+        if (c.slots) allSlots.push(...c.slots);
+      });
+    }
+    if (this.slots) allSlots.push(...this.slots);
+
+    const promises = [];
+    allSlots.forEach(slot => {
+      if (slot && slot.image && slot.image.url && slot.image.id) {
+        promises.push(this._preloadImage(slot.image.id, slot.image.url, false));
+      }
+    });
+    await Promise.all(promises);
+  },
 
   // ── Template ──
 ,
@@ -214,6 +254,9 @@ _loadTemplateImages() {
     }
     if (!this.slots) this.slots = [];
     this.selectedSlotIndex = slotIndex;
+    const tmpl = window.ALL_TEMPLATES ? window.ALL_TEMPLATES[this.currentTemplate] : null;
+    const slotDef = tmpl && tmpl.slots ? tmpl.slots[slotIndex] : null;
+    const defRot = slotDef ? (slotDef.defaultRotation !== undefined ? slotDef.defaultRotation : (slotDef.rotation || 0)) : 0;
 
     if (!this.slots[slotIndex]) {
       this.slots[slotIndex] = {
@@ -221,14 +264,14 @@ _loadTemplateImages() {
         zoom: 1.0,
         panX: 0,
         panY: 0,
-        rotation: 0
+        rotation: defRot
       };
     }
     this.slots[slotIndex].imageId = imageId;
     this.slots[slotIndex].zoom = 1.0;
     this.slots[slotIndex].panX = 0;
     this.slots[slotIndex].panY = 0;
-    this.slots[slotIndex].rotation = 0;
+    this.slots[slotIndex].rotation = defRot;
     this.slots[slotIndex].assignedAt = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
     // Update working draft only. DO NOT commit to official session component or broadcast until Gửi is clicked.
@@ -242,16 +285,12 @@ _loadTemplateImages() {
   // ── Auto Fill ──
 
   _autoFill(forceFill = false) {
-    const roomData = this.activeRoom && this.rooms[this.activeRoom];
-    const currentImages = (this.images && this.images.length > 0) ? this.images : (roomData && roomData.images ? roomData.images : []);
-    if (currentImages.length === 0) return;
-
+    if (!this.canvasesState || this.canvasesState.length === 0) return;
+    const selTmpls = this.selectedTemplates || [this.currentTemplate];
+    const currentImages = (this.images && this.images.length > 0) ? this.images : (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].images ? this.rooms[this.activeRoom].images : []);
+    
     if (!this._imageCache) this._imageCache = {};
     
-    const selTmpls = (this.selectedTemplates && this.selectedTemplates.length > 0)
-      ? this.selectedTemplates
-      : (this.currentTemplate ? [this.currentTemplate] : []);
-
     // Ensure canvasesState matches selectedTemplates in length and templateIds order
     if (!this.canvasesState || this.canvasesState.length !== selTmpls.length || this.canvasesState.some((c, idx) => c.templateId !== selTmpls[idx])) {
       this.canvasesState = selTmpls.map(tId => {
@@ -259,7 +298,10 @@ _loadTemplateImages() {
         const numSlots = tmpl && tmpl.slots ? tmpl.slots.length : 0;
         return {
           templateId: tId,
-          slots: Array(numSlots).fill(null).map(() => ({ imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: 0 })),
+          slots: Array(numSlots).fill(null).map((_, i) => {
+            const sDef = tmpl && tmpl.slots ? tmpl.slots[i] : null;
+            return { imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: sDef ? (sDef.defaultRotation !== undefined ? sDef.defaultRotation : (sDef.rotation || 0)) : 0 };
+          }),
           selectedSlotIndex: -1
         };
       });
@@ -312,7 +354,10 @@ _loadTemplateImages() {
       
       const maxSlots = cTmpl.slots.length;
       if (!cState.slots || cState.slots.length !== maxSlots) {
-        cState.slots = Array(maxSlots).fill(null).map(() => ({ imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: 0 }));
+        cState.slots = Array(maxSlots).fill(null).map((_, i) => {
+          const sDef = cTmpl.slots[i];
+          return { imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: sDef ? (sDef.defaultRotation !== undefined ? sDef.defaultRotation : (sDef.rotation || 0)) : 0 };
+        });
       }
       
       for (let i = 0; i < maxSlots; i++) {
@@ -326,7 +371,8 @@ _loadTemplateImages() {
           cState.slots[i].zoom = 1.0;
           cState.slots[i].panX = 0;
           cState.slots[i].panY = 0;
-          cState.slots[i].rotation = 0;
+          const sDef = cTmpl.slots[i];
+          cState.slots[i].rotation = sDef ? (sDef.defaultRotation !== undefined ? sDef.defaultRotation : (sDef.rotation || 0)) : 0;
           if (targetImgId) {
             cState.slots[i].assignedAt = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
           }

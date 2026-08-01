@@ -1,12 +1,12 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=250';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=250';
-import { LightboxComponent } from '../components/LightboxComponent.js?v=250';
-import { HeaderActions } from '../components/HeaderActions.js?v=250';
-import { CrossSellBanner } from '../components/CrossSellBanner.js?v=250';
-import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=250';
-import { QueueModalComponent } from '../components/QueueModalComponent.js?v=250';
-import { StepBannerComponent } from '../components/StepBannerComponent.js?v=250';
-import { ImageListUI } from '../components/ImageListUI.js?v=250';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=251';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=251';
+import { LightboxComponent } from '../components/LightboxComponent.js?v=251';
+import { HeaderActions } from '../components/HeaderActions.js?v=251';
+import { CrossSellBanner } from '../components/CrossSellBanner.js?v=251';
+import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=251';
+import { QueueModalComponent } from '../components/QueueModalComponent.js?v=251';
+import { StepBannerComponent } from '../components/StepBannerComponent.js?v=251';
+import { ImageListUI } from '../components/ImageListUI.js?v=251';
 
 export const UIInteractionsMixin = {
   _bindEvents() {
@@ -127,7 +127,10 @@ export const UIInteractionsMixin = {
             const numSlots = tmpl && tmpl.slots ? tmpl.slots.length : 0;
             return {
               templateId: t,
-              slots: Array(numSlots).fill(null).map(() => ({ imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: 0 })),
+              slots: Array(numSlots).fill(null).map((_, i) => {
+                const sDef = tmpl && tmpl.slots ? tmpl.slots[i] : null;
+                return { imageId: null, zoom: 1.0, panX: 0, panY: 0, rotation: sDef ? (sDef.defaultRotation !== undefined ? sDef.defaultRotation : (sDef.rotation || 0)) : 0 };
+              }),
               selectedSlotIndex: -1
             };
           });

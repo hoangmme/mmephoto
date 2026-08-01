@@ -7,6 +7,7 @@ import QRCode from 'qrcode';
 import { fileURLToPath } from 'url';
 import { createCanvas, loadImage, Image } from 'canvas';
 import crypto from 'crypto';
+import sharp from 'sharp';
 
 // Setup global mocks for DOM objects used in processor.js and lut-parser.js
 global.document = {
@@ -49,7 +50,51 @@ if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
-// Serve the uploads directory correctly
+// Serve the uploads directory with WebP On-Demand Thumbnail Middleware
+app.get('/uploads/*', async (req, res, next) => {
+  const reqPath = req.params[0];
+  if (!reqPath.includes('_thumb.webp')) {
+    return next();
+  }
+
+  const fullPath = path.join(UPLOADS_DIR, reqPath);
+  if (fs.existsSync(fullPath)) {
+    return next();
+  }
+
+  const dirPath = path.dirname(fullPath);
+  const thumbName = path.basename(reqPath);
+  const origBaseName = thumbName.replace('_thumb.webp', '');
+
+  const possibleExtensions = ['.png', '.jpg', '.jpeg', '.PNG', '.JPG', '.JPEG', '.webp'];
+  let origPath = null;
+
+  for (const ext of possibleExtensions) {
+    const testPath = path.join(dirPath, origBaseName + ext);
+    if (fs.existsSync(testPath)) {
+      origPath = testPath;
+      break;
+    }
+  }
+
+  if (!origPath) {
+    return res.status(404).send('Original image not found');
+  }
+
+  try {
+    fs.mkdirSync(dirPath, { recursive: true });
+    await sharp(origPath)
+      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 85 })
+      .toFile(fullPath);
+
+    res.sendFile(fullPath);
+  } catch (err) {
+    console.error('[WebP Middleware] Error generating thumbnail:', err);
+    res.sendFile(origPath);
+  }
+});
+
 app.use('/uploads', express.static(UPLOADS_DIR));
 
 // Multer setup (store files in memory temporarily to process them)
@@ -258,7 +303,7 @@ app.get('/api/download/:branch/:room/:session', (req, res) => {
   }
 
   const files = fs.readdirSync(sessionDir)
-                  .filter(f => f.endsWith('.jpg') || f.endsWith('.jpeg') || f.endsWith('.png') || f.endsWith('.webp'));
+                  .filter(f => (f.endsWith('.jpg') || f.endsWith('.jpeg') || f.endsWith('.png') || f.endsWith('.webp')) && !f.endsWith('_thumb.webp'));
                   
   const images = files.map(f => `/uploads/${branch}/${room}/${session}/${f}`);
 
@@ -451,10 +496,24 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), (r
   
   fs.mkdirSync(sessionDir, { recursive: true });
   
-  const filename = req.file.originalname;
-  const filepath = path.join(sessionDir, filename);
   fs.writeFileSync(filepath, req.file.buffer);
-  
+
+  // Pre-generate WebP thumbnail for lightning-fast UI canvas rendering
+  if (!filename.startsWith('00_frame')) {
+    try {
+      const ext = path.extname(filename);
+      const baseName = path.basename(filename, ext);
+      const thumbFilepath = path.join(sessionDir, `${baseName}_thumb.webp`);
+      sharp(req.file.buffer)
+        .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 85 })
+        .toFile(thumbFilepath)
+        .catch(err => console.error('[Sharp] Pre-generate thumb error:', err));
+    } catch (err) {
+      console.error('[Sharp] Sync error:', err);
+    }
+  }
+
   const imageUrl = `/uploads/${branch}/${room}/${session}/${filename}`;
   
   // Update state

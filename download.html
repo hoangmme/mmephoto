@@ -230,12 +230,18 @@
               item.className = 'photo-item';
               item.style.cursor = 'pointer'; // Make it look clickable
               
-              const cacheBustUrl = imgUrl + '?v=' + Date.now();
+              const fullResUrl = imgUrl + '?v=' + Date.now();
+              const lastDot = imgUrl.lastIndexOf('.');
+              const thumbUrl = (lastDot !== -1 && !imgUrl.startsWith('00_frame')) 
+                ? (imgUrl.substring(0, lastDot) + '_thumb.webp?v=' + Date.now())
+                : fullResUrl;
+
               const img = document.createElement('img');
-              img.src = cacheBustUrl;
+              img.src = thumbUrl;
+              img.onerror = () => { img.src = fullResUrl; };
               
               item.addEventListener('click', () => {
-                openLightbox(cacheBustUrl);
+                openLightbox(fullResUrl);
               });
               
               item.appendChild(img);

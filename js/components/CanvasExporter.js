@@ -24,6 +24,7 @@ export class CanvasExporter {
           appInstance.selectedSlotIndex = -1;
         }
         await appInstance._loadTemplateImages();
+        if (appInstance._preloadFullResImages) await appInstance._preloadFullResImages();
         appInstance._drawToCanvas(exportCanvas, false, null, false, 4000);
 
         const dataUrl = exportCanvas.toDataURL('image/png');
@@ -74,6 +75,7 @@ export class CanvasExporter {
           appInstance.selectedSlotIndex = -1;
         }
         await appInstance._loadTemplateImages();
+        if (appInstance._preloadFullResImages) await appInstance._preloadFullResImages();
         appInstance._drawToCanvas(exportCanvas, false, null, false, 4000);
 
         const dataUrl = exportCanvas.toDataURL('image/jpeg', 1.0);
@@ -124,6 +126,7 @@ export class CanvasExporter {
           appInstance.selectedSlotIndex = -1;
         }
         await appInstance._loadTemplateImages();
+        if (appInstance._preloadFullResImages) await appInstance._preloadFullResImages();
         appInstance._drawToCanvas(exportCanvas, false, null, false, 4000);
 
         const blob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/png'));
