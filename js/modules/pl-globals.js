@@ -193,7 +193,8 @@ const TEMPLATES = {
                         "cy": 3146.0,
                         "w": 334.0,
                         "h": 416.0,
-                        "rotation": 0
+                        "rotation": 0,
+                        "defaultRotation": 270
             },
             {
                         "id": "slot_a4_17",
@@ -202,7 +203,8 @@ const TEMPLATES = {
                         "cy": 3052.0,
                         "w": 156.0,
                         "h": 150.0,
-                        "rotation": 0
+                        "rotation": 0,
+                        "defaultRotation": 270
             },
             {
                         "id": "slot_a4_18",
@@ -211,7 +213,8 @@ const TEMPLATES = {
                         "cy": 3150.0,
                         "w": 334.0,
                         "h": 416.0,
-                        "rotation": 0
+                        "rotation": 0,
+                        "defaultRotation": 270
             },
             {
                         "id": "slot_a4_19",
@@ -229,7 +232,8 @@ const TEMPLATES = {
                         "cy": 3244.0,
                         "w": 163.0,
                         "h": 160.0,
-                        "rotation": 0
+                        "rotation": 0,
+                        "defaultRotation": 270
             }
         ],
         "tags": [
@@ -253,7 +257,8 @@ const TEMPLATES = {
                         "cy": 361.5,
                         "w": 745.0,
                         "h": 555.0,
-                        "rotation": 0.0
+                        "rotation": 0,
+                        "defaultRotation": 180
             },
             {
                         "id": "slot_a5_1",
@@ -325,7 +330,8 @@ const TEMPLATES = {
                         "cy": 967.5,
                         "w": 626.0,
                         "h": 551.0,
-                        "rotation": 0.0
+                        "rotation": 0,
+                        "defaultRotation": 90
             },
             {
                         "id": "slot_a5_9",
