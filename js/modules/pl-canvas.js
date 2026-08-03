@@ -1,6 +1,6 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=256';
-import { CanvasRenderer } from '../components/CanvasRenderer.js?v=256';
-import { CanvasExporter } from '../components/CanvasExporter.js?v=256';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=257';
+import { CanvasRenderer } from '../components/CanvasRenderer.js?v=257';
+import { CanvasExporter } from '../components/CanvasExporter.js?v=257';
 
 export const CanvasMixin = {
   _preloadImage(id, url, useThumb = true) {
@@ -46,10 +46,18 @@ export const CanvasMixin = {
     }
     if (this.slots) allSlots.push(...this.slots);
 
+    // Lấy danh sách toàn bộ ảnh đã upload của phòng hiện tại
+    const roomImages = (this.rooms && this.activeRoom && this.rooms[this.activeRoom]) 
+      ? this.rooms[this.activeRoom].images 
+      : (this.images || []);
+
     const promises = [];
     allSlots.forEach(slot => {
-      if (slot && slot.image && slot.image.url && slot.image.id) {
-        promises.push(this._preloadImage(slot.image.id, slot.image.url, false));
+      if (slot && slot.imageId) {
+        const imgObj = roomImages.find(i => i.id === slot.imageId);
+        if (imgObj && imgObj.url) {
+          promises.push(this._preloadImage(slot.imageId, imgObj.url, false));
+        }
       }
     });
     await Promise.all(promises);
