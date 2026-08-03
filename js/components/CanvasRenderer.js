@@ -116,6 +116,10 @@ export class CanvasRenderer {
     canvas.width = targetW;
     canvas.height = targetH;
     const ctx = canvas.getContext('2d');
+    
+    // Bật khử răng cưa chất lượng cao khi zoom/scale ảnh gốc
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     if (scale !== 1) {
       ctx.scale(scale, scale);
