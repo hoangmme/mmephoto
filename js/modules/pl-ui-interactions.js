@@ -1,12 +1,12 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=265';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=265';
-import { LightboxComponent } from '../components/LightboxComponent.js?v=265';
-import { HeaderActions } from '../components/HeaderActions.js?v=265';
-import { CrossSellBanner } from '../components/CrossSellBanner.js?v=265';
-import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=265';
-import { QueueModalComponent } from '../components/QueueModalComponent.js?v=265';
-import { StepBannerComponent } from '../components/StepBannerComponent.js?v=265';
-import { ImageListUI } from '../components/ImageListUI.js?v=265';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=266';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=266';
+import { LightboxComponent } from '../components/LightboxComponent.js?v=266';
+import { HeaderActions } from '../components/HeaderActions.js?v=266';
+import { CrossSellBanner } from '../components/CrossSellBanner.js?v=266';
+import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=266';
+import { QueueModalComponent } from '../components/QueueModalComponent.js?v=266';
+import { StepBannerComponent } from '../components/StepBannerComponent.js?v=266';
+import { ImageListUI } from '../components/ImageListUI.js?v=266';
 
 export const UIInteractionsMixin = {
   _bindEvents() {
