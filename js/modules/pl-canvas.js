@@ -1,6 +1,6 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=257';
-import { CanvasRenderer } from '../components/CanvasRenderer.js?v=257';
-import { CanvasExporter } from '../components/CanvasExporter.js?v=257';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=258';
+import { CanvasRenderer } from '../components/CanvasRenderer.js?v=258';
+import { CanvasExporter } from '../components/CanvasExporter.js?v=258';
 
 export const CanvasMixin = {
   _preloadImage(id, url, useThumb = true) {
@@ -346,7 +346,7 @@ export const CanvasMixin = {
     // Check if ALL canvases are completely empty
     const isCanvasEmpty = this.canvasesState.every(cState => {
       if (!cState || !cState.slots) return true;
-      return cState.slots.every(slot => !slot.imageId);
+      return cState.slots.every(slot => !slot || !slot.imageId);
     });
 
     if (!isCanvasEmpty && !forceFill) {
@@ -515,7 +515,7 @@ _renderSlotProps() {
     const slot = this.slots[this.selectedSlotIndex];
     const slotNum = this.selectedSlotIndex + 1;
 
-    if (!slot.imageId) {
+    if (!slot || !slot.imageId) {
       this.slotProps.innerHTML = `
         <div class="pl-prop-group">
           <span class="pl-prop-label">Slot ${slotNum}</span>

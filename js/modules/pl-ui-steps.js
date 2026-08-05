@@ -1,12 +1,12 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=257';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=257';
-import { LightboxComponent } from '../components/LightboxComponent.js?v=257';
-import { HeaderActions } from '../components/HeaderActions.js?v=257';
-import { CrossSellBanner } from '../components/CrossSellBanner.js?v=257';
-import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=257';
-import { QueueModalComponent } from '../components/QueueModalComponent.js?v=257';
-import { StepBannerComponent } from '../components/StepBannerComponent.js?v=257';
-import { ImageListUI } from '../components/ImageListUI.js?v=257';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=258';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=258';
+import { LightboxComponent } from '../components/LightboxComponent.js?v=258';
+import { HeaderActions } from '../components/HeaderActions.js?v=258';
+import { CrossSellBanner } from '../components/CrossSellBanner.js?v=258';
+import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=258';
+import { QueueModalComponent } from '../components/QueueModalComponent.js?v=258';
+import { StepBannerComponent } from '../components/StepBannerComponent.js?v=258';
+import { ImageListUI } from '../components/ImageListUI.js?v=258';
 
 export const UIStepsMixin = {
   _setStep(room, step, skipSync = false) {
@@ -78,7 +78,7 @@ export const UIStepsMixin = {
 
     // SAFEGUARD: Removed dangerous step 1 revert that caused user data wipe on sync.
     if (this.activeRoom && this.rooms[this.activeRoom] && this.rooms[this.activeRoom].step === 4) {
-      if (!this.slots || !this.slots.some(s => s.imageId)) {
+      if (!this.slots || !this.slots.some(s => s && s.imageId)) {
         console.warn("Safeguard warning: step 4 but no slots filled! (Not reverting to prevent data wipe)");
       }
     }

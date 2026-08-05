@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=257';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=258';
 
 export const StateMixin = {
 _initSSE(branch) {
@@ -127,8 +127,8 @@ _initSSE(branch) {
             if (data.paperSize !== undefined) sessionObj.paperSize = data.paperSize;
             if (data.canvasesState !== undefined) sessionObj.canvasesState = data.canvasesState;
             if (data.slots && data.slots.length > 0) {
-              const serverHasImages = data.slots.some(s => s.imageId);
-              const localHasImages = sessionObj.slots && sessionObj.slots.some(s => s.imageId);
+              const serverHasImages = data.slots && data.slots.some(s => s && s.imageId);
+              const localHasImages = sessionObj.slots && sessionObj.slots.some(s => s && s.imageId);
               if (serverHasImages || !localHasImages) {
                 sessionObj.slots = data.slots;
               }
@@ -186,8 +186,8 @@ _initSSE(branch) {
                     this.slots = this.canvasesState[activeIdx].slots || [];
                   }
                 } else if (data.slots && data.slots.length > 0) {
-                  const serverHasImages = data.slots.some(s => s.imageId);
-                  const localHasImages = this.slots && this.slots.some(s => s.imageId);
+                  const serverHasImages = data.slots && data.slots.some(s => s && s.imageId);
+                  const localHasImages = this.slots && this.slots.some(s => s && s.imageId);
                   if (serverHasImages || !localHasImages) {
                     this.slots = data.slots;
                   }

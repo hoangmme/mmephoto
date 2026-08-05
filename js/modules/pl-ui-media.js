@@ -1,12 +1,12 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=257';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=257';
-import { LightboxComponent } from '../components/LightboxComponent.js?v=257';
-import { HeaderActions } from '../components/HeaderActions.js?v=257';
-import { CrossSellBanner } from '../components/CrossSellBanner.js?v=257';
-import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=257';
-import { QueueModalComponent } from '../components/QueueModalComponent.js?v=257';
-import { StepBannerComponent } from '../components/StepBannerComponent.js?v=257';
-import { ImageListUI } from '../components/ImageListUI.js?v=257';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=258';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=258';
+import { LightboxComponent } from '../components/LightboxComponent.js?v=258';
+import { HeaderActions } from '../components/HeaderActions.js?v=258';
+import { CrossSellBanner } from '../components/CrossSellBanner.js?v=258';
+import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=258';
+import { QueueModalComponent } from '../components/QueueModalComponent.js?v=258';
+import { StepBannerComponent } from '../components/StepBannerComponent.js?v=258';
+import { ImageListUI } from '../components/ImageListUI.js?v=258';
 
 export const UIMediaMixin = {
   _initOverlays() {
@@ -292,7 +292,7 @@ this._syncLayoutSelection = () => {
 
   _updateImageListUI() {
     const step = (this.activeRoom && this.rooms[this.activeRoom]) ? (this.rooms[this.activeRoom].step || 1) : 1;
-    const usedIds = new Set(this.slots.filter(s => s.imageId).map(s => s.imageId));
+    const usedIds = new Set((this.slots || []).filter(s => s && s.imageId).map(s => s.imageId));
     const activeSlotImageId = (this.selectedSlotIndex >= 0 && this.slots && this.slots[this.selectedSlotIndex]) ? this.slots[this.selectedSlotIndex].imageId : null;
 
     if (step === 2) {
