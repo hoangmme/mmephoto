@@ -508,9 +508,13 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), as
   
   fs.mkdirSync(sessionDir, { recursive: true });
   
-  let filename = `${Date.now()}_${Math.random().toString(36).substr(2, 6)}.png`;
-  if (req.file && req.file.originalname && req.file.originalname.startsWith('00_frame')) {
-    filename = req.file.originalname; // Preserve fixed frame names (00_frame_P1.png, 00_frame_P2.png) to overwrite on re-render
+  let filename = '';
+  if (req.file && req.file.originalname) {
+    # Preserve original filename (e.g. IMG_0001.jpg or 00_frame_P1.png) to prevent duplicate uploads
+    filename = path.basename(req.file.originalname).replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+  }
+  if (!filename || filename === '_') {
+    filename = `${Date.now()}_${Math.random().toString(36).substr(2, 6)}.png`;
   }
   const filepath = path.join(sessionDir, filename);
   fs.writeFileSync(filepath, req.file.buffer);
