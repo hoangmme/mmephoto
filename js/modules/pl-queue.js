@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=262';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=263';
 
 export const QueueMixin = {
   queueTab: 'active',
@@ -127,31 +127,7 @@ export const QueueMixin = {
     try {
       const res = await fetch(`/api/set-active-session/${encodeURIComponent(this.branch)}/${encodeURIComponent(this.activeRoom)}/${encodeURIComponent(sessionId)}`, { method: 'POST' });
       if (res.ok) {
-        const queueOverlay = document.getElementById('queueModalOverlay');
-        if (queueOverlay) queueOverlay.style.display = 'none';
-
-        if (this.rooms[this.activeRoom]) {
-          const roomData = this.rooms[this.activeRoom];
-          roomData.activeSessionId = sessionId;
-          roomData.session = sessionId;
-          this._updateActiveSession(this.activeRoom);
-          
-          const activeSess = (roomData.queue || []).find(s => s.id === sessionId);
-          if (!activeSess || !activeSess.sessionStartedAt) {
-            roomData.step = 1;
-            roomData.locked = false;
-            roomData.sessionStarted = false;
-            const startOverlay = document.getElementById('startSessionOverlay');
-            if (startOverlay) {
-              startOverlay.classList.remove('dismissed');
-              startOverlay.style.display = 'flex';
-            }
-            const lockOverlay = document.getElementById('lockOverlay');
-            if (lockOverlay) lockOverlay.style.display = 'none';
-          }
-          this._updateUIForRoom();
-          if (this._renderQueueModal) this._renderQueueModal();
-        }
+        window.location.reload();
       }
     } catch (err) {
       console.error('Failed to set active session:', err);
@@ -187,38 +163,7 @@ export const QueueMixin = {
     try {
       const res = await fetch(`/api/reset-session-timer/${encodeURIComponent(this.branch)}/${encodeURIComponent(this.activeRoom)}/${encodeURIComponent(sessionId)}`, { method: 'POST' });
       if (res.ok) {
-          const queueOverlay = document.getElementById('queueModalOverlay');
-          if (queueOverlay) queueOverlay.style.display = 'none';
-
-          const lockOverlay = document.getElementById('lockOverlay');
-          if (lockOverlay) lockOverlay.style.display = 'none';
-
-          const startOverlay = document.getElementById('startSessionOverlay');
-          if (startOverlay) {
-            startOverlay.classList.remove('dismissed');
-            startOverlay.style.display = 'flex';
-          }
-
-          const roomData = this.rooms[this.activeRoom];
-          roomData.activeSessionId = sessionId;
-          roomData.session = sessionId;
-          roomData.step = 1;
-          roomData.locked = false;
-          roomData.timeLeft = 420;
-          roomData.sessionStarted = false;
-          if (roomData.timedOutSteps) roomData.timedOutSteps.clear();
-
-          const sessObj = (roomData.queue || []).find(s => s.id === sessionId);
-          if (sessObj) {
-            sessObj.finished = false;
-            sessObj.step = 1;
-            sessObj.sessionStartedAt = null;
-          }
-
-          this._setStep(this.activeRoom, 1);
-          this._updateUIForRoom();
-          this._renderCanvas();
-          if (this._renderQueueModal) this._renderQueueModal();
+        window.location.reload();
       }
     } catch (err) {
       console.error('Failed to reset session timer:', err);

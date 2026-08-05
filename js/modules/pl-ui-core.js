@@ -1,12 +1,12 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=262';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=262';
-import { LightboxComponent } from '../components/LightboxComponent.js?v=262';
-import { HeaderActions } from '../components/HeaderActions.js?v=262';
-import { CrossSellBanner } from '../components/CrossSellBanner.js?v=262';
-import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=262';
-import { QueueModalComponent } from '../components/QueueModalComponent.js?v=262';
-import { StepBannerComponent } from '../components/StepBannerComponent.js?v=262';
-import { ImageListUI } from '../components/ImageListUI.js?v=262';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=263';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=263';
+import { LightboxComponent } from '../components/LightboxComponent.js?v=263';
+import { HeaderActions } from '../components/HeaderActions.js?v=263';
+import { CrossSellBanner } from '../components/CrossSellBanner.js?v=263';
+import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=263';
+import { QueueModalComponent } from '../components/QueueModalComponent.js?v=263';
+import { StepBannerComponent } from '../components/StepBannerComponent.js?v=263';
+import { ImageListUI } from '../components/ImageListUI.js?v=263';
 
 export const UICoreMixin = {
   _initLogin() {
@@ -42,39 +42,13 @@ export const UICoreMixin = {
           try {
             const res = await fetch(`/api/finish-session/${b}/${r}/${encodeURIComponent(sessId)}`, { method: 'POST' });
             if (res.ok) {
-              const data = await res.json();
-              this.rooms[r].activeSessionId = data.activeSessionId || null;
+              window.location.reload();
+              return;
             }
           } catch (err) { console.error(err); }
         }
       }
-      const lockOverlay = document.getElementById('lockOverlay');
-      if (lockOverlay) lockOverlay.style.display = 'none';
-
-      const startOverlay = document.getElementById('startSessionOverlay');
-      if (startOverlay) {
-        startOverlay.classList.remove('dismissed');
-        startOverlay.style.display = 'flex';
-      }
-
-      if (r && this.rooms[r]) {
-        this.rooms[r].session = this.rooms[r].activeSessionId || null;
-        this.rooms[r].step = 1;
-        this.rooms[r].locked = false;
-        this.rooms[r].sessionStarted = false;
-        this.rooms[r].timerStarted = false;
-        this.currentStep = 1;
-        this._staffEditingOverride = false;
-        this.slots = [];
-        this.selectedPhotos = new Set();
-        this.canvasesState = null;
-
-        this._stopTimer(r);
-        this._updateActiveSession(r);
-        this._updateUIForRoom();
-        this._renderCanvas();
-        this._renderTabs();
-      }
+      window.location.reload();
     };
 
     document.getElementById('btnNextCustomer')?.addEventListener('click', handleNextCustomer);
