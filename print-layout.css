@@ -1433,24 +1433,85 @@ body.pl-mode-staff #roomTabs {
   height: 100vh;
   z-index: 999998;
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: none;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.pl-start-overlay img {
-  max-width: 95vw;
-  max-height: 95vh;
-  object-fit: contain;
-  border-radius: 16px;
-  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6);
-  pointer-events: none;
-  transition: transform 0.2s ease;
+.pl-start-card {
+  background: linear-gradient(135deg, rgba(30, 24, 18, 0.95), rgba(15, 12, 10, 0.98));
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(245, 158, 11, 0.15);
+  border-radius: 20px;
+  padding: 44px 36px;
+  width: 480px;
+  max-width: 90vw;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: plStartCardPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes plStartCardPop {
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.pl-start-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  line-height: 1;
+  filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.5));
+}
+
+.pl-start-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+}
+
+.pl-start-desc {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+  margin: 0 0 28px 0;
+}
+
+.pl-start-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  border: none;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 50px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 280px;
+}
+
+.pl-start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(245, 158, 11, 0.6);
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+}
+
+.pl-start-btn:active {
+  transform: translateY(1px);
 }
 
 /* Hide idle screensaver and start overlays completely in Staff Mode */

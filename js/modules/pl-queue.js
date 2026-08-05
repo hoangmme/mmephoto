@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=260';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=261';
 
 export const QueueMixin = {
   queueTab: 'active',
@@ -127,11 +127,29 @@ export const QueueMixin = {
     try {
       const res = await fetch(`/api/set-active-session/${encodeURIComponent(this.branch)}/${encodeURIComponent(this.activeRoom)}/${encodeURIComponent(sessionId)}`, { method: 'POST' });
       if (res.ok) {
+        const queueOverlay = document.getElementById('queueModalOverlay');
+        if (queueOverlay) queueOverlay.style.display = 'none';
+
         if (this.rooms[this.activeRoom]) {
           const roomData = this.rooms[this.activeRoom];
           roomData.activeSessionId = sessionId;
+          roomData.session = sessionId;
           this._updateActiveSession(this.activeRoom);
-          roomData.sessionStarted = false; roomData.timerStarted = false;
+          
+          const activeSess = (roomData.queue || []).find(s => s.id === sessionId);
+          if (!activeSess || !activeSess.sessionStartedAt) {
+            roomData.step = 1;
+            roomData.locked = false;
+            roomData.sessionStarted = false;
+            const startOverlay = document.getElementById('startSessionOverlay');
+            if (startOverlay) {
+              startOverlay.classList.remove('dismissed');
+              startOverlay.style.display = 'flex';
+            }
+            const lockOverlay = document.getElementById('lockOverlay');
+            if (lockOverlay) lockOverlay.style.display = 'none';
+          }
+          this._updateUIForRoom();
           if (this._renderQueueModal) this._renderQueueModal();
         }
       }
@@ -169,9 +187,17 @@ export const QueueMixin = {
     try {
       const res = await fetch(`/api/reset-session-timer/${encodeURIComponent(this.branch)}/${encodeURIComponent(this.activeRoom)}/${encodeURIComponent(sessionId)}`, { method: 'POST' });
       if (res.ok) {
-          this.sessionStarted = false;
+          const queueOverlay = document.getElementById('queueModalOverlay');
+          if (queueOverlay) queueOverlay.style.display = 'none';
+
+          const lockOverlay = document.getElementById('lockOverlay');
+          if (lockOverlay) lockOverlay.style.display = 'none';
+
           const startOverlay = document.getElementById('startSessionOverlay');
-          if (startOverlay) startOverlay.classList.remove('dismissed');
+          if (startOverlay) {
+            startOverlay.classList.remove('dismissed');
+            startOverlay.style.display = 'flex';
+          }
 
           const roomData = this.rooms[this.activeRoom];
           roomData.activeSessionId = sessionId;
@@ -189,7 +215,6 @@ export const QueueMixin = {
             sessObj.sessionStartedAt = null;
           }
 
-          this._setActiveSession(sessionId);
           this._setStep(this.activeRoom, 1);
           this._updateUIForRoom();
           this._renderCanvas();

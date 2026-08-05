@@ -1,12 +1,12 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=260';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=260';
-import { LightboxComponent } from '../components/LightboxComponent.js?v=260';
-import { HeaderActions } from '../components/HeaderActions.js?v=260';
-import { CrossSellBanner } from '../components/CrossSellBanner.js?v=260';
-import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=260';
-import { QueueModalComponent } from '../components/QueueModalComponent.js?v=260';
-import { StepBannerComponent } from '../components/StepBannerComponent.js?v=260';
-import { ImageListUI } from '../components/ImageListUI.js?v=260';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=261';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=261';
+import { LightboxComponent } from '../components/LightboxComponent.js?v=261';
+import { HeaderActions } from '../components/HeaderActions.js?v=261';
+import { CrossSellBanner } from '../components/CrossSellBanner.js?v=261';
+import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=261';
+import { QueueModalComponent } from '../components/QueueModalComponent.js?v=261';
+import { StepBannerComponent } from '../components/StepBannerComponent.js?v=261';
+import { ImageListUI } from '../components/ImageListUI.js?v=261';
 
 export const UIInteractionsMixin = {
   _bindEvents() {
@@ -73,18 +73,10 @@ export const UIInteractionsMixin = {
     if (btnLockResetTimer) {
       btnLockResetTimer.addEventListener('click', () => {
         const roomData = this.rooms[this.activeRoom];
-        if (roomData) {
-          roomData.sessionStarted = false;
-          const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
-          if (activeSess) {
-            activeSess.sessionStartedAt = null;
-          }
-          if (roomData.session && this._resetSessionTimer) {
-            this._resetSessionTimer(roomData.session);
-          } else {
-            this._setStep(this.activeRoom, 1);
-            this._updateUIForRoom();
-          }
+        if (roomData && roomData.session) {
+          const lockOverlay = document.getElementById('lockOverlay');
+          if (lockOverlay) lockOverlay.style.display = 'none';
+          this._resetSessionTimer(roomData.session);
         }
       });
     }
