@@ -1,12 +1,12 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=269';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=269';
-import { LightboxComponent } from '../components/LightboxComponent.js?v=269';
-import { HeaderActions } from '../components/HeaderActions.js?v=269';
-import { CrossSellBanner } from '../components/CrossSellBanner.js?v=269';
-import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=269';
-import { QueueModalComponent } from '../components/QueueModalComponent.js?v=269';
-import { StepBannerComponent } from '../components/StepBannerComponent.js?v=269';
-import { ImageListUI } from '../components/ImageListUI.js?v=269';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=270';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=270';
+import { LightboxComponent } from '../components/LightboxComponent.js?v=270';
+import { HeaderActions } from '../components/HeaderActions.js?v=270';
+import { CrossSellBanner } from '../components/CrossSellBanner.js?v=270';
+import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=270';
+import { QueueModalComponent } from '../components/QueueModalComponent.js?v=270';
+import { StepBannerComponent } from '../components/StepBannerComponent.js?v=270';
+import { ImageListUI } from '../components/ImageListUI.js?v=270';
 
 export const UIDraftsMixin = {
   _loadDraftsFromStorage() {
