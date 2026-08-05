@@ -1,12 +1,12 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=271';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=271';
-import { LightboxComponent } from '../components/LightboxComponent.js?v=271';
-import { HeaderActions } from '../components/HeaderActions.js?v=271';
-import { CrossSellBanner } from '../components/CrossSellBanner.js?v=271';
-import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=271';
-import { QueueModalComponent } from '../components/QueueModalComponent.js?v=271';
-import { StepBannerComponent } from '../components/StepBannerComponent.js?v=271';
-import { ImageListUI } from '../components/ImageListUI.js?v=271';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=272';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=272';
+import { LightboxComponent } from '../components/LightboxComponent.js?v=272';
+import { HeaderActions } from '../components/HeaderActions.js?v=272';
+import { CrossSellBanner } from '../components/CrossSellBanner.js?v=272';
+import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=272';
+import { QueueModalComponent } from '../components/QueueModalComponent.js?v=272';
+import { StepBannerComponent } from '../components/StepBannerComponent.js?v=272';
+import { ImageListUI } from '../components/ImageListUI.js?v=272';
 
 export const UIStepsMixin = {
   _setStep(room, step, skipSync = false) {
@@ -199,7 +199,7 @@ export const UIStepsMixin = {
         const draftKey = (roomData && roomData.session) ? `${this.activeRoom}_${roomData.session}` : null;
         const currentDraft = (draftMap && draftKey && draftMap[draftKey]) ? draftMap[draftKey] : null;
   
-        if (currentDraft) {
+        if (currentDraft && !isStaffMode) {
         this.selectedTemplates = [...(currentDraft.selectedTemplates || [])];
         if (this.selectedTemplates && this.selectedTemplates.length > 0) {
           this.currentTemplate = this.selectedTemplates[0];
@@ -218,7 +218,7 @@ export const UIStepsMixin = {
           }
         }
       } else if (roomData && roomData.queue && roomData.session) {
-        // No draft exists yet: Load 100% of official Step 4 session data (submitted by User) into Staff draft
+        // Staff mode (or user without draft): ALWAYS copy 100% of official Step 4 session data (submitted by User) into Staff draft
         const activeSess = roomData.queue.find(s => s.id === roomData.session);
         if (activeSess) {
           if (activeSess.selectedTemplates && activeSess.selectedTemplates.length > 0) {
