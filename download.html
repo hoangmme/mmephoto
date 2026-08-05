@@ -311,15 +311,35 @@
                 const JSZip = window.JSZip;
                 const zip = new JSZip();
                 
-                for (let i = 0; i < data.images.length; i++) {
-                  const url = data.images[i];
-                  const ext = url.split('.').pop() || 'png';
-                  const filename = `LL_Photobooth_${session}_P${i+1}_${Date.now().toString().slice(-4)}.${ext}`;
+                const frames = data.frames || [];
+                const photos = data.photos || [];
+                let count = 0;
+                const total = (frames.length + photos.length) || data.images.length;
+
+                for (let i = 0; i < frames.length; i++) {
+                  const url = frames[i];
+                  const ext = url.split('.').pop().split('?')[0] || 'png';
+                  const filename = `LL_FRAME_${session}_P${i+1}.${ext}`;
                   const response = await fetch(url);
-                  if (!response.ok) throw new Error(`Lỗi tải ảnh #${i+1}`);
-                  const blob = await response.blob();
-                  zip.file(filename, blob);
-                  btnDownloadZip.innerText = `Đang nén file (${Math.round(((i + 1) / data.images.length) * 100)}%)...`;
+                  if (response.ok) {
+                    const blob = await response.blob();
+                    zip.file(filename, blob);
+                  }
+                  count++;
+                  btnDownloadZip.innerText = `Đang nén file (${Math.round((count / total) * 100)}%)...`;
+                }
+
+                for (let i = 0; i < photos.length; i++) {
+                  const url = photos[i];
+                  const ext = url.split('.').pop().split('?')[0] || 'jpg';
+                  const filename = `LL_PHOTO_${session}_${i+1}.${ext}`;
+                  const response = await fetch(url);
+                  if (response.ok) {
+                    const blob = await response.blob();
+                    zip.file(filename, blob);
+                  }
+                  count++;
+                  btnDownloadZip.innerText = `Đang nén file (${Math.round((count / total) * 100)}%)...`;
                 }
 
                 btnDownloadZip.innerText = 'Đang tạo file tải xuống...';

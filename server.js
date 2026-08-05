@@ -378,15 +378,23 @@ app.get('/api/download/:branch/:room/:session', (req, res) => {
     return res.status(404).json({ error: 'Session not found' });
   }
 
-  const files = fs.readdirSync(sessionDir)
-                  .filter(f => (f.endsWith('.jpg') || f.endsWith('.jpeg') || f.endsWith('.png') || f.endsWith('.webp')) && !f.endsWith('_thumb.webp'));
+  const allFiles = fs.readdirSync(sessionDir)
+                     .filter(f => (f.endsWith('.jpg') || f.endsWith('.jpeg') || f.endsWith('.png') || f.endsWith('.webp')) && !f.endsWith('_thumb.webp'));
                   
-  const images = files.map(f => `/uploads/${branch}/${room}/${session}/${f}`);
+  const frameFiles = allFiles.filter(f => f.startsWith('00_frame')).sort();
+  const photoFiles = allFiles.filter(f => !f.startsWith('00_frame')).sort();
+
+  const frames = frameFiles.map(f => `/uploads/${branch}/${room}/${session}/${f}`);
+  const photos = photoFiles.map(f => `/uploads/${branch}/${room}/${session}/${f}`);
+  // Combined list with frames FIRST
+  const images = [...frames, ...photos];
 
   res.json({
     success: true,
     session,
-    images
+    images,
+    frames,
+    photos
   });
 });
 
