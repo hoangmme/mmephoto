@@ -604,6 +604,7 @@ app.post('/api/finish-session/:branch/:room/:session', (req, res) => {
     if (remainingUnfinished.length > 0) {
       roomD.activeSessionId = remainingUnfinished[0].id;
       remainingUnfinished[0].step = 1;
+      remainingUnfinished[0].sessionStartedAt = null;
     } else {
       roomD.activeSessionId = null;
     }
