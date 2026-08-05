@@ -12,9 +12,11 @@ export class CanvasExporter {
     try {
       const exportCanvas = document.createElement('canvas');
       const currentIdx = appInstance.activeCanvasIndex;
-      const templatesToExport = appInstance.selectedTemplates && appInstance.selectedTemplates.length > 0 
+      const maxFrames = (appInstance.paperSize === 'A4') ? 1 : 2;
+      const rawTemplates = (appInstance.selectedTemplates && appInstance.selectedTemplates.length > 0)
         ? appInstance.selectedTemplates 
         : [appInstance.currentTemplate];
+      const templatesToExport = rawTemplates.slice(0, maxFrames);
 
       for (let i = 0; i < templatesToExport.length; i++) {
         appInstance.activeCanvasIndex = i;
@@ -63,9 +65,11 @@ export class CanvasExporter {
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: formatStr });
       const exportCanvas = document.createElement('canvas');
       const currentIdx = appInstance.activeCanvasIndex;
-      const templatesToExport = appInstance.selectedTemplates && appInstance.selectedTemplates.length > 0 
+      const maxFrames = (appInstance.paperSize === 'A4') ? 1 : 2;
+      const rawTemplates = (appInstance.selectedTemplates && appInstance.selectedTemplates.length > 0)
         ? appInstance.selectedTemplates 
         : [appInstance.currentTemplate];
+      const templatesToExport = rawTemplates.slice(0, maxFrames);
 
       for (let i = 0; i < templatesToExport.length; i++) {
         appInstance.activeCanvasIndex = i;
@@ -113,9 +117,11 @@ export class CanvasExporter {
 
     try {
       const exportCanvas = document.createElement('canvas');
-      const templatesToExport = appInstance.selectedTemplates && appInstance.selectedTemplates.length > 0 
+      const maxFrames = (appInstance.paperSize === 'A4') ? 1 : 2;
+      const rawTemplates = (appInstance.selectedTemplates && appInstance.selectedTemplates.length > 0)
         ? appInstance.selectedTemplates 
         : [appInstance.currentTemplate];
+      const templatesToExport = rawTemplates.slice(0, maxFrames);
 
       const origIdx = appInstance.activeCanvasIndex;
       for (let i = 0; i < templatesToExport.length; i++) {

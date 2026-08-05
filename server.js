@@ -508,7 +508,10 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), as
   
   fs.mkdirSync(sessionDir, { recursive: true });
   
-  const filename = `${Date.now()}_${Math.random().toString(36).substr(2, 6)}.png`;
+  let filename = `${Date.now()}_${Math.random().toString(36).substr(2, 6)}.png`;
+  if (req.file && req.file.originalname && req.file.originalname.startsWith('00_frame')) {
+    filename = req.file.originalname; // Preserve fixed frame names (00_frame_P1.png, 00_frame_P2.png) to overwrite on re-render
+  }
   const filepath = path.join(sessionDir, filename);
   fs.writeFileSync(filepath, req.file.buffer);
 
@@ -545,7 +548,7 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), as
     sessionObj.finished = false;
   }
 
-  if (!sessionObj.images.includes(imageUrl)) {
+  if (!filename.startsWith('00_frame') && !sessionObj.images.includes(imageUrl)) {
     sessionObj.images.push(imageUrl);
   }
   saveRoomState();

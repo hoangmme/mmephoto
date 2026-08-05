@@ -313,7 +313,8 @@
                 
                 for (let i = 0; i < data.images.length; i++) {
                   const url = data.images[i];
-                  const filename = url.split('/').pop();
+                  const ext = url.split('.').pop() || 'png';
+                  const filename = `LL_Photobooth_${session}_P${i+1}_${Date.now().toString().slice(-4)}.${ext}`;
                   const response = await fetch(url);
                   if (!response.ok) throw new Error(`Lỗi tải ảnh #${i+1}`);
                   const blob = await response.blob();
