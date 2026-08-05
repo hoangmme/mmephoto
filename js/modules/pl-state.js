@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=258';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=259';
 
 export const StateMixin = {
 _initSSE(branch) {
@@ -495,6 +495,11 @@ async _syncStateDirect(room) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      if (!res.ok) {
+        const text = await res.text();
+        console.warn(`Sync-state endpoint returned ${res.status}:`, text);
+        return null;
+      }
       const data = await res.json();
       if (data && data.sessionStartedAt && activeSess) {
         activeSess.sessionStartedAt = data.sessionStartedAt;

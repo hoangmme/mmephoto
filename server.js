@@ -743,8 +743,8 @@ app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) =>
   }
   
   if (slots && Array.isArray(slots) && slots.length > 0) {
-    const hasImages = slots.some(s => s.imageId);
-    const hadImages = sessionObj.slots && sessionObj.slots.some(s => s.imageId);
+    const hasImages = slots.some(s => s && s.imageId);
+    const hadImages = sessionObj.slots && sessionObj.slots.some(s => s && s.imageId);
     if (hasImages || !hadImages) {
       sessionObj.slots = slots;
     }
