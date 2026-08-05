@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=266';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=267';
 
 export const StateMixin = {
 _initSSE(branch) {
@@ -491,6 +491,9 @@ async _syncStateDirect(room) {
         payload.canvasesState = activeSess.canvasesState || [];
         payload.selectedImages = activeSess.selectedImages || [];
         payload.slots = activeSess.slots || [];
+        if (activeSess.frameImages) {
+          payload.frameImages = activeSess.frameImages;
+        }
         if (activeSess.sessionStartedAt) {
           payload.sessionStartedAt = activeSess.sessionStartedAt;
         }

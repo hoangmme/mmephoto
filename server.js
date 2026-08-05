@@ -199,18 +199,22 @@ function scanDiskSessions() {
           const sPath = path.join(rPath, s);
           if (!fs.statSync(sPath).isDirectory()) return;
           
-          const images = getAllImagesRecursive(sPath, `/uploads/${encodeURIComponent(b)}/${encodeURIComponent(r)}/${encodeURIComponent(s)}`);
+          const allFiles = getAllImagesRecursive(sPath, `/uploads/${encodeURIComponent(b)}/${encodeURIComponent(r)}/${encodeURIComponent(s)}`);
+          const images = allFiles.filter(img => !img.includes('/00_frame'));
+          const frameImages = allFiles.filter(img => img.includes('/00_frame'));
           
           let sessObj = roomState[branchKey][roomKey].sessions.find(x => x.id.toLowerCase() === s.toLowerCase());
           if (!sessObj) {
             sessObj = {
               id: s,
               images: images,
+              frameImages: frameImages,
               finished: true,
               step: 4
             };
             roomState[branchKey][roomKey].sessions.push(sessObj);
           } else {
+            sessObj.frameImages = frameImages;
             if (!sessObj.images || sessObj.images.length === 0) {
               sessObj.images = images;
             }
@@ -223,9 +227,10 @@ function scanDiskSessions() {
   }
 }
 scanDiskSessions();
+autoCleanOldSessions(48);
 
 // Auto cleanup session files older than maxAgeHours (default 24 hours)
-function autoCleanOldSessions(maxAgeHours = 24) {
+function autoCleanOldSessions(maxAgeHours = 48) {
   if (!fs.existsSync(UPLOADS_DIR)) return 0;
   let deletedCount = 0;
   const now = Date.now();
@@ -278,7 +283,7 @@ function autoCleanOldSessions(maxAgeHours = 24) {
 
 // Run auto cleanup every 6 hours automatically
 setInterval(() => {
-  autoCleanOldSessions(24);
+  autoCleanOldSessions(48);
 }, 6 * 60 * 60 * 1000);
 
 
@@ -611,8 +616,15 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), as
     sessionObj.finished = false;
   }
 
-  if (!filename.startsWith('00_frame') && !sessionObj.images.includes(imageUrl)) {
-    sessionObj.images.push(imageUrl);
+  if (filename.startsWith('00_frame')) {
+    if (!sessionObj.frameImages) sessionObj.frameImages = [];
+    if (!sessionObj.frameImages.includes(imageUrl)) {
+      sessionObj.frameImages.push(imageUrl);
+    }
+  } else {
+    if (!sessionObj.images.includes(imageUrl)) {
+      sessionObj.images.push(imageUrl);
+    }
   }
   saveRoomState();
   
@@ -974,7 +986,7 @@ app.listen(port, () => {
 
 // Admin API to clean old session files manually (default older than 24h, or maxAgeHours param)
 app.post('/api/admin/clean-old-files', (req, res) => {
-  const hours = parseInt(req.body.hours) || 24;
+  const hours = parseInt(req.body.hours) || 48;
   const deleted = autoCleanOldSessions(hours);
   res.json({ success: true, deletedSessions: deleted, message: `Successfully deleted sessions older than ${hours} hours` });
 });
