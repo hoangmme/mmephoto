@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=268';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=269';
 
 export const StateMixin = {
 _initSSE(branch) {
@@ -472,8 +472,9 @@ async _syncStateDirect(room) {
         if (this.currentTemplate) activeSess.currentTemplate = this.currentTemplate;
         if (this.selectedTemplates && this.selectedTemplates.length > 0) activeSess.selectedTemplates = this.selectedTemplates;
         if (this.paperSize) activeSess.paperSize = this.paperSize;
-        if (this.slots && this.slots.length > 0) activeSess.slots = JSON.parse(JSON.stringify(this.slots));
-        if (this.canvasesState && this.canvasesState.length > 0) activeSess.canvasesState = JSON.parse(JSON.stringify(this.canvasesState));
+        // Always sync slots and canvasesState (even if empty) to prevent server storing stale data
+        activeSess.slots = JSON.parse(JSON.stringify(this.slots || []));
+        activeSess.canvasesState = JSON.parse(JSON.stringify(this.canvasesState || []));
         if (this.selectedPhotos) activeSess.selectedImages = Array.from(this.selectedPhotos);
       }
     }

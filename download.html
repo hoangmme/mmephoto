@@ -258,16 +258,35 @@
 
               try {
                 const files = [];
-                for (let i = 0; i < data.images.length; i++) {
-                  const url = data.images[i];
+                const shareFrames = data.frames || [];
+                const sharePhotos = data.photos || [];
+                const total = shareFrames.length + sharePhotos.length;
+                let count = 0;
+
+                for (let i = 0; i < shareFrames.length; i++) {
+                  const url = shareFrames[i];
+                  const response = await fetch(url);
+                  if (!response.ok) throw new Error(`Lỗi tải frame #${i+1}`);
+                  const blob = await response.blob();
+                  const mimeType = blob.type || 'image/png';
+                  const ext = mimeType.includes('png') ? 'png' : 'jpg';
+                  const file = new File([blob], `LL_FRAME_${session}_P${i+1}.${ext}`, { type: mimeType });
+                  files.push(file);
+                  count++;
+                  btnDownloadAll.innerText = `Đang chuẩn bị ảnh (${Math.round((count / total) * 100)}%)...`;
+                }
+
+                for (let i = 0; i < sharePhotos.length; i++) {
+                  const url = sharePhotos[i];
                   const response = await fetch(url);
                   if (!response.ok) throw new Error(`Lỗi tải ảnh #${i+1}`);
                   const blob = await response.blob();
                   const mimeType = blob.type || 'image/jpeg';
                   const ext = mimeType.includes('png') ? 'png' : (mimeType.includes('webp') ? 'webp' : 'jpg');
-                  const file = new File([blob], `LL_Photobooth_${session}_${i+1}.${ext}`, { type: mimeType });
+                  const file = new File([blob], `LL_PHOTO_${session}_${i+1}.${ext}`, { type: mimeType });
                   files.push(file);
-                  btnDownloadAll.innerText = `Đang chuẩn bị ảnh (${Math.round(((i + 1) / data.images.length) * 100)}%)...`;
+                  count++;
+                  btnDownloadAll.innerText = `Đang chuẩn bị ảnh (${Math.round((count / total) * 100)}%)...`;
                 }
 
                 if (navigator.share && navigator.canShare && navigator.canShare({ files })) {

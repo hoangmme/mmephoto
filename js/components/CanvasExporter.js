@@ -146,7 +146,15 @@ export class CanvasExporter {
           });
         }
       }
+      // Restore original canvas state after export (critical for A5 dual-frame mode)
       appInstance.activeCanvasIndex = origIdx;
+      if (templatesToExport.length > 1) {
+        appInstance.currentTemplate = templatesToExport[origIdx];
+        if (appInstance.canvasesState && appInstance.canvasesState[origIdx]) {
+          appInstance.slots = appInstance.canvasesState[origIdx].slots;
+        }
+        await appInstance._loadTemplateImages();
+      }
     } catch (err) {
       console.error('uploadFinalFrame error:', err);
     }

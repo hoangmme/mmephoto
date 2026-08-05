@@ -1,12 +1,12 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=268';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=268';
-import { LightboxComponent } from '../components/LightboxComponent.js?v=268';
-import { HeaderActions } from '../components/HeaderActions.js?v=268';
-import { CrossSellBanner } from '../components/CrossSellBanner.js?v=268';
-import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=268';
-import { QueueModalComponent } from '../components/QueueModalComponent.js?v=268';
-import { StepBannerComponent } from '../components/StepBannerComponent.js?v=268';
-import { ImageListUI } from '../components/ImageListUI.js?v=268';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=269';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=269';
+import { LightboxComponent } from '../components/LightboxComponent.js?v=269';
+import { HeaderActions } from '../components/HeaderActions.js?v=269';
+import { CrossSellBanner } from '../components/CrossSellBanner.js?v=269';
+import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=269';
+import { QueueModalComponent } from '../components/QueueModalComponent.js?v=269';
+import { StepBannerComponent } from '../components/StepBannerComponent.js?v=269';
+import { ImageListUI } from '../components/ImageListUI.js?v=269';
 
 export const UIInteractionsMixin = {
   _bindEvents() {
@@ -90,7 +90,7 @@ export const UIInteractionsMixin = {
       btnStepPrev.addEventListener('click', () => {
         if (!this.activeRoom || !this.rooms[this.activeRoom]) return;
         const cur = this.rooms[this.activeRoom].step || 1;
-        if (cur === 4 && !this._state.isStaffMode()) return; // Locked at step 4
+        if (cur === 4 && !isStaffMode) return; // Locked at step 4
         if (cur > 1) {
           this._setStep(this.activeRoom, cur - 1);
         }
@@ -168,6 +168,19 @@ export const UIInteractionsMixin = {
             roomData.step = 4;
             this._staffEditingOverride = false; // Staff finishes editing, commit changes to official session component
             this._commitDraftToOfficialSession(this.activeRoom);
+          }
+          // Refresh local canvasesState/slots from activeSess AFTER commitDraft so uploadFinalFrame renders the correct data
+          if (roomData && roomData.queue && roomData.session) {
+            const activeSess = roomData.queue.find(s => s.id === roomData.session);
+            if (activeSess) {
+              if (activeSess.canvasesState && activeSess.canvasesState.length > 0) {
+                this.canvasesState = JSON.parse(JSON.stringify(activeSess.canvasesState));
+              }
+              if (activeSess.selectedTemplates && activeSess.selectedTemplates.length > 0) {
+                this.selectedTemplates = [...activeSess.selectedTemplates];
+              }
+              if (activeSess.paperSize) this.paperSize = activeSess.paperSize;
+            }
           }
           if (this._syncStateDirect) {
             await this._syncStateDirect(this.activeRoom);
