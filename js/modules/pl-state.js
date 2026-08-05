@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=264';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=265';
 
 export const StateMixin = {
 _initSSE(branch) {
@@ -547,22 +547,9 @@ _startStepTimer(room, step) {
 
     const activeSess = roomData.queue ? roomData.queue.find(s => s.id === roomData.session) : null;
     const updateTimeLeft = () => {
-      let effectiveStart = null;
-      if (roomData.lastImageTime) {
-        effectiveStart = roomData.lastImageTime + 30000;
-      } else if (activeSess && activeSess.sessionStartedAt) {
-        effectiveStart = activeSess.sessionStartedAt + 30000;
-      }
-
-      if (effectiveStart) {
-        if (Date.now() < effectiveStart) {
-          // Trong vòng 30s kể từ khi có ảnh mới tải lên, giữ nguyên 7:00 (chưa đếm giây)
-          roomData.timeLeft = duration;
-        } else {
-          // Đã trôi qua 30s không có ảnh mới -> bắt đầu đếm lùi giây từ 07:00
-          const elapsed = Math.floor((Date.now() - effectiveStart) / 1000);
-          roomData.timeLeft = Math.max(0, duration - elapsed);
-        }
+      if (activeSess && activeSess.sessionStartedAt) {
+        const elapsed = Math.floor((Date.now() - activeSess.sessionStartedAt) / 1000);
+        roomData.timeLeft = Math.max(0, duration - elapsed);
       } else {
         roomData.timeLeft = duration;
       }
