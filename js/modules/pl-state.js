@@ -1,4 +1,4 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=263';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=264';
 
 export const StateMixin = {
 _initSSE(branch) {
@@ -357,50 +357,48 @@ _updateActiveSession(room, onlyBadge = false) {
       if (!onlyBadge && active) {
         if (this.activeRoom === room) {
           // Staff editing override: when Staff is editing steps 1-3, do NOT load template/slots from active session
-          const blockOverwrite = isStaffMode && this._staffEditingOverride;
           const isUserStep1 = !isStaffMode && (roomData.step || 1) === 1;
-          
-          if (blockOverwrite || isUserStep1) {
-            // Staff editing or User at Step 1: preserve local state completely
-          } else {
-            if (active.currentTemplate && ALL_TEMPLATES[active.currentTemplate]) {
-              this.currentTemplate = active.currentTemplate;
-            } else if (this.currentTemplate && ALL_TEMPLATES[this.currentTemplate]) {
-              active.currentTemplate = this.currentTemplate;
-            } else {
-              this.currentTemplate = Object.keys(ALL_TEMPLATES)[0];
-              active.currentTemplate = this.currentTemplate;
-            }
-
-            if (active.selectedTemplates && active.selectedTemplates.length > 0) {
-              this.selectedTemplates = active.selectedTemplates;
-            }
-
-            if (active.paperSize) {
-              this.paperSize = active.paperSize;
-            }
-
-            if (active.canvasesState && active.canvasesState.length > 0) {
-              this.canvasesState = JSON.parse(JSON.stringify(active.canvasesState));
-            } else {
-              this.canvasesState = [];
-            }
-          }
+          const hasLocalSlots = this.slots && this.slots.length > 0 && this.slots.some(s => s && s.imageId);
 
           if (isStaffMode) {
-            if (blockOverwrite) {
-              // Staff editing: preserve ALL local data, do NOT load from active session
-            } else {
-              // Staff at Step 4 or first load: load data from active session
-              const activeIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
-              if (this.canvasesState && this.canvasesState[activeIdx]) {
-                this.slots = JSON.parse(JSON.stringify(this.canvasesState[activeIdx].slots || []));
-              } else if (active.slots && active.slots.length > 0) {
+            // Staff Mode: If local slots are empty or Staff navigated back to edit steps, load customer session data
+            if (!hasLocalSlots && active) {
+              if (active.currentTemplate && ALL_TEMPLATES[active.currentTemplate]) {
+                this.currentTemplate = active.currentTemplate;
+              }
+              if (active.selectedTemplates && active.selectedTemplates.length > 0) {
+                this.selectedTemplates = active.selectedTemplates;
+              }
+              if (active.paperSize) {
+                this.paperSize = active.paperSize;
+              }
+              if (active.canvasesState && active.canvasesState.length > 0) {
+                this.canvasesState = JSON.parse(JSON.stringify(active.canvasesState));
+              }
+              if (active.slots && active.slots.length > 0) {
                 this.slots = JSON.parse(JSON.stringify(active.slots));
+              } else {
+                const activeIdx = (this.activeCanvasIndex !== undefined && this.activeCanvasIndex !== null) ? this.activeCanvasIndex : 0;
+                if (this.canvasesState && this.canvasesState[activeIdx] && this.canvasesState[activeIdx].slots) {
+                  this.slots = JSON.parse(JSON.stringify(this.canvasesState[activeIdx].slots));
+                }
               }
               if (active.selectedImages) {
                 this.selectedPhotos = new Set(active.selectedImages);
               }
+            }
+          } else if (!isUserStep1) {
+            if (active.currentTemplate && ALL_TEMPLATES[active.currentTemplate]) {
+              this.currentTemplate = active.currentTemplate;
+            }
+            if (active.selectedTemplates && active.selectedTemplates.length > 0) {
+              this.selectedTemplates = active.selectedTemplates;
+            }
+            if (active.paperSize) {
+              this.paperSize = active.paperSize;
+            }
+            if (active.canvasesState && active.canvasesState.length > 0) {
+              this.canvasesState = JSON.parse(JSON.stringify(active.canvasesState));
             }
           } else {
             // Màn Khách: Chỉ nạp slots từ Server nếu local hoàn toàn rỗng hoặc chưa chọn ảnh nào
