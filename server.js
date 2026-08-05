@@ -510,7 +510,7 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), as
   
   let filename = '';
   if (req.file && req.file.originalname) {
-    # Preserve original filename (e.g. IMG_0001.jpg or 00_frame_P1.png) to prevent duplicate uploads
+    // Preserve original filename (e.g. IMG_0001.jpg or 00_frame_P1.png) to prevent duplicate uploads
     filename = path.basename(req.file.originalname).replace(/[^a-zA-Z0-9_\-\.]/g, '_');
   }
   if (!filename || filename === '_') {
