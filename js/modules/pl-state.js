@@ -500,7 +500,7 @@ async _syncStateDirect(room) {
         if (activeSess.frameImages) {
           payload.frameImages = activeSess.frameImages;
         }
-        if (activeSess.sessionStartedAt) {
+        if (activeSess.sessionStartedAt !== undefined) {
           payload.sessionStartedAt = activeSess.sessionStartedAt;
         }
       }
