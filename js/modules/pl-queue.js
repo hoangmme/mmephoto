@@ -126,8 +126,8 @@ export const QueueMixin = {
     if (!this.activeRoom || !this.branch) return;
     try {
       const res = await fetch(`/api/set-active-session/${encodeURIComponent(this.branch)}/${encodeURIComponent(this.activeRoom)}/${encodeURIComponent(sessionId)}`, { method: 'POST' });
-      if (res.ok) {
-        window.location.reload();
+      if (res.ok && this._renderQueueModal) {
+        this._renderQueueModal();
       }
     } catch (err) {
       console.error('Failed to set active session:', err);
@@ -162,8 +162,8 @@ export const QueueMixin = {
 
     try {
       const res = await fetch(`/api/reset-session-timer/${encodeURIComponent(this.branch)}/${encodeURIComponent(this.activeRoom)}/${encodeURIComponent(sessionId)}`, { method: 'POST' });
-      if (res.ok) {
-        window.location.reload();
+      if (res.ok && this._renderQueueModal) {
+        this._renderQueueModal();
       }
     } catch (err) {
       console.error('Failed to reset session timer:', err);

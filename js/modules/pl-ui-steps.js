@@ -69,7 +69,8 @@ export const UIStepsMixin = {
 
     const startOverlay = document.getElementById('startSessionOverlay');
     if (startOverlay) {
-      if (!isStaffMode && currentRoomD && currentRoomD.session && !isSessionStarted && step !== 4) {
+      const currentStep = currentRoomD ? (currentRoomD.step || 1) : 1;
+      if (!isStaffMode && currentRoomD && currentRoomD.session && !isSessionStarted && currentStep !== 4) {
         this.sessionStarted = false;
         if (currentRoomD) currentRoomD.sessionStarted = false;
         startOverlay.classList.remove('dismissed');
