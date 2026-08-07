@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MME Slot & Frame Visual Calibration Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(20, 26, 42, 0.75);
+      --border: rgba(255, 255, 255, 0.12);
+      --accent: #38bdf8;
+      --accent-pink: #f43f5e;
+      --accent-purple: #a855f7;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    header {
+      height: 60px;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .brand span { color: var(--accent); }
+    .controls-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    select, button, input {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    select:focus, button:hover, input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+    button.btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+      color: white;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    button.btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    .main-layout {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .canvas-viewport {
+      flex: 1;
+      background: #04060a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: auto;
+      padding: 40px;
+    }
+    canvas {
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      border-radius: 4px;
+      background: #ffffff;
+      cursor: crosshair;
+    }
+    .sidebar {
+      width: 420px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .slot-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .slot-card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      transition: all 0.2s;
+    }
+    .slot-card.active {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.1);
+    }
+    .slot-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    .slot-card-header span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-index {
+      background: var(--accent);
+      color: #000;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .grid-2x2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .field-group label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .field-group input {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      padding: 6px 10px;
+      width: 100%;
+    }
+    .slot-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .json-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+    .json-box {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 800px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    textarea {
+      flex: 1;
+      min-height: 400px;
+      background: #020617;
+      color: #38bdf8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      padding: 16px;
+      border: none;
+      outline: none;
+      resize: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#38bdf8" stroke-width="2"/><path d="M12 6v12M6 12h12" stroke="#f43f5e" stroke-width="2"/></svg>
+      MME Slot Editor <span>Visual Calibration</span>
+    </div>
+    <div class="controls-top">
+      <label>Template:</label>
+      <select id="selTemplate"></select>
+      <button id="btnAddSlot" class="btn-sm">+ Thêm Slot Mới</button>
+      <button id="btnExportJSON" class="btn-primary">📋 Xuất & Copy JSON Code</button>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <div class="canvas-viewport" id="viewport">
+      <canvas id="editorCanvas"></canvas>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <span>Danh sách Khung & Slots (Draw Order Top→Down)</span>
+      </div>
+      <div class="slot-list" id="slotList"></div>
+    </div>
+  </div>
+
+  <div class="json-modal" id="jsonModal">
+    <div class="json-box">
+      <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+        <h3>Mã Cấu Hình JSON Cho pl-globals.js</h3>
+        <button id="btnCloseModal" class="btn-sm">Đóng</button>
+      </div>
+      <textarea id="jsonOutput" readonly></textarea>
+      <div style="padding: 16px; text-align: right;">
+        <button id="btnCopyJSON" class="btn-primary">Sao Chép Vào Clipboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=279';
+    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=279';
+
+    let currentTmplId = 'a5-1';
+    let currentSlots = [];
+    let selectedSlotIdx = 0;
+    let isDragging = false;
+    let dragMode = 'move'; // 'move' or 'resize'
+    let dragStartPos = { x: 0, y: 0 };
+    let initialSlotPos = { cx: 0, cy: 0, w: 0, h: 0 };
+    let frameImgObj = null;
+
+    const selTemplate = document.getElementById('selTemplate');
+    const slotList = document.getElementById('slotList');
+    const canvas = document.getElementById('editorCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Init dropdown
+    Object.keys(ALL_TEMPLATES).forEach(id => {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = `${ALL_TEMPLATES[id].name} (${id})`;
+      selTemplate.appendChild(opt);
+    });
+
+    async function loadTemplate(tmplId) {
+      currentTmplId = tmplId;
+      const tmpl = ALL_TEMPLATES[tmplId];
+      currentSlots = JSON.parse(JSON.stringify(tmpl.slots || []));
+      selectedSlotIdx = 0;
+
+      frameImgObj = new Image();
+      frameImgObj.src = tmpl.frame_url;
+      await new Promise(r => frameImgObj.onload = r);
+
+      renderSidebar();
+      renderCanvas();
+    }
+
+    function renderSidebar() {
+      slotList.innerHTML = '';
+      currentSlots.forEach((slot, idx) => {
+        const card = document.createElement('div');
+        card.className = `slot-card ${idx === selectedSlotIdx ? 'active' : ''}`;
+        card.onclick = (e) => {
+          if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+            selectedSlotIdx = idx;
+            renderSidebar();
+            renderCanvas();
+          }
+        };
+
+        const hasClip = !!slot.clipPath;
+
+        card.innerHTML = `
+          <div class="slot-card-header">
+            <span><span class="badge-index">${idx + 1}</span> ${slot.id || ('Slot ' + (idx + 1))}</span>
+            <span style="font-size: 11px; color: ${hasClip ? '#38bdf8' : '#94a3b8'};">${hasClip ? 'Heart Path' : 'Rect Slot'}</span>
+          </div>
+          <div class="grid-2x2">
+            <div class="field-group"><label>CX (X Center)</label><input type="number" value="${slot.cx}" data-key="cx" data-idx="${idx}"></div>
+            <div class="field-group"><label>CY (Y Center)</label><input type="number" value="${slot.cy}" data-key="cy" data-idx="${idx}"></div>
+            <div class="field-group"><label>Width (W)</label><input type="number" value="${slot.w}" data-key="w" data-idx="${idx}"></div>
+            <div class="field-group"><label>Height (H)</label><input type="number" value="${slot.h}" data-key="h" data-idx="${idx}"></div>
+          </div>
+          <div class="slot-actions">
+            <button class="btn-sm btn-up" data-idx="${idx}">▲ Lên (Vẽ Trước)</button>
+            <button class="btn-sm btn-down" data-idx="${idx}">▼ Xuống (Vẽ Sau)</button>
+            <button class="btn-sm btn-del" data-idx="${idx}" style="color: #f43f5e;">Xóa</button>
+          </div>
+        `;
+        slotList.appendChild(card);
+      });
+
+      // Bind inputs
+      slotList.querySelectorAll('input').forEach(inp => {
+        inp.oninput = (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          const key = e.target.dataset.key;
+          currentSlots[idx][key] = floatVal(e.target.value);
+          renderCanvas();
+        };
+      });
+
+      // Bind order buttons
+      slotList.querySelectorAll('.btn-up').forEach(btn => {
+        btn.onclick = () => {
+          const idx = parseInt(btn.dataset.idx);
+          if (idx > 0) {
+            const temp = currentSlots[idx];
+            currentSlots[idx] = currentSlots[idx - 1];
+            currentSlots[idx - 1] = temp;
+            selectedSlotIdx = idx - 1;
+            renderSidebar();
+            renderCanvas();
+          }
+        };
+      });
+
+      slotList.querySelectorAll('.btn-down').forEach(btn => {
+        btn.onclick = () => {
+          const idx = parseInt(btn.dataset.idx);
+          if (idx < currentSlots.length - 1) {
+            const temp = currentSlots[idx];
+            currentSlots[idx] = currentSlots[idx + 1];
+            currentSlots[idx + 1] = temp;
+            selectedSlotIdx = idx + 1;
+            renderSidebar();
+            renderCanvas();
+          }
+        };
+      });
+
+      slotList.querySelectorAll('.btn-del').forEach(btn => {
+        btn.onclick = () => {
+          const idx = parseInt(btn.dataset.idx);
+          currentSlots.splice(idx, 1);
+          selectedSlotIdx = Math.max(0, idx - 1);
+          renderSidebar();
+          renderCanvas();
+        };
+      });
+    }
+
+    function floatVal(v) { return parseFloat(v) || 0; }
+
+    function renderCanvas() {
+      const tmpl = ALL_TEMPLATES[currentTmplId];
+      if (!tmpl) return;
+
+      const overrideTmpl = {
+        ...tmpl,
+        slots: currentSlots
+      };
+
+      const state = {
+        overrideTemplate: overrideTmpl,
+        currentTemplate: currentTmplId,
+        slots: [],
+        selectedSlotIndex: selectedSlotIdx,
+        frameImageObj: frameImgObj,
+        isPreview: true,
+        currentStep: 3,
+        targetWidth: tmpl.canvas_width
+      };
+
+      CanvasRenderer.drawToCanvas(canvas, state);
+
+      // Draw custom interactive handles over canvas
+      const scale = canvas.width / tmpl.canvas_width;
+      ctx.save();
+      ctx.scale(scale, scale);
+
+      currentSlots.forEach((slot, idx) => {
+        const isSel = (idx === selectedSlotIdx);
+        ctx.save();
+        ctx.translate(slot.cx, slot.cy);
+        if (slot.rotation) ctx.rotate(slot.rotation * Math.PI / 180);
+
+        ctx.strokeStyle = isSel ? '#0284c7' : 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = isSel ? 6 : 2;
+        if (isSel) {
+          ctx.shadowColor = 'rgba(2, 132, 199, 0.8)';
+          ctx.shadowBlur = 12;
+        }
+        ctx.strokeRect(-slot.w / 2, -slot.h / 2, slot.w, slot.h);
+        ctx.shadowBlur = 0;
+
+        // Label
+        ctx.fillStyle = isSel ? '#0284c7' : 'rgba(0,0,0,0.7)';
+        ctx.fillRect(-slot.w / 2, -slot.h / 2 - 28, 90, 24);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '600 14px Inter, sans-serif';
+        ctx.fillText(`Slot ${idx + 1}`, -slot.w / 2 + 8, -slot.h / 2 - 12);
+
+        ctx.restore();
+      });
+
+      ctx.restore();
+    }
+
+    // Interactive Dragging on Canvas
+    canvas.onmousedown = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scale = ALL_TEMPLATES[currentTmplId].canvas_width / rect.width;
+      const mouseX = (e.clientX - rect.left) * scale;
+      const mouseY = (e.clientY - rect.top) * scale;
+
+      // Find clicked slot
+      for (let i = currentSlots.length - 1; i >= 0; i--) {
+        const s = currentSlots[i];
+        if (Math.abs(mouseX - s.cx) <= s.w / 2 && Math.abs(mouseY - s.cy) <= s.h / 2) {
+          selectedSlotIdx = i;
+          isDragging = true;
+          dragStartPos = { x: mouseX, y: mouseY };
+          initialSlotPos = { ...s };
+          renderSidebar();
+          renderCanvas();
+          break;
+        }
+      }
+    };
+
+    window.onmousemove = (e) => {
+      if (!isDragging || selectedSlotIdx < 0) return;
+      const rect = canvas.getBoundingClientRect();
+      const scale = ALL_TEMPLATES[currentTmplId].canvas_width / rect.width;
+      const mouseX = (e.clientX - rect.left) * scale;
+      const mouseY = (e.clientY - rect.top) * scale;
+
+      const dx = Math.round(mouseX - dragStartPos.x);
+      const dy = Math.round(mouseY - dragStartPos.y);
+
+      currentSlots[selectedSlotIdx].cx = initialSlotPos.cx + dx;
+      currentSlots[selectedSlotIdx].cy = initialSlotPos.cy + dy;
+
+      renderSidebar();
+      renderCanvas();
+    };
+
+    window.onmouseup = () => { isDragging = false; };
+
+    selTemplate.onchange = () => loadTemplate(selTemplate.value);
+
+    document.getElementById('btnAddSlot').onclick = () => {
+      const tmpl = ALL_TEMPLATES[currentTmplId];
+      currentSlots.push({
+        id: `slot_${currentTmplId}_${currentSlots.length}`,
+        color: '#ff3131',
+        cx: tmpl.canvas_width / 2,
+        cy: tmpl.canvas_height / 2,
+        w: 400,
+        h: 400,
+        rotation: 0
+      });
+      selectedSlotIdx = currentSlots.length - 1;
+      renderSidebar();
+      renderCanvas();
+    };
+
+    const modal = document.getElementById('jsonModal');
+    const jsonOutput = document.getElementById('jsonOutput');
+
+    document.getElementById('btnExportJSON').onclick = () => {
+      const output = JSON.stringify(currentSlots, null, 12);
+      jsonOutput.value = `"slots": ${output}`;
+      modal.style.display = 'flex';
+    };
+
+    document.getElementById('btnCloseModal').onclick = () => { modal.style.display = 'none'; };
+    document.getElementById('btnCopyJSON').onclick = () => {
+      jsonOutput.select();
+      navigator.clipboard.writeText(jsonOutput.value);
+      alert('Đã sao chép mã cấu hình JSON vào Clipboard thành công!');
+    };
+
+    loadTemplate('a5-1');
+  </script>
+</body>
+</html>
