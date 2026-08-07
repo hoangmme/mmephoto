@@ -44,7 +44,8 @@ export class RoomTabsComponent {
       }
 
       const roomD = roomsObj[roomKey];
-      const isReadyStep4 = roomD && roomD.step === 4 && !roomD.finished;
+      const activeSess = roomD && roomD.queue ? roomD.queue.find(s => s.id === roomD.session) : null;
+      const isReadyStep4 = roomD && (roomD.step === 4 || roomD.remoteStep === 4 || (activeSess && activeSess.step === 4)) && !roomD.finished;
       if ((roomD.hasNew || isReadyStep4) && roomKey !== activeRoomKey) {
         const dot = document.createElement('div');
         dot.style.position = 'absolute';

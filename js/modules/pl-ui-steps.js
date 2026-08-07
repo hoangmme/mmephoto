@@ -191,6 +191,10 @@ export const UIStepsMixin = {
           }
         }
       }
+
+      // Preload all slot images into _imageCache for canvas rendering
+      this._preloadSlotImagesForStep4();
+
       this._updateHeaderActions();
     } else {
         // Steps 1, 2, 3: Working Draft per room (Staff or User)
@@ -630,6 +634,27 @@ export const UIStepsMixin = {
 
     // Don't auto-select first slot to avoid accidental overwrites
     this.selectedSlotIndex = -1;
+  },
+
+
+  _preloadSlotImagesForStep4() {
+    if (!this.canvasesState) return;
+    if (!this._imageCache) this._imageCache = {};
+    const roomImages = (this.rooms && this.activeRoom && this.rooms[this.activeRoom])
+      ? this.rooms[this.activeRoom].images : (this.images || []);
+    if (!roomImages || roomImages.length === 0) return;
+
+    this.canvasesState.forEach(cState => {
+      if (!cState || !cState.slots) return;
+      cState.slots.forEach(slot => {
+        if (slot && slot.imageId && !this._imageCache[slot.imageId]) {
+          const imgObj = roomImages.find(i => i.id === slot.imageId);
+          if (imgObj && imgObj.url) {
+            this._preloadImage(slot.imageId, imgObj.url).then(() => this._renderCanvas());
+          }
+        }
+      });
+    });
   },
 
 

@@ -184,11 +184,11 @@ export const UIInteractionsMixin = {
           }
           if (this._syncStateDirect) {
             await this._syncStateDirect(this.activeRoom);
-          } else {
-            this._syncState(this.activeRoom);
           }
-          await this._uploadFinalFrame();
           this._setStep(this.activeRoom, 4, false);
+
+          // Upload rendered frame in background (non-blocking) for faster UI transition
+          this._uploadFinalFrame().catch(err => console.error('Background frame upload error:', err));
         }
       });
     }
