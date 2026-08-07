@@ -209,6 +209,8 @@
     .slot-actions {
       display: flex;
       gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
     }
     .btn-sm {
       padding: 4px 8px;
@@ -280,9 +282,9 @@
           <input type="checkbox" id="chkShowMask" checked> Hiển thị ClipPath Mask
         </label>
         <label style="display: flex; align-items: center; gap: 6px;">
-          <input type="checkbox" id="chkDemoPhotos" checked> Ảnh Test
+          <input type="checkbox" id="chkDemoPhotos"> Nạp Ảnh Demo Tất Cả
         </label>
-        <button id="btnUploadCustomTest" class="btn-sm">📁 Nạp Ảnh Mới Từ Máy</button>
+        <button id="btnUploadCustomTest" class="btn-sm">📁 Nạp Ảnh Tải Từ Máy</button>
         <input type="file" id="fileInputTest" accept="image/*" style="display: none;">
       </div>
 
@@ -313,8 +315,8 @@
   </div>
 
   <script type="module">
-    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=283';
-    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=283';
+    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=284';
+    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=284';
 
     let currentTmplId = 'a5-1';
     let currentSlots = [];
@@ -325,6 +327,9 @@
     let frameImgObj = null;
     let demoImageMap = {};
     let customUploadedImg = null;
+    let slotPhotoTickedState = {};
+
+    const UNSPLASH_TEST_URL = 'https://images.unsplash.com/photo-1631947430066-48c30d57b943?q=80&w=1016&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
     const selTemplate = document.getElementById('selTemplate');
     const slotList = document.getElementById('slotList');
@@ -375,6 +380,15 @@
       'demo_3': demoImg3
     };
 
+    // Load Unsplash test image
+    const unsplashImg = new Image();
+    unsplashImg.crossOrigin = 'anonymous';
+    unsplashImg.src = UNSPLASH_TEST_URL;
+    unsplashImg.onload = () => {
+      demoImageMap['unsplash_test'] = unsplashImg;
+      renderCanvas();
+    };
+
     btnUploadCustomTest.onclick = () => fileInputTest.click();
     fileInputTest.onchange = (e) => {
       if (e.target.files && e.target.files[0]) {
@@ -384,7 +398,6 @@
           img.onload = () => {
             customUploadedImg = img;
             demoImageMap['custom_test'] = customUploadedImg;
-            chkDemoPhotos.checked = true;
             renderCanvas();
           };
           img.src = evt.target.result;
@@ -398,6 +411,7 @@
       const tmpl = ALL_TEMPLATES[tmplId];
       currentSlots = JSON.parse(JSON.stringify(tmpl.slots || []));
       selectedSlotIdx = 0;
+      slotPhotoTickedState = {};
 
       frameImgObj = new Image();
       frameImgObj.src = tmpl.frame_url;
@@ -413,7 +427,7 @@
         const card = document.createElement('div');
         card.className = `slot-card ${idx === selectedSlotIdx ? 'active' : ''}`;
         card.onclick = (e) => {
-          if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+          if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && !e.target.classList.contains('chk-slot-photo')) {
             selectedSlotIdx = idx;
             renderSidebar();
             renderCanvas();
@@ -421,10 +435,12 @@
         };
 
         const hasClip = !!slot.clipPath;
+        const slotKey = slot.id || ('slot_' + idx);
+        const isTicked = !!slotPhotoTickedState[slotKey];
 
         card.innerHTML = `
           <div class="slot-card-header">
-            <span><span class="badge-index">${idx + 1}</span> ${slot.id || ('Slot ' + (idx + 1))}</span>
+            <span><span class="badge-index">${idx + 1}</span> ${slotKey}</span>
             <span style="font-size: 11px; color: ${hasClip ? '#38bdf8' : '#94a3b8'};">${hasClip ? '★ ClipPath Mask' : 'Rect Slot'}</span>
           </div>
           <div class="grid-2x2">
@@ -432,6 +448,12 @@
             <div class="field-group"><label>CY (Y Center)</label><input type="number" value="${slot.cy}" data-key="cy" data-idx="${idx}"></div>
             <div class="field-group"><label>Width (W)</label><input type="number" value="${slot.w}" data-key="w" data-idx="${idx}"></div>
             <div class="field-group"><label>Height (H)</label><input type="number" value="${slot.h}" data-key="h" data-idx="${idx}"></div>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #38bdf8; font-weight: 600; cursor: pointer;">
+              <input type="checkbox" class="chk-slot-photo" data-key="${slotKey}" ${isTicked ? 'checked' : ''}>
+              ☑ Nạp Ảnh Test Vào Slot Này
+            </label>
           </div>
           <div class="slot-actions">
             <button class="btn-sm btn-up" data-idx="${idx}">▲ Vẽ Trước</button>
@@ -443,8 +465,17 @@
         slotList.appendChild(card);
       });
 
+      // Bind slot photo checkboxes
+      slotList.querySelectorAll('.chk-slot-photo').forEach(chk => {
+        chk.onchange = (e) => {
+          const sKey = e.target.dataset.key;
+          slotPhotoTickedState[sKey] = e.target.checked;
+          renderCanvas();
+        };
+      });
+
       // Bind inputs
-      slotList.querySelectorAll('input').forEach(inp => {
+      slotList.querySelectorAll('input[type="number"]').forEach(inp => {
         inp.oninput = (e) => {
           const idx = parseInt(e.target.dataset.idx);
           const key = e.target.dataset.key;
@@ -517,9 +548,16 @@
         slots: currentSlots
       };
 
-      // Construct demo slot images data if enabled
+      // Construct slot images array:
+      // 1. If slot tick box is checked -> use unsplash_test image or custom image
+      // 2. Else if chkDemoPhotos is checked -> use demo image
+      // 3. Else -> null (empty box)
       const slotDataArr = currentSlots.map((s, i) => {
-        if (chkDemoPhotos.checked) {
+        const sKey = s.id || ('slot_' + i);
+        if (slotPhotoTickedState[sKey]) {
+          const testImgKey = customUploadedImg ? 'custom_test' : 'unsplash_test';
+          return { imageId: testImgKey, zoom: 1.0, panX: 0, panY: 0, rotation: 0 };
+        } else if (chkDemoPhotos.checked) {
           const demoKey = customUploadedImg ? 'custom_test' : ('demo_' + ((i % 3) + 1));
           return { imageId: demoKey, zoom: 1.0, panX: 0, panY: 0, rotation: 0 };
         }
