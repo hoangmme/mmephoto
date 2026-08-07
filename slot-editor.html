@@ -261,10 +261,10 @@
     <div class="controls-top">
       <label>Template:</label>
       <select id="selTemplate"></select>
+      <button id="btnAddTemplate" class="btn-sm" style="background: #a855f7;">+ Thêm Mới</button>
       <button id="btnResetDraft" class="btn-sm" style="color: #f59e0b;">🔄 Reset Về Gốc (pl-globals.js)</button>
       <button id="btnAddSlot" class="btn-sm">+ Thêm Slot</button>
       <button id="btnSaveDirect" class="btn-save">💾 LƯU TRỰC TIẾP VÀO CODE</button>
-      <button id="btnExportJSON" class="btn-primary">📋 Copy JSON</button>
     </div>
   </header>
 
@@ -293,23 +293,29 @@
     </div>
 
     <div class="sidebar">
+      <div class="sidebar-header" style="background: #1e293b; padding: 12px; border-bottom: 1px solid #334155; margin-bottom: 12px; border-radius: 6px; display: flex; flex-direction: column; gap: 8px;">
+        <div class="field-group">
+          <label>Tên Template (Hiển thị UI)</label>
+          <input type="text" id="txtTmplName" placeholder="VD: Khung 4 Ảnh" style="width: 100%;">
+        </div>
+        <div class="field-group">
+          <label>Chi nhánh áp dụng (Để trống = Tất cả)</label>
+          <div id="branchCheckboxes" style="display:flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; font-size: 12px;">
+            <span style="color: #94a3b8;">Đang tải...</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Loại giấy (Hiển thị tab riêng)</label>
+          <div id="tagCheckboxes" style="display:flex; gap: 12px; margin-top: 4px; font-size: 13px; color: #38bdf8;">
+            <label style="cursor:pointer;"><input type="checkbox" value="a4" class="chk-tmpl-tag"> 📄 A4</label>
+            <label style="cursor:pointer;"><input type="checkbox" value="a5" class="chk-tmpl-tag"> 📄 A5</label>
+          </div>
+        </div>
+      </div>
       <div class="sidebar-header">
         <span>Danh sách Slots (Thứ Tự Vẽ: Trên → Dưới)</span>
       </div>
       <div class="slot-list" id="slotList"></div>
-    </div>
-  </div>
-
-  <div class="json-modal" id="jsonModal">
-    <div class="json-box">
-      <div style="padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
-        <h3>Mã Cấu Hình JSON Cho pl-globals.js</h3>
-        <button id="btnCloseModal" class="btn-sm">Đóng</button>
-      </div>
-      <textarea id="jsonOutput" readonly></textarea>
-      <div style="padding: 14px 18px; text-align: right;">
-        <button id="btnCopyJSON" class="btn-primary">Sao Chép Vào Clipboard</button>
-      </div>
     </div>
   </div>
 
@@ -321,11 +327,16 @@
     let currentSlots = [];
     let selectedSlotIdx = 0;
     let isDragging = false;
+
+    const CLIP_PATHS = {
+      "heart": "M -89.5 -157.0 L -121.5 -138.0 L -124.5 -126.0 L -139.5 -113.0 L -149.5 -79.0 L -161.5 -66.0 L -156.5 -48.0 L -160.5 -4.0 L -151.5 9.0 L -153.5 22.0 L -86.5 105.0 L -68.5 110.0 L 21.5 109.0 L 19.5 149.0 L -15.5 151.0 L -0.5 153.0 L 13.5 165.0 L 31.5 165.0 L 44.5 153.0 L 84.5 139.0 L 93.5 126.0 L 110.5 118.0 L 114.5 107.0 L 134.5 103.0 L 142.5 87.0 L 159.5 73.0 L 160.5 65.0 L 126.5 23.0 L 128.5 9.0 L 119.5 -2.0 L 123.5 -48.0 L 118.5 -62.0 L 140.5 -103.0 L 141.5 -116.0 L 161.5 -142.0 L 101.5 -166.0 L 83.5 -158.0 L 67.5 -160.0 L 22.5 -131.0 L -26.5 -161.0 L -39.5 -158.0 L -58.5 -166.0 L -72.5 -157.0 Z"
+    };
+
     let dragStartPos = { x: 0, y: 0 };
     let initialSlotPos = { cx: 0, cy: 0, w: 0, h: 0 };
     let frameImgObj = null;
     let demoImageMap = {};
-    let slotPhotoTickedState = {};
+
 
     const selTemplate = document.getElementById('selTemplate');
     const slotList = document.getElementById('slotList');
@@ -342,7 +353,7 @@
     Object.keys(ALL_TEMPLATES).forEach(id => {
       const opt = document.createElement('option');
       opt.value = id;
-      opt.textContent = `${ALL_TEMPLATES[id].name} (${id})`;
+      opt.textContent = ALL_TEMPLATES[id].name ? ALL_TEMPLATES[id].name : id;
       selTemplate.appendChild(opt);
     });
 
@@ -428,7 +439,7 @@
       });
 
       selectedSlotIdx = 0;
-      slotPhotoTickedState = {};
+
 
       frameImgObj = new Image();
       frameImgObj.src = tmpl.frame_url;
@@ -438,6 +449,19 @@
           frameImgObj.onerror = r;
         });
       }
+
+      document.getElementById('txtTmplName').value = tmpl.name || '';
+      
+      document.querySelectorAll('.chk-tmpl-branch').forEach(chk => {
+        chk.checked = tmpl.branches && tmpl.branches.includes(chk.value);
+      });
+      const fallbackInput = document.getElementById('txtTmplBranchesFallback');
+      if (fallbackInput) {
+        fallbackInput.value = (tmpl.branches || []).join(', ');
+      }
+      document.querySelectorAll('.chk-tmpl-tag').forEach(chk => {
+        chk.checked = tmpl.tags && tmpl.tags.includes(chk.value);
+      });
 
       renderSidebar();
       renderCanvas();
@@ -458,7 +482,7 @@
 
         const hasClip = !!slot.clipPath;
         const slotKey = slot.id || ('slot_' + idx);
-        const isTicked = !!slotPhotoTickedState[slotKey];
+
 
         card.innerHTML = `
           <div class="slot-card-header">
@@ -472,31 +496,22 @@
             <div class="field-group"><label>Height (H)</label><input type="number" value="${slot.h}" data-key="h" data-idx="${idx}"></div>
             <div class="field-group" style="grid-column: span 2;"><label>Góc Xoay Mặc Định (Rotation °)</label><input type="number" value="${slot.rotation || 0}" data-key="rotation" data-idx="${idx}" placeholder="0, 90, -90, 180"></div>
           </div>
-          <div style="margin-bottom: 8px;">
-            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #38bdf8; font-weight: 600; cursor: pointer;">
-              <input type="checkbox" class="chk-slot-photo" data-key="${slotKey}" ${isTicked ? 'checked' : ''}>
-              ☑ Nạp Ảnh Test Vào Slot Này
-            </label>
-          </div>
-          <div class="slot-actions">
+          <div class="slot-actions" style="margin-top: 12px;">
             <button class="btn-sm btn-up" data-idx="${idx}">▲ Vẽ Trước</button>
             <button class="btn-sm btn-down" data-idx="${idx}">▼ Vẽ Sau (Đè Lên)</button>
             <button class="btn-sm btn-rot-left" data-idx="${idx}">🔄 Xoay Trái (-90°)</button>
             <button class="btn-sm btn-rot-right" data-idx="${idx}">🔄 Xoay Phải (+90°)</button>
-            <button class="btn-sm btn-toggle-path" data-idx="${idx}">${hasClip ? 'Bỏ Path' : '+ Path Tim'}</button>
+            
+            <select class="sel-path" data-idx="${idx}" style="font-size: 11px; padding: 2px 4px; background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 4px;">
+              <option value="">+ Không có Path (Mặc định)</option>
+              <option value="heart" ${slot.clipPath === CLIP_PATHS.heart ? 'selected' : ''}>+ Path: Trái Tim</option>
+              ${slot.clipPath && slot.clipPath !== CLIP_PATHS.heart ? '<option value="custom" selected>+ Path: Tùy Chỉnh (Custom)</option>' : ''}
+            </select>
+            
             <button class="btn-sm btn-del" data-idx="${idx}" style="color: #f43f5e;">Xóa</button>
           </div>
         `;
         slotList.appendChild(card);
-      });
-
-      // Bind slot photo checkboxes
-      slotList.querySelectorAll('.chk-slot-photo').forEach(chk => {
-        chk.onchange = (e) => {
-          const sKey = e.target.dataset.key;
-          slotPhotoTickedState[sKey] = e.target.checked;
-          renderCanvas();
-        };
       });
 
       // Bind inputs
@@ -537,7 +552,6 @@
           }
         };
       });
-
       slotList.querySelectorAll('.btn-rot-left').forEach(btn => {
         btn.onclick = () => {
           const idx = parseInt(btn.dataset.idx);
@@ -558,14 +572,16 @@
         };
       });
 
-      slotList.querySelectorAll('.btn-toggle-path').forEach(btn => {
-        btn.onclick = () => {
-          const idx = parseInt(btn.dataset.idx);
-          if (currentSlots[idx].clipPath) {
+      slotList.querySelectorAll('.sel-path').forEach(sel => {
+        sel.onchange = (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          const val = e.target.value;
+          if (!val) {
             delete currentSlots[idx].clipPath;
-          } else {
-            currentSlots[idx].clipPath = "M -89.5 -157.0 L -121.5 -138.0 L -124.5 -126.0 L -139.5 -113.0 L -149.5 -79.0 L -161.5 -66.0 L -156.5 -48.0 L -160.5 -4.0 L -151.5 9.0 L -153.5 22.0 L -86.5 105.0 L -68.5 110.0 L 21.5 109.0 L 19.5 149.0 L -15.5 151.0 L -0.5 153.0 L 13.5 165.0 L 31.5 165.0 L 44.5 153.0 L 84.5 139.0 L 93.5 126.0 L 110.5 118.0 L 114.5 107.0 L 134.5 103.0 L 142.5 87.0 L 159.5 73.0 L 160.5 65.0 L 126.5 23.0 L 128.5 9.0 L 119.5 -2.0 L 123.5 -48.0 L 118.5 -62.0 L 140.5 -103.0 L 141.5 -116.0 L 161.5 -142.0 L 101.5 -166.0 L 83.5 -158.0 L 67.5 -160.0 L 22.5 -131.0 L -26.5 -161.0 L -39.5 -158.0 L -58.5 -166.0 L -72.5 -157.0 Z";
+          } else if (val === 'heart') {
+            currentSlots[idx].clipPath = CLIP_PATHS.heart;
           }
+          // if 'custom', we leave it alone (they can't select custom manually anyway, it's just for display if it already has one)
           renderSidebar();
           renderCanvas();
         };
@@ -594,16 +610,11 @@
       };
 
       // Construct slot images array:
-      // 1. If slot tick box is checked -> use test image
-      // 2. Else if chkDemoPhotos is checked -> use demo image
-      // 3. Else -> null (empty box)
+      // If chkDemoPhotos is checked -> use demo image
+      // Else -> null (empty box)
       const slotDataArr = currentSlots.map((s, i) => {
-        const sKey = s.id || ('slot_' + i);
         const defRot = s.defaultRotation !== undefined ? s.defaultRotation : (s.rotation || 0);
-        if (slotPhotoTickedState[sKey]) {
-          const key = demoImageMap['test_local_photo'] ? 'test_local_photo' : ('test_img_' + (i % 4));
-          return { imageId: key, zoom: 1.0, panX: 0, panY: 0, rotation: defRot };
-        } else if (chkDemoPhotos.checked) {
+        if (chkDemoPhotos.checked) {
           const key = demoImageMap['test_local_photo'] ? 'test_local_photo' : ('test_img_' + (i % 4));
           return { imageId: key, zoom: 1.0, panX: 0, panY: 0, rotation: defRot };
         }
@@ -812,14 +823,18 @@
 
         if (hName.includes('r')) {
           s.w = Math.max(50, Math.round(init.w + dx));
+          s.cx = Math.round(init.cx + (s.w - init.w) / 2);
         } else if (hName.includes('l')) {
           s.w = Math.max(50, Math.round(init.w - dx));
+          s.cx = Math.round(init.cx - (s.w - init.w) / 2);
         }
 
         if (hName.includes('b')) {
           s.h = Math.max(50, Math.round(init.h + dy));
+          s.cy = Math.round(init.cy + (s.h - init.h) / 2);
         } else if (hName.includes('t')) {
           s.h = Math.max(50, Math.round(init.h - dy));
+          s.cy = Math.round(init.cy - (s.h - init.h) / 2);
         }
       }
 
@@ -853,6 +868,26 @@
       try {
         localStorage.setItem(`mme_slot_draft_${currentTmplId}`, JSON.stringify(currentSlots));
         
+        const tmplName = document.getElementById('txtTmplName').value.trim();
+        let branchesArr = Array.from(document.querySelectorAll('.chk-tmpl-branch:checked')).map(c => c.value);
+        
+        const fallbackInput = document.getElementById('txtTmplBranchesFallback');
+        if (fallbackInput) {
+          const branchesStr = fallbackInput.value.trim();
+          branchesArr = branchesStr ? branchesStr.split(',').map(s => s.trim()).filter(s => s) : [];
+        }
+
+        const tagsArr = Array.from(document.querySelectorAll('.chk-tmpl-tag:checked')).map(c => c.value);
+
+        // Update the template in memory
+        ALL_TEMPLATES[currentTmplId].name = tmplName || currentTmplId;
+        ALL_TEMPLATES[currentTmplId].branches = branchesArr.length > 0 ? branchesArr : undefined;
+        ALL_TEMPLATES[currentTmplId].tags = tagsArr.length > 0 ? tagsArr : undefined;
+        
+        if (!ALL_TEMPLATES[currentTmplId].branches) delete ALL_TEMPLATES[currentTmplId].branches;
+        if (!ALL_TEMPLATES[currentTmplId].tags) delete ALL_TEMPLATES[currentTmplId].tags;
+        ALL_TEMPLATES[currentTmplId].slots = currentSlots;
+
         const endpoints = [
           '/api/admin/save-slots',
           'http://localhost:3000/api/admin/save-slots',
@@ -869,7 +904,7 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 templateId: currentTmplId,
-                slots: currentSlots
+                templateData: ALL_TEMPLATES[currentTmplId]
               })
             });
             const cType = res.headers.get('content-type') || '';
@@ -911,23 +946,63 @@
       renderCanvas();
     };
 
-    const modal = document.getElementById('jsonModal');
-    const jsonOutput = document.getElementById('jsonOutput');
-
-    document.getElementById('btnExportJSON').onclick = () => {
-      const output = JSON.stringify(currentSlots, null, 12);
-      jsonOutput.value = `"slots": ${output}`;
-      modal.style.display = 'flex';
+    document.getElementById('btnAddTemplate').onclick = () => {
+      const id = prompt('Nhập ID cho Template mới (VD: 4photo_new):');
+      if (!id) return;
+      if (ALL_TEMPLATES[id]) {
+        alert('Template ID này đã tồn tại!');
+        return;
+      }
+      
+      const w = parseInt(prompt('Nhập chiều rộng (Width) theo pixel:', '1200'));
+      const h = parseInt(prompt('Nhập chiều cao (Height) theo pixel:', '1800'));
+      if (isNaN(w) || isNaN(h)) return;
+      
+      ALL_TEMPLATES[id] = {
+        canvas_width: w,
+        canvas_height: h,
+        slots: []
+      };
+      
+      const selTemplate = document.getElementById('selTemplate');
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = `${id} (${w}x${h}) [Local]`;
+      selTemplate.appendChild(opt);
+      selTemplate.value = id;
+      
+      loadTemplate(id);
     };
 
-    document.getElementById('btnCloseModal').onclick = () => { modal.style.display = 'none'; };
-    document.getElementById('btnCopyJSON').onclick = () => {
-      jsonOutput.select();
-      navigator.clipboard.writeText(jsonOutput.value);
-      alert('Đã sao chép mã cấu hình JSON vào Clipboard thành công!');
-    };
+    // Load branches from server then init template
+    fetch('/api/branches')
+      .then(res => {
+        if (!res.ok) throw new Error('API not available');
+        return res.json();
+      })
+      .then(data => {
+        const c = document.getElementById('branchCheckboxes');
+        c.innerHTML = '';
+        if (data && data.branches && Array.isArray(data.branches)) {
+          data.branches.forEach(b => {
+            c.innerHTML += `<label style="cursor:pointer;"><input type="checkbox" value="${b}" class="chk-tmpl-branch"> ${b}</label>`;
+          });
+        } else if (data && data.branches) {
+           Object.keys(data.branches).forEach(b => {
+             c.innerHTML += `<label style="cursor:pointer;"><input type="checkbox" value="${b}" class="chk-tmpl-branch"> ${b}</label>`;
+           });
+        }
+      })
+      .catch(e => {
+        // Fallback to text input if API fails (e.g. running on live server without updated backend)
+        const c = document.getElementById('branchCheckboxes');
+        c.innerHTML = `<input type="text" id="txtTmplBranchesFallback" placeholder="VD: CN01, CN02 (API lỗi)" style="width: 100%; font-size: 11px; padding: 4px;">`;
+      })
+      .finally(() => {
+        loadTemplate('a5-1');
+      });
 
-    loadTemplate('a5-1');
+
   </script>
 </body>
 </html>

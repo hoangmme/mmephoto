@@ -31,6 +31,15 @@ export class TemplatePicker {
         if (allowedType === 'a4' && !isA4) return;
         if (allowedType === 'a5' && !isA5) return;
       }
+
+      // Branch Filtering
+      const appState = typeof window !== 'undefined' && window.printApp ? window.printApp : null;
+      const currentBranch = appState ? appState.branch : (typeof localStorage !== 'undefined' ? localStorage.getItem('mme_branch') : null);
+      if (tmpl.branches && Array.isArray(tmpl.branches) && tmpl.branches.length > 0) {
+        if (!currentBranch || !tmpl.branches.includes(currentBranch)) {
+          return; // Skip this template as it is not assigned to the current branch
+        }
+      }
       
       const card = document.createElement('div');
       card.className = 'pl-template-card';

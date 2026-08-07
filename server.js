@@ -439,6 +439,12 @@ function generateSetupCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
+// -- Public APIs --
+app.get('/api/branches', (req, res) => {
+  const branches = Object.keys(ADMIN_DATA.branches || {});
+  res.json({ branches });
+});
+
 // -- Admin APIs --
 app.post('/api/admin/login', (req, res) => {
   const { password } = req.body;
@@ -569,56 +575,70 @@ app.post('/api/login', (req, res) => {
   res.json({ success: true, branchId: matchedId });
 });
 
-// Admin API to save edited template slots directly to pl-globals.js
+// Admin API to save edited template directly to pl-globals.js
 app.post('/api/admin/save-slots', express.json({ limit: '10mb' }), (req, res) => {
   try {
-    const { templateId, slots } = req.body;
-    if (!templateId || !Array.isArray(slots)) {
+    const { templateId, templateData } = req.body;
+    if (!templateId || !templateData) {
       return res.status(400).json({ error: 'Invalid payload' });
     }
 
     const globalsPath = path.join(__dirname, 'js/modules/pl-globals.js');
     let content = fs.readFileSync(globalsPath, 'utf-8');
 
-    const tmplKey = `"${templateId}":`;
-    const tmplIdx = content.indexOf(tmplKey);
+    // Attempt to find the exact template block start
+    let tmplKey = `"${templateId}": {`;
+    let tmplIdx = content.indexOf(tmplKey);
+    
     if (tmplIdx === -1) {
-      return res.status(404).json({ error: `Template ${templateId} not found` });
+      tmplKey = `"${templateId}":`;
+      tmplIdx = content.indexOf(tmplKey);
+    }
+    
+    if (tmplIdx === -1) {
+      // If it doesn't exist, we can't easily append it without knowing where TEMPLATES ends.
+      // But we can append it at the end of the file safely using Object.assign
+      const newExport = `\n// [AUTO-SAVED TEMPLATE] \nObject.assign(ALL_TEMPLATES, { "${templateId}": ${JSON.stringify(templateData, null, 4)} });\n`;
+      fs.appendFileSync(globalsPath, newExport);
+      console.log(`[SAVE TEMPLATE] Appended new template ${templateId} to pl-globals.js`);
+      return res.json({ success: true, message: `Created new template ${templateId} in pl-globals.js!` });
     }
 
-    const slotsKey = '"slots": [';
-    const slotsStart = content.indexOf(slotsKey, tmplIdx);
-    if (slotsStart === -1) {
-      return res.status(500).json({ error: 'Slots key not found in template block' });
+    // Found existing template, find the curly braces block
+    let objStart = content.indexOf('{', tmplIdx);
+    if (objStart === -1) {
+      return res.status(500).json({ error: 'Template object start not found' });
     }
 
     let braceCount = 0;
-    let arrayStart = content.indexOf('[', slotsStart);
-    let arrayEnd = -1;
+    let objEnd = -1;
 
-    for (let i = arrayStart; i < content.length; i++) {
-      if (content[i] === '[') braceCount++;
-      else if (content[i] === ']') {
+    for (let i = objStart; i < content.length; i++) {
+      if (content[i] === '{') braceCount++;
+      else if (content[i] === '}') {
         braceCount--;
         if (braceCount === 0) {
-          arrayEnd = i;
+          objEnd = i;
           break;
         }
       }
     }
 
-    if (arrayEnd === -1) {
-      return res.status(500).json({ error: 'Could not parse end of slots array' });
+    if (objEnd === -1) {
+      return res.status(500).json({ error: 'Could not parse end of template object' });
     }
 
-    const formattedSlots = JSON.stringify(slots, null, 12);
-    const newContent = content.substring(0, arrayStart) + formattedSlots + content.substring(arrayEnd + 1);
+    const formattedTmpl = JSON.stringify(templateData, null, 8);
+    // Add correct indentation
+    const indentedTmpl = formattedTmpl.split('\n').map((l, idx) => idx === 0 ? l : '    ' + l).join('\n');
+    
+    const newContent = content.substring(0, objStart) + indentedTmpl + content.substring(objEnd + 1);
 
     fs.writeFileSync(globalsPath, newContent, 'utf-8');
-    console.log(`[SAVE SLOTS] Successfully updated slots for template ${templateId} in pl-globals.js!`);
+    console.log(`[SAVE TEMPLATE] Successfully updated template ${templateId} in pl-globals.js!`);
     return res.json({ success: true, message: `Updated ${templateId} in pl-globals.js!` });
   } catch (err) {
-    console.error('[SAVE SLOTS ERROR]', err);
+    console.error('[SAVE TEMPLATE ERROR]', err);
     return res.status(500).json({ error: err.message });
   }
 });
