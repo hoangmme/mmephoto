@@ -251,17 +251,22 @@ _initSSE(branch) {
           roomData.step = 1;
           roomData.locked = false;
           roomData.timeLeft = 420;
+          roomData.sessionStarted = false;
+          roomData.timerStarted = false;
+          if (roomData.timerInterval) {
+            clearInterval(roomData.timerInterval);
+            roomData.timerInterval = null;
+          }
           if (roomData.timedOutSteps) roomData.timedOutSteps.clear();
 
           const sessObj = (roomData.queue || []).find(s => s.id === data.session);
           if (sessObj) {
             sessObj.finished = false;
             sessObj.step = 1;
-            sessObj.sessionStartedAt = data.sessionStartedAt || Date.now();
+            sessObj.sessionStartedAt = null;
           }
 
           this._updateActiveSession(room);
-          this._startStepTimer(room, 1);
           if (this.activeRoom === room) {
             this._setStep(room, 1);
             this._updateUIForRoom();

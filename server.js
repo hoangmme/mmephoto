@@ -815,7 +815,6 @@ app.post('/api/reopen-session/:branch/:room/:session', (req, res) => {
 
 app.post('/api/reset-session-timer/:branch/:room/:session', (req, res) => {
   const { branch, room, session } = req.params;
-  const now = Date.now();
   
   if (roomState[branch] && roomState[branch][room]) {
     const roomD = roomState[branch][room];
@@ -823,7 +822,7 @@ app.post('/api/reset-session-timer/:branch/:room/:session', (req, res) => {
     if (sess) {
       sess.finished = false;
       sess.step = 1;
-      sess.sessionStartedAt = now;
+      sess.sessionStartedAt = null;
     }
     roomD.activeSessionId = session;
     saveRoomState();
@@ -831,10 +830,10 @@ app.post('/api/reset-session-timer/:branch/:room/:session', (req, res) => {
   
   if (clients[branch]) {
     clients[branch].forEach(client => {
-      client.write(`data: ${JSON.stringify({ type: 'session_reset', room, session, sessionStartedAt: now })}\n\n`);
+      client.write(`data: ${JSON.stringify({ type: 'session_reset', room, session, sessionStartedAt: null })}\n\n`);
     });
   }
-  res.json({ success: true, sessionStartedAt: now });
+  res.json({ success: true, sessionStartedAt: null });
 });
 
 app.post('/api/sync-state/:branch/:room/:session', express.json(), (req, res) => {
