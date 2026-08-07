@@ -313,8 +313,8 @@
   </div>
 
   <script type="module">
-    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=285';
-    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=285';
+    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=286';
+    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=286';
 
     let currentTmplId = 'a5-1';
     let currentSlots = [];
@@ -388,12 +388,11 @@
       'test_img_3': testImgPurple
     };
 
-    // Load Unsplash photo as optional fallback
-    const unsplashImg = new Image();
-    unsplashImg.crossOrigin = 'anonymous';
-    unsplashImg.src = 'https://images.unsplash.com/photo-1631947430066-48c30d57b943?q=80&w=1016&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
-    unsplashImg.onload = () => {
-      demoImageMap['unsplash_photo'] = unsplashImg;
+    // Load local test_photo.jpg (Downloaded to local disk for 100% fast & reliable loading)
+    const testLocalImg = new Image();
+    testLocalImg.src = './templates/test_photo.jpg';
+    testLocalImg.onload = () => {
+      demoImageMap['test_local_photo'] = testLocalImg;
       renderCanvas();
     };
 
@@ -546,10 +545,10 @@
       const slotDataArr = currentSlots.map((s, i) => {
         const sKey = s.id || ('slot_' + i);
         if (slotPhotoTickedState[sKey]) {
-          const key = demoImageMap['unsplash_photo'] ? 'unsplash_photo' : ('test_img_' + (i % 4));
+          const key = demoImageMap['test_local_photo'] ? 'test_local_photo' : ('test_img_' + (i % 4));
           return { imageId: key, zoom: 1.0, panX: 0, panY: 0, rotation: 0 };
         } else if (chkDemoPhotos.checked) {
-          const key = 'test_img_' + (i % 4);
+          const key = demoImageMap['test_local_photo'] ? 'test_local_photo' : ('test_img_' + (i % 4));
           return { imageId: key, zoom: 1.0, panX: 0, panY: 0, rotation: 0 };
         }
         return null;
