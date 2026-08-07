@@ -313,8 +313,8 @@
   </div>
 
   <script type="module">
-    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=288';
-    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=288';
+    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=289';
+    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=289';
 
     let currentTmplId = 'a5-1';
     let currentSlots = [];
@@ -693,22 +693,40 @@
     btnSaveDirect.onclick = async () => {
       try {
         localStorage.setItem(`mme_slot_draft_${currentTmplId}`, JSON.stringify(currentSlots));
-        const res = await fetch('/api/admin/save-slots', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            templateId: currentTmplId,
-            slots: currentSlots
-          })
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert(`✅ ĐÃ LƯU THÀNH CÔNG VÀO MÁY LOCAL!\n\nĐã ghi các số khung mới của ${currentTmplId} vào tệp pl-globals.js ở máy local của bạn.\nKhi nào bạn sẵn sàng đẩy lên VPS, chỉ cần git push là VPS sẽ tự động load các số mới này!`);
+        
+        // Prepare formatted JSON output
+        const outputJSON = `"slots": ${JSON.stringify(currentSlots, null, 12)}`;
+        
+        let apiSavedSuccess = false;
+        try {
+          const res = await fetch('/api/admin/save-slots', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              templateId: currentTmplId,
+              slots: currentSlots
+            })
+          });
+          const cType = res.headers.get('content-type') || '';
+          if (res.ok && cType.includes('application/json')) {
+            const data = await res.json();
+            if (data.success) {
+              apiSavedSuccess = true;
+            }
+          }
+        } catch (e) {
+          apiSavedSuccess = false;
+        }
+
+        if (apiSavedSuccess) {
+          alert(`✅ ĐÃ LƯU THÀNH CÔNG VÀO FILE CODE LOCAL!\n\nĐã ghi các số khung mới của ${currentTmplId} vào tệp pl-globals.js ở máy local của bạn.`);
         } else {
-          alert(`❌ Lỗi: ${data.error}`);
+          // Fallback if opened via python -m http.server or VS Code Live Server without Node backend
+          await navigator.clipboard.writeText(outputJSON);
+          alert(`✅ ĐÃ LƯU BẢN NHÁP VÀ LỰA CHỌN MÃ JSON!\n\n1. Bản nháp đã tự động lưu vào LocalStorage của trình duyệt.\n2. Đoạn mã JSON cấu hình mới đã được SAO CHÉP VÀO CLIPBOARD!\n\n💡 Mẹo: Vì bạn đang mở trang bằng Live Server tĩnh, hãy dán đoạn mã này vào pl-globals.js (hoặc mở bằng Node server http://localhost:3000/slot-editor.html để tự động ghi file).`);
         }
       } catch (err) {
-        alert(`❌ Lỗi kết nối Server Local: ${err.message}`);
+        alert(`⚠️ Đã lưu bản nháp vào LocalStorage: ${err.message}`);
       }
     };
 
