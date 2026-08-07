@@ -569,6 +569,60 @@ app.post('/api/login', (req, res) => {
   res.json({ success: true, branchId: matchedId });
 });
 
+// Admin API to save edited template slots directly to pl-globals.js
+app.post('/api/admin/save-slots', express.json({ limit: '10mb' }), (req, res) => {
+  try {
+    const { templateId, slots } = req.body;
+    if (!templateId || !Array.isArray(slots)) {
+      return res.status(400).json({ error: 'Invalid payload' });
+    }
+
+    const globalsPath = path.join(__dirname, 'js/modules/pl-globals.js');
+    let content = fs.readFileSync(globalsPath, 'utf-8');
+
+    const tmplKey = `"${templateId}":`;
+    const tmplIdx = content.indexOf(tmplKey);
+    if (tmplIdx === -1) {
+      return res.status(404).json({ error: `Template ${templateId} not found` });
+    }
+
+    const slotsKey = '"slots": [';
+    const slotsStart = content.indexOf(slotsKey, tmplIdx);
+    if (slotsStart === -1) {
+      return res.status(500).json({ error: 'Slots key not found in template block' });
+    }
+
+    let braceCount = 0;
+    let arrayStart = content.indexOf('[', slotsStart);
+    let arrayEnd = -1;
+
+    for (let i = arrayStart; i < content.length; i++) {
+      if (content[i] === '[') braceCount++;
+      else if (content[i] === ']') {
+        braceCount--;
+        if (braceCount === 0) {
+          arrayEnd = i;
+          break;
+        }
+      }
+    }
+
+    if (arrayEnd === -1) {
+      return res.status(500).json({ error: 'Could not parse end of slots array' });
+    }
+
+    const formattedSlots = JSON.stringify(slots, null, 12);
+    const newContent = content.substring(0, arrayStart) + formattedSlots + content.substring(arrayEnd + 1);
+
+    fs.writeFileSync(globalsPath, newContent, 'utf-8');
+    console.log(`[SAVE SLOTS] Successfully updated slots for template ${templateId} in pl-globals.js!`);
+    return res.json({ success: true, message: `Updated ${templateId} in pl-globals.js!` });
+  } catch (err) {
+    console.error('[SAVE SLOTS ERROR]', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), async (req, res) => {
   const { branch, room, session } = req.params;
   

@@ -15,6 +15,7 @@
       --accent: #38bdf8;
       --accent-pink: #f43f5e;
       --accent-purple: #a855f7;
+      --accent-green: #10b981;
       --text: #f1f5f9;
       --text-muted: #94a3b8;
     }
@@ -50,7 +51,7 @@
     .controls-top {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
     select, button, input[type="text"], input[type="number"] {
       background: rgba(30, 41, 59, 0.8);
@@ -73,7 +74,14 @@
       border: none;
       cursor: pointer;
     }
-    button.btn-primary:hover { opacity: 0.9; }
+    button.btn-save {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    button.btn-save:hover, button.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
     .main-layout {
       flex: 1;
       display: flex;
@@ -94,14 +102,14 @@
       position: absolute;
       top: 16px;
       left: 20px;
-      background: rgba(15, 23, 42, 0.8);
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(10px);
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 8px 14px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       z-index: 10;
       font-size: 13px;
     }
@@ -251,8 +259,9 @@
     <div class="controls-top">
       <label>Template:</label>
       <select id="selTemplate"></select>
-      <button id="btnAddSlot" class="btn-sm">+ Thêm Slot Mới</button>
-      <button id="btnExportJSON" class="btn-primary">📋 Xuất & Copy JSON Code</button>
+      <button id="btnAddSlot" class="btn-sm">+ Thêm Slot</button>
+      <button id="btnSaveDirect" class="btn-save">💾 LƯU TRỰC TIẾP VÀO CODE</button>
+      <button id="btnExportJSON" class="btn-primary">📋 Copy JSON</button>
     </div>
   </header>
 
@@ -268,11 +277,13 @@
           <span id="txtOpacity">100%</span>
         </label>
         <label style="display: flex; align-items: center; gap: 6px;">
-          <input type="checkbox" id="chkShowMask" checked> Hiển thị Đường ClipPath Mask
+          <input type="checkbox" id="chkShowMask" checked> Hiển thị ClipPath Mask
         </label>
         <label style="display: flex; align-items: center; gap: 6px;">
-          <input type="checkbox" id="chkDemoPhotos" checked> Đặt Ảnh Demo Test
+          <input type="checkbox" id="chkDemoPhotos" checked> Ảnh Test
         </label>
+        <button id="btnUploadCustomTest" class="btn-sm">📁 Nạp Ảnh Mới Từ Máy</button>
+        <input type="file" id="fileInputTest" accept="image/*" style="display: none;">
       </div>
 
       <div class="canvas-container">
@@ -302,8 +313,8 @@
   </div>
 
   <script type="module">
-    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=280';
-    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=280';
+    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=283';
+    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=283';
 
     let currentTmplId = 'a5-1';
     let currentSlots = [];
@@ -313,6 +324,7 @@
     let initialSlotPos = { cx: 0, cy: 0, w: 0, h: 0 };
     let frameImgObj = null;
     let demoImageMap = {};
+    let customUploadedImg = null;
 
     const selTemplate = document.getElementById('selTemplate');
     const slotList = document.getElementById('slotList');
@@ -323,6 +335,9 @@
     const txtOpacity = document.getElementById('txtOpacity');
     const chkShowMask = document.getElementById('chkShowMask');
     const chkDemoPhotos = document.getElementById('chkDemoPhotos');
+    const btnUploadCustomTest = document.getElementById('btnUploadCustomTest');
+    const fileInputTest = document.getElementById('fileInputTest');
+    const btnSaveDirect = document.getElementById('btnSaveDirect');
 
     // Populate dropdown
     Object.keys(ALL_TEMPLATES).forEach(id => {
@@ -360,6 +375,24 @@
       'demo_3': demoImg3
     };
 
+    btnUploadCustomTest.onclick = () => fileInputTest.click();
+    fileInputTest.onchange = (e) => {
+      if (e.target.files && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const img = new Image();
+          img.onload = () => {
+            customUploadedImg = img;
+            demoImageMap['custom_test'] = customUploadedImg;
+            chkDemoPhotos.checked = true;
+            renderCanvas();
+          };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+      }
+    };
+
     async function loadTemplate(tmplId) {
       currentTmplId = tmplId;
       const tmpl = ALL_TEMPLATES[tmplId];
@@ -392,7 +425,7 @@
         card.innerHTML = `
           <div class="slot-card-header">
             <span><span class="badge-index">${idx + 1}</span> ${slot.id || ('Slot ' + (idx + 1))}</span>
-            <span style="font-size: 11px; color: ${hasClip ? '#38bdf8' : '#94a3b8'};">${hasClip ? '★ ClipPath Heart' : 'Rect Slot'}</span>
+            <span style="font-size: 11px; color: ${hasClip ? '#38bdf8' : '#94a3b8'};">${hasClip ? '★ ClipPath Mask' : 'Rect Slot'}</span>
           </div>
           <div class="grid-2x2">
             <div class="field-group"><label>CX (X Center)</label><input type="number" value="${slot.cx}" data-key="cx" data-idx="${idx}"></div>
@@ -402,8 +435,8 @@
           </div>
           <div class="slot-actions">
             <button class="btn-sm btn-up" data-idx="${idx}">▲ Vẽ Trước</button>
-            <button class="btn-sm btn-down" data-idx="${idx}">▼ Vẽ Sau</button>
-            <button class="btn-sm btn-toggle-path" data-idx="${idx}">${hasClip ? 'Bỏ Path' : '+ Thêm Path'}</button>
+            <button class="btn-sm btn-down" data-idx="${idx}">▼ Vẽ Sau (Đè Lên)</button>
+            <button class="btn-sm btn-toggle-path" data-idx="${idx}">${hasClip ? 'Bỏ Path' : '+ Path Tim'}</button>
             <button class="btn-sm btn-del" data-idx="${idx}" style="color: #f43f5e;">Xóa</button>
           </div>
         `;
@@ -487,7 +520,7 @@
       // Construct demo slot images data if enabled
       const slotDataArr = currentSlots.map((s, i) => {
         if (chkDemoPhotos.checked) {
-          const demoKey = 'demo_' + ((i % 3) + 1);
+          const demoKey = customUploadedImg ? 'custom_test' : ('demo_' + ((i % 3) + 1));
           return { imageId: demoKey, zoom: 1.0, panX: 0, panY: 0, rotation: 0 };
         }
         return null;
@@ -512,9 +545,9 @@
       ctx.save();
       ctx.scale(scale, scale);
 
-      // If opacity < 1.0, re-draw frame overlay with globalAlpha opacity
+      // Draw PNG frame overlay with selected opacity
       const opacity = parseFloat(rngOpacity.value);
-      if (chkShowPNG.checked && frameImgObj && opacity < 1.0) {
+      if (chkShowPNG.checked && frameImgObj) {
         ctx.globalAlpha = opacity;
         ctx.drawImage(frameImgObj, 0, 0, tmpl.canvas_width, tmpl.canvas_height);
         ctx.globalAlpha = 1.0;
@@ -530,8 +563,8 @@
             
             const p = new Path2D(slot.clipPath);
             ctx.strokeStyle = '#f43f5e';
-            ctx.lineWidth = 4;
-            ctx.setLineDash([6, 4]);
+            ctx.lineWidth = 5;
+            ctx.setLineDash([8, 6]);
             ctx.stroke(p);
             ctx.setLineDash([]);
             ctx.restore();
@@ -616,6 +649,27 @@
     rngOpacity.oninput = (e) => {
       txtOpacity.innerText = Math.round(e.target.value * 100) + '%';
       renderCanvas();
+    };
+
+    btnSaveDirect.onclick = async () => {
+      try {
+        const res = await fetch('/api/admin/save-slots', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            templateId: currentTmplId,
+            slots: currentSlots
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(`✅ THÀNH CÔNG!\nĐã ghi trực tiếp toàn bộ thông số Slots của ${currentTmplId} vào mã nguồn pl-globals.js!`);
+        } else {
+          alert(`❌ Lỗi: ${data.error}`);
+        }
+      } catch (err) {
+        alert(`❌ Lỗi kết nối Server: ${err.message}`);
+      }
     };
 
     document.getElementById('btnAddSlot').onclick = () => {

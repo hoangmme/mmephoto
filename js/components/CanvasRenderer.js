@@ -3,7 +3,7 @@
  * High-performance Canvas rendering engine for Photobooth templates, slots, and HiDPI exports.
  */
 
-import { ALL_TEMPLATES, A5_WIDTH, A5_HEIGHT } from '../modules/pl-globals.js?v=280';
+import { ALL_TEMPLATES, A5_WIDTH, A5_HEIGHT } from '../modules/pl-globals.js?v=283';
 
 export class CanvasRenderer {
   static calcCover(imgW, imgH, slotW, slotH, zoom = 1.0, rotation = 0) {
@@ -129,7 +129,7 @@ export class CanvasRenderer {
     ctx.fillStyle = tmpl.background_color || '#ffffff';
     ctx.fillRect(0, 0, w, h);
 
-    if (bgImageObj && !overrideTemplate) {
+    if (bgImageObj) {
       ctx.drawImage(bgImageObj, 0, 0, w, h);
     }
 
@@ -190,7 +190,7 @@ export class CanvasRenderer {
     }
 
     // Layer 3: Overlay Frame
-    if (frameImageObj && !overrideTemplate) {
+    if (frameImageObj) {
       ctx.drawImage(frameImageObj, 0, 0, w, h);
     }
 
