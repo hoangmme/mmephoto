@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Slots</title>
+    <style>
+        body { font-family: sans-serif; background: #eee; padding: 20px; }
+        .template-container { margin-bottom: 40px; }
+        .canvas-wrapper {
+            position: relative;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: inline-block;
+            transform-origin: top left;
+            transform: scale(0.3);
+            margin-bottom: -1500px; /* hack for scale space */
+        }
+        .slot-box {
+            z-index: 20;
+            position: absolute;
+            border: 4px solid red;
+            background: rgba(255, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 60px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000;
+        }
+        .slot-info {
+            position: absolute;
+            bottom: 5px;
+            font-size: 20px;
+            text-shadow: 1px 1px 2px #000;
+        }
+        img.frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Preview Slots</h1>
+    
+    <div id="app"></div>
+
+    <script type="module">
+        import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=999';
+
+        const app = document.getElementById('app');
+
+        ['a4-1', 'a5-1'].forEach(tmplId => {
+            const tmpl = ALL_TEMPLATES[tmplId];
+            if (!tmpl) return;
+
+            const container = document.createElement('div');
+            container.className = 'template-container';
+            
+            const title = document.createElement('h2');
+            title.textContent = tmpl.name;
+            container.appendChild(title);
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'canvas-wrapper';
+            wrapper.style.width = tmpl.canvas_width + 'px';
+            wrapper.style.height = tmpl.canvas_height + 'px';
+            
+            // Draw slots
+            tmpl.slots.forEach((s, idx) => {
+                const box = document.createElement('div');
+                box.className = 'slot-box';
+                // cx, cy are centers
+                const left = s.cx - s.w/2;
+                const top = s.cy - s.h/2;
+                box.style.left = left + 'px';
+                box.style.top = top + 'px';
+                box.style.width = s.w + 'px';
+                box.style.height = s.h + 'px';
+                
+                box.innerHTML = `${s.id ? s.id.split('_').pop() : idx}<div class="slot-info">Rot: ${s.rotation || 0}°</div>`;
+                wrapper.appendChild(box);
+            });
+
+            // Draw frame on top
+            if (tmpl.frame_url) {
+                const img = document.createElement('img');
+                img.src = tmpl.frame_url;
+                img.className = 'frame';
+                wrapper.appendChild(img);
+            }
+
+            container.appendChild(wrapper);
+            app.appendChild(container);
+        });
+    </script>
+</body>
+</html>
