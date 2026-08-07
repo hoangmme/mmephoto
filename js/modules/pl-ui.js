@@ -1,8 +1,8 @@
-import { UICoreMixin } from './pl-ui-core.js?v=286';
-import { UIStepsMixin } from './pl-ui-steps.js?v=286';
-import { UIDraftsMixin } from './pl-ui-drafts.js?v=286';
-import { UIInteractionsMixin } from './pl-ui-interactions.js?v=286';
-import { UIMediaMixin } from './pl-ui-media.js?v=286';
+import { UICoreMixin } from './pl-ui-core.js?v=287';
+import { UIStepsMixin } from './pl-ui-steps.js?v=287';
+import { UIDraftsMixin } from './pl-ui-drafts.js?v=287';
+import { UIInteractionsMixin } from './pl-ui-interactions.js?v=287';
+import { UIMediaMixin } from './pl-ui-media.js?v=287';
 
 export const UIMixin = Object.assign(
   {},
