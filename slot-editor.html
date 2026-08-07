@@ -284,8 +284,6 @@
         <label style="display: flex; align-items: center; gap: 6px;">
           <input type="checkbox" id="chkDemoPhotos"> Nạp Ảnh Demo Tất Cả
         </label>
-        <button id="btnUploadCustomTest" class="btn-sm">📁 Nạp Ảnh Tải Từ Máy</button>
-        <input type="file" id="fileInputTest" accept="image/*" style="display: none;">
       </div>
 
       <div class="canvas-container">
@@ -315,8 +313,8 @@
   </div>
 
   <script type="module">
-    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=284';
-    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=284';
+    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=285';
+    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=285';
 
     let currentTmplId = 'a5-1';
     let currentSlots = [];
@@ -326,10 +324,7 @@
     let initialSlotPos = { cx: 0, cy: 0, w: 0, h: 0 };
     let frameImgObj = null;
     let demoImageMap = {};
-    let customUploadedImg = null;
     let slotPhotoTickedState = {};
-
-    const UNSPLASH_TEST_URL = 'https://images.unsplash.com/photo-1631947430066-48c30d57b943?q=80&w=1016&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
     const selTemplate = document.getElementById('selTemplate');
     const slotList = document.getElementById('slotList');
@@ -340,8 +335,6 @@
     const txtOpacity = document.getElementById('txtOpacity');
     const chkShowMask = document.getElementById('chkShowMask');
     const chkDemoPhotos = document.getElementById('chkDemoPhotos');
-    const btnUploadCustomTest = document.getElementById('btnUploadCustomTest');
-    const fileInputTest = document.getElementById('fileInputTest');
     const btnSaveDirect = document.getElementById('btnSaveDirect');
 
     // Populate dropdown
@@ -352,58 +345,56 @@
       selTemplate.appendChild(opt);
     });
 
-    // Create 3 colorful demo photos for testing
-    function createDemoImage(color, text) {
+    // Helper: Create instant dataURL test image with vibrant patterns & clear label
+    function createInstantTestPhoto(bgColor, labelText) {
       const pc = document.createElement('canvas');
       pc.width = 1200; pc.height = 1200;
       const pctx = pc.getContext('2d');
-      pctx.fillStyle = color;
+      
+      // Gradient background
+      const grad = pctx.createLinearGradient(0, 0, 1200, 1200);
+      grad.addColorStop(0, bgColor);
+      grad.addColorStop(1, '#090d16');
+      pctx.fillStyle = grad;
       pctx.fillRect(0, 0, 1200, 1200);
+
+      // Inner portrait border simulation
+      pctx.strokeStyle = '#ffffff';
+      pctx.lineWidth = 16;
+      pctx.strokeRect(60, 60, 1080, 1080);
+
+      // Text label
       pctx.fillStyle = '#ffffff';
-      pctx.font = 'bold 70px Inter, sans-serif';
+      pctx.font = 'bold 80px Inter, sans-serif';
       pctx.textAlign = 'center';
       pctx.textBaseline = 'middle';
-      pctx.fillText(text, 600, 600);
+      pctx.fillText(labelText, 600, 600);
 
       const img = new Image();
-      img.src = pc.toDataURL();
+      img.src = pc.toDataURL('image/png');
       return img;
     }
 
-    const demoImg1 = createDemoImage('#ef4444', 'DEMO PHOTO 1');
-    const demoImg2 = createDemoImage('#10b981', 'DEMO PHOTO 2');
-    const demoImg3 = createDemoImage('#3b82f6', 'DEMO PHOTO 3');
+    // Pre-create instant test images (Zero network delay, 100% reliable)
+    const testImgRed = createInstantTestPhoto('#e11d48', 'TEST PHOTO 1');
+    const testImgGreen = createInstantTestPhoto('#059669', 'TEST PHOTO 2');
+    const testImgBlue = createInstantTestPhoto('#2563eb', 'TEST PHOTO 3');
+    const testImgPurple = createInstantTestPhoto('#9333ea', 'TEST PHOTO 4');
 
     demoImageMap = {
-      'demo_1': demoImg1,
-      'demo_2': demoImg2,
-      'demo_3': demoImg3
+      'test_img_0': testImgRed,
+      'test_img_1': testImgGreen,
+      'test_img_2': testImgBlue,
+      'test_img_3': testImgPurple
     };
 
-    // Load Unsplash test image
+    // Load Unsplash photo as optional fallback
     const unsplashImg = new Image();
     unsplashImg.crossOrigin = 'anonymous';
-    unsplashImg.src = UNSPLASH_TEST_URL;
+    unsplashImg.src = 'https://images.unsplash.com/photo-1631947430066-48c30d57b943?q=80&w=1016&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
     unsplashImg.onload = () => {
-      demoImageMap['unsplash_test'] = unsplashImg;
+      demoImageMap['unsplash_photo'] = unsplashImg;
       renderCanvas();
-    };
-
-    btnUploadCustomTest.onclick = () => fileInputTest.click();
-    fileInputTest.onchange = (e) => {
-      if (e.target.files && e.target.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-          const img = new Image();
-          img.onload = () => {
-            customUploadedImg = img;
-            demoImageMap['custom_test'] = customUploadedImg;
-            renderCanvas();
-          };
-          img.src = evt.target.result;
-        };
-        reader.readAsDataURL(e.target.files[0]);
-      }
     };
 
     async function loadTemplate(tmplId) {
@@ -549,17 +540,17 @@
       };
 
       // Construct slot images array:
-      // 1. If slot tick box is checked -> use unsplash_test image or custom image
+      // 1. If slot tick box is checked -> use test image
       // 2. Else if chkDemoPhotos is checked -> use demo image
       // 3. Else -> null (empty box)
       const slotDataArr = currentSlots.map((s, i) => {
         const sKey = s.id || ('slot_' + i);
         if (slotPhotoTickedState[sKey]) {
-          const testImgKey = customUploadedImg ? 'custom_test' : 'unsplash_test';
-          return { imageId: testImgKey, zoom: 1.0, panX: 0, panY: 0, rotation: 0 };
+          const key = demoImageMap['unsplash_photo'] ? 'unsplash_photo' : ('test_img_' + (i % 4));
+          return { imageId: key, zoom: 1.0, panX: 0, panY: 0, rotation: 0 };
         } else if (chkDemoPhotos.checked) {
-          const demoKey = customUploadedImg ? 'custom_test' : ('demo_' + ((i % 3) + 1));
-          return { imageId: demoKey, zoom: 1.0, panX: 0, panY: 0, rotation: 0 };
+          const key = 'test_img_' + (i % 4);
+          return { imageId: key, zoom: 1.0, panX: 0, panY: 0, rotation: 0 };
         }
         return null;
       });
