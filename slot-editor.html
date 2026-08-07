@@ -975,7 +975,11 @@
     };
 
     // Load branches from server then init template
-    fetch('/api/branches')
+    const branchApiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'https://photo.llphotobooth.vn/api/branches'
+      : '/api/branches';
+
+    fetch(branchApiUrl)
       .then(res => {
         if (!res.ok) throw new Error('API not available');
         return res.json();

@@ -441,6 +441,7 @@ function generateSetupCode() {
 
 // -- Public APIs --
 app.get('/api/branches', (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
   const branches = Object.keys(ADMIN_DATA.branches || {});
   res.json({ branches });
 });
