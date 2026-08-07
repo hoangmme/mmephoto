@@ -313,8 +313,8 @@
   </div>
 
   <script type="module">
-    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=287';
-    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=287';
+    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=288';
+    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=288';
 
     let currentTmplId = 'a5-1';
     let currentSlots = [];
@@ -399,7 +399,18 @@
     async function loadTemplate(tmplId) {
       currentTmplId = tmplId;
       const tmpl = ALL_TEMPLATES[tmplId];
-      currentSlots = JSON.parse(JSON.stringify(tmpl.slots || []));
+      
+      const localDraft = localStorage.getItem(`mme_slot_draft_${tmplId}`);
+      if (localDraft) {
+        try {
+          currentSlots = JSON.parse(localDraft);
+        } catch (e) {
+          currentSlots = JSON.parse(JSON.stringify(tmpl.slots || []));
+        }
+      } else {
+        currentSlots = JSON.parse(JSON.stringify(tmpl.slots || []));
+      }
+
       selectedSlotIdx = 0;
       slotPhotoTickedState = {};
 
@@ -681,6 +692,7 @@
 
     btnSaveDirect.onclick = async () => {
       try {
+        localStorage.setItem(`mme_slot_draft_${currentTmplId}`, JSON.stringify(currentSlots));
         const res = await fetch('/api/admin/save-slots', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -691,12 +703,12 @@
         });
         const data = await res.json();
         if (data.success) {
-          alert(`✅ THÀNH CÔNG!\nĐã ghi trực tiếp toàn bộ thông số Slots của ${currentTmplId} vào mã nguồn pl-globals.js!`);
+          alert(`✅ ĐÃ LƯU THÀNH CÔNG VÀO MÁY LOCAL!\n\nĐã ghi các số khung mới của ${currentTmplId} vào tệp pl-globals.js ở máy local của bạn.\nKhi nào bạn sẵn sàng đẩy lên VPS, chỉ cần git push là VPS sẽ tự động load các số mới này!`);
         } else {
           alert(`❌ Lỗi: ${data.error}`);
         }
       } catch (err) {
-        alert(`❌ Lỗi kết nối Server: ${err.message}`);
+        alert(`❌ Lỗi kết nối Server Local: ${err.message}`);
       }
     };
 
