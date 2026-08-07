@@ -64,16 +64,18 @@ export const UIStepsMixin = {
     const btnNext = document.getElementById('btnNextCustomer');
 
     const currentRoomD = (this.activeRoom && this.rooms[this.activeRoom]) ? this.rooms[this.activeRoom] : null;
-    if (!isStaffMode && currentRoomD && currentRoomD.session) {
-      const activeSess = (currentRoomD.queue || []).find(s => s.id === currentRoomD.session);
-      const startOverlay = document.getElementById('startSessionOverlay');
-      if (startOverlay) {
-        if (!activeSess || !activeSess.sessionStartedAt) {
-          startOverlay.classList.remove('dismissed');
-          startOverlay.style.display = 'flex';
-        } else {
-          startOverlay.style.display = 'none';
-        }
+    const activeSess = (currentRoomD && currentRoomD.queue) ? currentRoomD.queue.find(s => s.id === currentRoomD.session) : null;
+    const isSessionStarted = !!(activeSess && activeSess.sessionStartedAt);
+
+    const startOverlay = document.getElementById('startSessionOverlay');
+    if (startOverlay) {
+      if (!isStaffMode && currentRoomD && currentRoomD.session && !isSessionStarted && step !== 4) {
+        this.sessionStarted = false;
+        if (currentRoomD) currentRoomD.sessionStarted = false;
+        startOverlay.classList.remove('dismissed');
+        startOverlay.style.display = 'flex';
+      } else {
+        startOverlay.style.display = 'none';
       }
     }
     const hasActiveSess = !!(currentRoomD && currentRoomD.session);
@@ -364,17 +366,6 @@ export const UIStepsMixin = {
 
     if (qrOverlay && step !== 4) {
       qrOverlay.style.display = 'none';
-    }
-
-    const startOverlay = document.getElementById('startSessionOverlay');
-    if (startOverlay) {
-      if (!isStaffMode && roomData && roomData.session && !roomData.sessionStarted && step !== 4) {
-        this.sessionStarted = false;
-        startOverlay.classList.remove('dismissed');
-        startOverlay.style.display = 'flex';
-      } else {
-        startOverlay.style.display = 'none';
-      }
     }
 
     // Ensure canvasContainer is in its default place

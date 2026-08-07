@@ -89,8 +89,8 @@ _initSSE(branch) {
         // If this is the active session
         if (this.rooms[room].session === data.session) {
             this.rooms[room].lastImageTime = Date.now();
-            // Refresh timer start time while images are still uploading in Step 1 or 2
-            if (sessionObj && (sessionObj.step || 1) <= 2) {
+            // Refresh timer start time while images are still uploading in Step 1 or 2 ONLY if session has already started
+            if (sessionObj && sessionObj.sessionStartedAt && (sessionObj.step || 1) <= 2) {
               sessionObj.sessionStartedAt = Date.now();
             }
             if (this.rooms[room].images.length === 0 && this.rooms[room].step === 1) {
@@ -573,6 +573,15 @@ _startStepTimer(room, step) {
     };
 
     updateTimeLeft();
+
+    // If session has not been started by customer yet, show overlay & do not run countdown interval
+    if (!activeSess || !activeSess.sessionStartedAt) {
+      roomData.sessionStarted = false;
+      if (this.activeRoom === room) this._updateUIForRoom();
+      return;
+    }
+
+    roomData.sessionStarted = true;
 
     roomData.timerInterval = setInterval(() => {
       updateTimeLeft();
