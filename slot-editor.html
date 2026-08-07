@@ -261,6 +261,7 @@
     <div class="controls-top">
       <label>Template:</label>
       <select id="selTemplate"></select>
+      <button id="btnResetDraft" class="btn-sm" style="color: #f59e0b;">🔄 Reset Về Gốc (pl-globals.js)</button>
       <button id="btnAddSlot" class="btn-sm">+ Thêm Slot</button>
       <button id="btnSaveDirect" class="btn-save">💾 LƯU TRỰC TIẾP VÀO CODE</button>
       <button id="btnExportJSON" class="btn-primary">📋 Copy JSON</button>
@@ -313,8 +314,8 @@
   </div>
 
   <script type="module">
-    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=291';
-    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=291';
+    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=297';
+    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=297';
 
     let currentTmplId = 'a5-1';
     let currentSlots = [];
@@ -396,12 +397,20 @@
       renderCanvas();
     };
 
-    async function loadTemplate(tmplId) {
+    async function loadTemplate(tmplId, forceReset = false) {
       currentTmplId = tmplId;
+      if (selTemplate.value !== tmplId) {
+        selTemplate.value = tmplId;
+      }
       const tmpl = ALL_TEMPLATES[tmplId];
-      
+      if (!tmpl) return;
+
+      if (forceReset) {
+        localStorage.removeItem(`mme_slot_draft_${tmplId}`);
+      }
+
       const localDraft = localStorage.getItem(`mme_slot_draft_${tmplId}`);
-      if (localDraft) {
+      if (localDraft && !forceReset) {
         try {
           currentSlots = JSON.parse(localDraft);
         } catch (e) {
@@ -411,12 +420,24 @@
         currentSlots = JSON.parse(JSON.stringify(tmpl.slots || []));
       }
 
+      // Sync rotation from pl-globals.js if missing
+      currentSlots.forEach((slot, idx) => {
+        if (tmpl.slots && tmpl.slots[idx] && slot.rotation === undefined) {
+          slot.rotation = tmpl.slots[idx].rotation || 0;
+        }
+      });
+
       selectedSlotIdx = 0;
       slotPhotoTickedState = {};
 
       frameImgObj = new Image();
       frameImgObj.src = tmpl.frame_url;
-      await new Promise(r => frameImgObj.onload = r);
+      if (!frameImgObj.complete) {
+        await new Promise(r => {
+          frameImgObj.onload = r;
+          frameImgObj.onerror = r;
+        });
+      }
 
       renderSidebar();
       renderCanvas();
@@ -449,6 +470,7 @@
             <div class="field-group"><label>CY (Y Center)</label><input type="number" value="${slot.cy}" data-key="cy" data-idx="${idx}"></div>
             <div class="field-group"><label>Width (W)</label><input type="number" value="${slot.w}" data-key="w" data-idx="${idx}"></div>
             <div class="field-group"><label>Height (H)</label><input type="number" value="${slot.h}" data-key="h" data-idx="${idx}"></div>
+            <div class="field-group" style="grid-column: span 2;"><label>Góc Xoay Mặc Định (Rotation °)</label><input type="number" value="${slot.rotation || 0}" data-key="rotation" data-idx="${idx}" placeholder="0, 90, -90, 180"></div>
           </div>
           <div style="margin-bottom: 8px;">
             <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #38bdf8; font-weight: 600; cursor: pointer;">
@@ -459,6 +481,8 @@
           <div class="slot-actions">
             <button class="btn-sm btn-up" data-idx="${idx}">▲ Vẽ Trước</button>
             <button class="btn-sm btn-down" data-idx="${idx}">▼ Vẽ Sau (Đè Lên)</button>
+            <button class="btn-sm btn-rot-left" data-idx="${idx}">🔄 Xoay Trái (-90°)</button>
+            <button class="btn-sm btn-rot-right" data-idx="${idx}">🔄 Xoay Phải (+90°)</button>
             <button class="btn-sm btn-toggle-path" data-idx="${idx}">${hasClip ? 'Bỏ Path' : '+ Path Tim'}</button>
             <button class="btn-sm btn-del" data-idx="${idx}" style="color: #f43f5e;">Xóa</button>
           </div>
@@ -514,6 +538,26 @@
         };
       });
 
+      slotList.querySelectorAll('.btn-rot-left').forEach(btn => {
+        btn.onclick = () => {
+          const idx = parseInt(btn.dataset.idx);
+          const currentRot = currentSlots[idx].rotation || 0;
+          currentSlots[idx].rotation = (currentRot - 90) % 360;
+          renderSidebar();
+          renderCanvas();
+        };
+      });
+
+      slotList.querySelectorAll('.btn-rot-right').forEach(btn => {
+        btn.onclick = () => {
+          const idx = parseInt(btn.dataset.idx);
+          const currentRot = currentSlots[idx].rotation || 0;
+          currentSlots[idx].rotation = (currentRot + 90) % 360;
+          renderSidebar();
+          renderCanvas();
+        };
+      });
+
       slotList.querySelectorAll('.btn-toggle-path').forEach(btn => {
         btn.onclick = () => {
           const idx = parseInt(btn.dataset.idx);
@@ -555,12 +599,13 @@
       // 3. Else -> null (empty box)
       const slotDataArr = currentSlots.map((s, i) => {
         const sKey = s.id || ('slot_' + i);
+        const defRot = s.defaultRotation !== undefined ? s.defaultRotation : (s.rotation || 0);
         if (slotPhotoTickedState[sKey]) {
           const key = demoImageMap['test_local_photo'] ? 'test_local_photo' : ('test_img_' + (i % 4));
-          return { imageId: key, zoom: 1.0, panX: 0, panY: 0, rotation: 0 };
+          return { imageId: key, zoom: 1.0, panX: 0, panY: 0, rotation: defRot };
         } else if (chkDemoPhotos.checked) {
           const key = demoImageMap['test_local_photo'] ? 'test_local_photo' : ('test_img_' + (i % 4));
-          return { imageId: key, zoom: 1.0, panX: 0, panY: 0, rotation: 0 };
+          return { imageId: key, zoom: 1.0, panX: 0, panY: 0, rotation: defRot };
         }
         return null;
       });
@@ -611,7 +656,7 @@
         });
       }
 
-      // Draw interactive handles for selection
+      // Draw interactive handles for selection & resize
       currentSlots.forEach((slot, idx) => {
         const isSel = (idx === selectedSlotIdx);
         ctx.save();
@@ -634,11 +679,66 @@
         ctx.font = 'bold 14px Inter, sans-serif';
         ctx.fillText(`Slot ${idx + 1}`, -slot.w / 2 + 10, -slot.h / 2 - 13);
 
+        // Draw 8 Interactive Resize Handles if selected
+        if (isSel) {
+          const hw = slot.w / 2;
+          const hh = slot.h / 2;
+          const handlePts = [
+            { x: -hw, y: -hh }, // Top-Left
+            { x:  hw, y: -hh }, // Top-Right
+            { x: -hw, y:  hh }, // Bottom-Left
+            { x:  hw, y:  hh }, // Bottom-Right
+            { x:   0, y: -hh }, // Top
+            { x:   0, y:  hh }, // Bottom
+            { x: -hw, y:   0 }, // Left
+            { x:  hw, y:   0 }  // Right
+          ];
+
+          handlePts.forEach(pt => {
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          });
+        }
+
         ctx.restore();
       });
 
       ctx.restore();
     }
+
+    // Helper: Get handle at mouse canvas position for the selected slot
+    function getHandleAtMouse(mouseX, mouseY, slot) {
+      if (!slot) return null;
+      const hitRadius = 24;
+      const hw = slot.w / 2;
+      const hh = slot.h / 2;
+
+      const handles = [
+        { name: 'tl', x: slot.cx - hw, y: slot.cy - hh, cursor: 'nwse-resize' },
+        { name: 'tr', x: slot.cx + hw, y: slot.cy - hh, cursor: 'nesw-resize' },
+        { name: 'bl', x: slot.cx - hw, y: slot.cy + hh, cursor: 'nesw-resize' },
+        { name: 'br', x: slot.cx + hw, y: slot.cy + hh, cursor: 'nwse-resize' },
+        { name: 't',  x: slot.cx,      y: slot.cy - hh, cursor: 'ns-resize' },
+        { name: 'b',  x: slot.cx,      y: slot.cy + hh, cursor: 'ns-resize' },
+        { name: 'l',  x: slot.cx - hw, y: slot.cy,      cursor: 'ew-resize' },
+        { name: 'r',  x: slot.cx + hw, y: slot.cy,      cursor: 'ew-resize' }
+      ];
+
+      for (const h of handles) {
+        if (Math.abs(mouseX - h.x) <= hitRadius && Math.abs(mouseY - h.y) <= hitRadius) {
+          return h;
+        }
+      }
+      return null;
+    }
+
+    let dragMode = 'none'; // 'none', 'move', 'resize'
+    let activeResizeHandle = null;
 
     // Canvas Mouse Interactions
     canvas.onmousedown = (e) => {
@@ -647,38 +747,91 @@
       const mouseX = (e.clientX - rect.left) * scale;
       const mouseY = (e.clientY - rect.top) * scale;
 
+      // 1. Check if clicking on a resize handle of the currently selected slot
+      if (selectedSlotIdx >= 0 && currentSlots[selectedSlotIdx]) {
+        const handle = getHandleAtMouse(mouseX, mouseY, currentSlots[selectedSlotIdx]);
+        if (handle) {
+          dragMode = 'resize';
+          activeResizeHandle = handle;
+          isDragging = true;
+          dragStartPos = { x: mouseX, y: mouseY };
+          initialSlotPos = { ...currentSlots[selectedSlotIdx] };
+          return;
+        }
+      }
+
+      // 2. Check if clicking inside any slot to move/select
       for (let i = currentSlots.length - 1; i >= 0; i--) {
         const s = currentSlots[i];
         if (Math.abs(mouseX - s.cx) <= s.w / 2 && Math.abs(mouseY - s.cy) <= s.h / 2) {
           selectedSlotIdx = i;
+          dragMode = 'move';
           isDragging = true;
           dragStartPos = { x: mouseX, y: mouseY };
           initialSlotPos = { ...s };
           renderSidebar();
           renderCanvas();
-          break;
+          return;
         }
       }
     };
 
     window.onmousemove = (e) => {
-      if (!isDragging || selectedSlotIdx < 0) return;
       const rect = canvas.getBoundingClientRect();
       const scale = ALL_TEMPLATES[currentTmplId].canvas_width / rect.width;
       const mouseX = (e.clientX - rect.left) * scale;
       const mouseY = (e.clientY - rect.top) * scale;
 
+      // Update Cursor on hover when not dragging
+      if (!isDragging && selectedSlotIdx >= 0 && currentSlots[selectedSlotIdx]) {
+        const handle = getHandleAtMouse(mouseX, mouseY, currentSlots[selectedSlotIdx]);
+        if (handle) {
+          canvas.style.cursor = handle.cursor;
+        } else {
+          const s = currentSlots[selectedSlotIdx];
+          if (Math.abs(mouseX - s.cx) <= s.w / 2 && Math.abs(mouseY - s.cy) <= s.h / 2) {
+            canvas.style.cursor = 'move';
+          } else {
+            canvas.style.cursor = 'default';
+          }
+        }
+      }
+
+      if (!isDragging || selectedSlotIdx < 0) return;
+
       const dx = Math.round(mouseX - dragStartPos.x);
       const dy = Math.round(mouseY - dragStartPos.y);
+      const s = currentSlots[selectedSlotIdx];
 
-      currentSlots[selectedSlotIdx].cx = initialSlotPos.cx + dx;
-      currentSlots[selectedSlotIdx].cy = initialSlotPos.cy + dy;
+      if (dragMode === 'move') {
+        s.cx = initialSlotPos.cx + dx;
+        s.cy = initialSlotPos.cy + dy;
+      } else if (dragMode === 'resize' && activeResizeHandle) {
+        const hName = activeResizeHandle.name;
+        const init = initialSlotPos;
+
+        if (hName.includes('r')) {
+          s.w = Math.max(50, Math.round(init.w + dx));
+        } else if (hName.includes('l')) {
+          s.w = Math.max(50, Math.round(init.w - dx));
+        }
+
+        if (hName.includes('b')) {
+          s.h = Math.max(50, Math.round(init.h + dy));
+        } else if (hName.includes('t')) {
+          s.h = Math.max(50, Math.round(init.h - dy));
+        }
+      }
 
       renderSidebar();
       renderCanvas();
     };
 
-    window.onmouseup = () => { isDragging = false; };
+    window.onmouseup = () => {
+      isDragging = false;
+      dragMode = 'none';
+      activeResizeHandle = null;
+    };
 
     selTemplate.onchange = () => loadTemplate(selTemplate.value);
 
@@ -690,98 +843,55 @@
       renderCanvas();
     };
 
-    let nativeFileHandle = null;
+    document.getElementById('btnResetDraft').onclick = () => {
+      if (confirm(`Bạn có chắc chắn muốn xóa bản nháp và Reset toàn bộ khung của ${currentTmplId} về dữ liệu gốc từ pl-globals.js không?`)) {
+        loadTemplate(currentTmplId, true);
+      }
+    };
 
     btnSaveDirect.onclick = async () => {
       try {
         localStorage.setItem(`mme_slot_draft_${currentTmplId}`, JSON.stringify(currentSlots));
         
-        // 1. Try Native Chrome File System Access API (100% Offline Direct File Write)
-        if ('showOpenFilePicker' in window) {
+        const endpoints = [
+          '/api/admin/save-slots',
+          'http://localhost:3000/api/admin/save-slots',
+          'http://127.0.0.1:3000/api/admin/save-slots',
+          'http://localhost:8080/api/admin/save-slots'
+        ];
+
+        let savedData = null;
+
+        for (const ep of endpoints) {
           try {
-            if (!nativeFileHandle) {
-              const [handle] = await window.showOpenFilePicker({
-                types: [{
-                  description: 'JavaScript File (pl-globals.js)',
-                  accept: { 'text/javascript': ['.js'] }
-                }],
-                suggestedName: 'pl-globals.js'
-              });
-              nativeFileHandle = handle;
-            }
-            
-            const file = await nativeFileHandle.getFile();
-            let content = await file.text();
-
-            const tmplKey = `"${currentTmplId}":`;
-            const tmplIdx = content.indexOf(tmplKey);
-            if (tmplIdx !== -1) {
-              const slotsKey = '"slots": [';
-              const slotsStart = content.indexOf(slotsKey, tmplIdx);
-              if (slotsStart !== -1) {
-                let braceCount = 0;
-                let arrayStart = content.indexOf('[', slotsStart);
-                let arrayEnd = -1;
-
-                for (let i = arrayStart; i < content.length; i++) {
-                  if (content[i] === '[') braceCount++;
-                  else if (content[i] === ']') {
-                    braceCount--;
-                    if (braceCount === 0) {
-                      arrayEnd = i;
-                      break;
-                    }
-                  }
-                }
-
-                if (arrayEnd !== -1) {
-                  const formattedSlots = JSON.stringify(currentSlots, null, 12);
-                  const newContent = content.substring(0, arrayStart) + formattedSlots + content.substring(arrayEnd + 1);
-
-                  const writable = await nativeFileHandle.createWritable();
-                  await writable.write(newContent);
-                  await writable.close();
-
-                  alert(`✅ THÀNH CÔNG (TRỰC TIẾP TRÊN Ổ ĐĨA MAC)!\n\nĐã ghi các số khung mới của ${currentTmplId} trực tiếp vào tệp pl-globals.js trên máy bạn mà không cần bất kỳ server nào!`);
-                  return;
-                }
+            const res = await fetch(ep, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                templateId: currentTmplId,
+                slots: currentSlots
+              })
+            });
+            const cType = res.headers.get('content-type') || '';
+            if (res.ok && cType.includes('application/json')) {
+              const data = await res.json();
+              if (data.success) {
+                savedData = data;
+                break;
               }
             }
-          } catch (fileErr) {
-            if (fileErr.name === 'AbortError') return; // User cancelled file picker
-            console.warn('Native File System API fallback:', fileErr);
+          } catch (e) {
+            // Try next endpoint
           }
         }
 
-        // 2. Fallback to Server API if Node server is running
-        let apiSavedSuccess = false;
-        try {
-          const res = await fetch('/api/admin/save-slots', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              templateId: currentTmplId,
-              slots: currentSlots
-            })
-          });
-          const cType = res.headers.get('content-type') || '';
-          if (res.ok && cType.includes('application/json')) {
-            const data = await res.json();
-            if (data.success) apiSavedSuccess = true;
-          }
-        } catch (e) {
-          apiSavedSuccess = false;
-        }
-
-        if (apiSavedSuccess) {
-          alert(`✅ ĐÃ LƯU THÀNH CÔNG VÀO FILE CODE LOCAL!\n\nĐã ghi các số khung mới của ${currentTmplId} vào tệp pl-globals.js.`);
+        if (savedData && savedData.success) {
+          alert(`✅ ĐÃ LƯU THÀNH CÔNG VÀO FILE PL-GLOBALS.JS!`);
         } else {
-          const outputJSON = `"slots": ${JSON.stringify(currentSlots, null, 12)}`;
-          await navigator.clipboard.writeText(outputJSON);
-          alert(`✅ ĐÃ LƯU BẢN NHÁP VÀ SAO CHÉP MÃ JSON!\n\nĐoạn mã JSON cấu hình mới đã được SAO CHÉP VÀO CLIPBOARD! Dán vào pl-globals.js là xong!`);
+          alert(`❌ Lỗi kết nối Server Node.js (404 Not Found)!\n\nHãy đảm bảo bạn đã chạy server Node.js bằng cách gõ lệnh sau trong Terminal trên máy bạn:\n\n   npm run editor\n\n(Hoặc lệnh: node server.js)`);
         }
       } catch (err) {
-        alert(`⚠️ Lỗi: ${err.message}`);
+        alert(`❌ Lỗi: ${err.message}`);
       }
     };
 
