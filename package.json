@@ -4,6 +4,8 @@
   "description": "Hiện tại, PhotoTune Pro là một ứng dụng thuần Front-end (Static Web App). Nó chỉ bao gồm các file HTML, CSS, và JS, mọi tính năng xử lý ảnh đều được thực hiện trực tiếp trên trình duyệt của người dùng (Client-side).",
   "main": "index.js",
   "scripts": {
+    "start": "node server.js",
+    "editor": "./start-editor.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
