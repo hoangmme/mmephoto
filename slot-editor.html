@@ -313,8 +313,8 @@
   </div>
 
   <script type="module">
-    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=289';
-    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=289';
+    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=290';
+    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=290';
 
     let currentTmplId = 'a5-1';
     let currentSlots = [];
@@ -690,13 +690,70 @@
       renderCanvas();
     };
 
+    let nativeFileHandle = null;
+
     btnSaveDirect.onclick = async () => {
       try {
         localStorage.setItem(`mme_slot_draft_${currentTmplId}`, JSON.stringify(currentSlots));
         
-        // Prepare formatted JSON output
-        const outputJSON = `"slots": ${JSON.stringify(currentSlots, null, 12)}`;
-        
+        // 1. Try Native Chrome File System Access API (100% Offline Direct File Write)
+        if ('showOpenFilePicker' in window) {
+          try {
+            if (!nativeFileHandle) {
+              const [handle] = await window.showOpenFilePicker({
+                types: [{
+                  description: 'JavaScript File (pl-globals.js)',
+                  accept: { 'text/javascript': ['.js'] }
+                }],
+                suggestedName: 'pl-globals.js'
+              });
+              nativeFileHandle = handle;
+            }
+            
+            const file = await nativeFileHandle.getFile();
+            let content = await file.text();
+
+            const tmplKey = `"${currentTmplId}":`;
+            const tmplIdx = content.indexOf(tmplKey);
+            if (tmplIdx !== -1) {
+              const slotsKey = '"slots": [';
+              const slotsStart = content.indexOf(slotsKey, tmplIdx);
+              if (slotsStart !== -1) {
+                let braceCount = 0;
+                let arrayStart = content.indexOf('[', slotsStart);
+                let arrayEnd = -1;
+
+                for (let i = arrayStart; i < content.length; i++) {
+                  if (content[i] === '[') braceCount++;
+                  else if (content[i] === ']') {
+                    braceCount--;
+                    if (braceCount === 0) {
+                      arrayEnd = i;
+                      break;
+                    }
+                  }
+                }
+
+                if (arrayEnd !== -1) {
+                  const formattedSlots = JSON.stringify(currentSlots, null, 12);
+                  const newContent = content.substring(0, arrayStart) + formattedSlots + content.substring(arrayEnd + 1);
+
+                  const writable = await nativeFileHandle.createWritable();
+                  await writable.write(newContent);
+                  await writable.close();
+
+                  alert(`✅ THÀNH CÔNG (TRỰC TIẾP TRÊN Ổ ĐĨA MAC)!\n\nĐã ghi các số khung mới của ${currentTmplId} trực tiếp vào tệp pl-globals.js trên máy bạn mà không cần bất kỳ server nào!`);
+                  return;
+                }
+              }
+            }
+          } catch (fileErr) {
+            if (fileErr.name === 'AbortError') return; // User cancelled file picker
+            console.warn('Native File System API fallback:', fileErr);
+          }
+        }
+
+        // 2. Fallback to Server API if Node server is running
         let apiSavedSuccess = false;
         try {
           const res = await fetch('/api/admin/save-slots', {
@@ -710,23 +767,21 @@
           const cType = res.headers.get('content-type') || '';
           if (res.ok && cType.includes('application/json')) {
             const data = await res.json();
-            if (data.success) {
-              apiSavedSuccess = true;
-            }
+            if (data.success) apiSavedSuccess = true;
           }
         } catch (e) {
           apiSavedSuccess = false;
         }
 
         if (apiSavedSuccess) {
-          alert(`✅ ĐÃ LƯU THÀNH CÔNG VÀO FILE CODE LOCAL!\n\nĐã ghi các số khung mới của ${currentTmplId} vào tệp pl-globals.js ở máy local của bạn.`);
+          alert(`✅ ĐÃ LƯU THÀNH CÔNG VÀO FILE CODE LOCAL!\n\nĐã ghi các số khung mới của ${currentTmplId} vào tệp pl-globals.js.`);
         } else {
-          // Fallback if opened via python -m http.server or VS Code Live Server without Node backend
+          const outputJSON = `"slots": ${JSON.stringify(currentSlots, null, 12)}`;
           await navigator.clipboard.writeText(outputJSON);
-          alert(`✅ ĐÃ LƯU BẢN NHÁP VÀ LỰA CHỌN MÃ JSON!\n\n1. Bản nháp đã tự động lưu vào LocalStorage của trình duyệt.\n2. Đoạn mã JSON cấu hình mới đã được SAO CHÉP VÀO CLIPBOARD!\n\n💡 Mẹo: Vì bạn đang mở trang bằng Live Server tĩnh, hãy dán đoạn mã này vào pl-globals.js (hoặc mở bằng Node server http://localhost:3000/slot-editor.html để tự động ghi file).`);
+          alert(`✅ ĐÃ LƯU BẢN NHÁP VÀ SAO CHÉP MÃ JSON!\n\nĐoạn mã JSON cấu hình mới đã được SAO CHÉP VÀO CLIPBOARD! Dán vào pl-globals.js là xong!`);
         }
       } catch (err) {
-        alert(`⚠️ Đã lưu bản nháp vào LocalStorage: ${err.message}`);
+        alert(`⚠️ Lỗi: ${err.message}`);
       }
     };
 
