@@ -299,6 +299,14 @@
           <input type="text" id="txtTmplName" placeholder="VD: Khung 4 Ảnh" style="width: 100%;">
         </div>
         <div class="field-group">
+          <label>Đường dẫn Ảnh Nền (frame_url)</label>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="txtTmplFrameUrl" placeholder="VD: templates/a4-1.png" style="flex:1;">
+            <input type="file" id="fileFrameUpload" style="display:none;" accept="image/png, image/jpeg, image/webp">
+            <button id="btnUploadFrame" class="btn-sm" style="background:#22c55e;">Tải PNG</button>
+          </div>
+        </div>
+        <div class="field-group">
           <label>Chi nhánh áp dụng (Để trống = Tất cả)</label>
           <div id="branchCheckboxes" style="display:flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; font-size: 12px;">
             <span style="color: #94a3b8;">Đang tải...</span>
@@ -452,6 +460,7 @@
       }
 
       document.getElementById('txtTmplName').value = tmpl.name || '';
+      document.getElementById('txtTmplFrameUrl').value = tmpl.frame_url || '';
       
       document.querySelectorAll('.chk-tmpl-branch').forEach(chk => {
         chk.checked = tmpl.branches && tmpl.branches.includes(chk.value);
@@ -853,6 +862,45 @@
     };
 
     selTemplate.onchange = () => loadTemplate(selTemplate.value);
+    
+    document.getElementById('txtTmplFrameUrl').onchange = (e) => {
+      const url = e.target.value.trim();
+      if (url) {
+        frameImgObj.src = url;
+        frameImgObj.onload = renderCanvas;
+        frameImgObj.onerror = renderCanvas;
+      }
+    };
+
+    const fileFrameUpload = document.getElementById('fileFrameUpload');
+    document.getElementById('btnUploadFrame').onclick = () => fileFrameUpload.click();
+    fileFrameUpload.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('frame', file);
+      
+      const btn = document.getElementById('btnUploadFrame');
+      const oldText = btn.textContent;
+      btn.textContent = 'Đang tải...';
+      
+      try {
+        const res = await fetch('/api/admin/upload-frame', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) {
+          const txtUrl = document.getElementById('txtTmplFrameUrl');
+          txtUrl.value = data.url;
+          txtUrl.dispatchEvent(new Event('change'));
+        } else {
+          alert('Lỗi: ' + data.error);
+        }
+      } catch (err) {
+        alert('Lỗi mạng khi tải ảnh lên!');
+      } finally {
+        btn.textContent = oldText;
+        fileFrameUpload.value = '';
+      }
+    };
 
     chkShowPNG.onchange = renderCanvas;
     chkShowMask.onchange = renderCanvas;
@@ -873,6 +921,7 @@
         localStorage.setItem(`mme_slot_draft_${currentTmplId}`, JSON.stringify(currentSlots));
         
         const tmplName = document.getElementById('txtTmplName').value.trim();
+        const frameUrl = document.getElementById('txtTmplFrameUrl').value.trim();
         let branchesArr = Array.from(document.querySelectorAll('.chk-tmpl-branch:checked')).map(c => c.value);
         
         const fallbackInput = document.getElementById('txtTmplBranchesFallback');
@@ -885,6 +934,7 @@
 
         // Update the template in memory
         ALL_TEMPLATES[currentTmplId].name = tmplName || currentTmplId;
+        if (frameUrl) ALL_TEMPLATES[currentTmplId].frame_url = frameUrl;
         ALL_TEMPLATES[currentTmplId].branches = branchesArr.length > 0 ? branchesArr : undefined;
         ALL_TEMPLATES[currentTmplId].tags = tagsArr.length > 0 ? tagsArr : undefined;
         

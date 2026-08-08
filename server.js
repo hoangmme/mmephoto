@@ -480,6 +480,23 @@ app.post('/api/admin/branch', (req, res) => {
   res.json({ success: true });
 });
 
+app.post('/api/admin/upload-frame', upload.single('frame'), (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'Không có file' });
+    const originalName = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const templatesDir = path.join(__dirname, 'templates');
+    if (!fs.existsSync(templatesDir)) fs.mkdirSync(templatesDir, { recursive: true });
+    
+    const filePath = path.join(templatesDir, originalName);
+    fs.writeFileSync(filePath, req.file.buffer);
+    
+    res.json({ success: true, url: 'templates/' + originalName });
+  } catch (e) {
+    console.error('Frame upload error:', e);
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+
 app.post('/api/admin/room', (req, res) => {
   const { auth, branchId, roomId } = req.body;
   if (auth !== ADMIN_DATA.adminPass) return res.status(401).json({ error: 'Unauthorized' });
