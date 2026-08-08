@@ -329,7 +329,8 @@
     let isDragging = false;
 
     const CLIP_PATHS = {
-      "heart": "M -89.5 -157.0 L -121.5 -138.0 L -124.5 -126.0 L -139.5 -113.0 L -149.5 -79.0 L -161.5 -66.0 L -156.5 -48.0 L -160.5 -4.0 L -151.5 9.0 L -153.5 22.0 L -86.5 105.0 L -68.5 110.0 L 21.5 109.0 L 19.5 149.0 L -15.5 151.0 L -0.5 153.0 L 13.5 165.0 L 31.5 165.0 L 44.5 153.0 L 84.5 139.0 L 93.5 126.0 L 110.5 118.0 L 114.5 107.0 L 134.5 103.0 L 142.5 87.0 L 159.5 73.0 L 160.5 65.0 L 126.5 23.0 L 128.5 9.0 L 119.5 -2.0 L 123.5 -48.0 L 118.5 -62.0 L 140.5 -103.0 L 141.5 -116.0 L 161.5 -142.0 L 101.5 -166.0 L 83.5 -158.0 L 67.5 -160.0 L 22.5 -131.0 L -26.5 -161.0 L -39.5 -158.0 L -58.5 -166.0 L -72.5 -157.0 Z"
+      "heart": "M -89.5 -157.0 L -121.5 -138.0 L -124.5 -126.0 L -139.5 -113.0 L -149.5 -79.0 L -161.5 -66.0 L -156.5 -48.0 L -160.5 -4.0 L -151.5 9.0 L -153.5 22.0 L -86.5 105.0 L -68.5 110.0 L 21.5 109.0 L 19.5 149.0 L -15.5 151.0 L -0.5 153.0 L 13.5 165.0 L 31.5 165.0 L 44.5 153.0 L 84.5 139.0 L 93.5 126.0 L 110.5 118.0 L 114.5 107.0 L 134.5 103.0 L 142.5 87.0 L 159.5 73.0 L 160.5 65.0 L 126.5 23.0 L 128.5 9.0 L 119.5 -2.0 L 123.5 -48.0 L 118.5 -62.0 L 140.5 -103.0 L 141.5 -116.0 L 161.5 -142.0 L 101.5 -166.0 L 83.5 -158.0 L 67.5 -160.0 L 22.5 -131.0 L -26.5 -161.0 L -39.5 -158.0 L -58.5 -166.0 L -72.5 -157.0 Z",
+      "path2": "M 0.0664062 -1.667969 L 91.109375 -1.667969 L 91.109375 81.398438 L 0.0664062 81.398438 Z M 0.0664062 -1.667969"
     };
 
     let dragStartPos = { x: 0, y: 0 };
@@ -473,7 +474,7 @@
         const card = document.createElement('div');
         card.className = `slot-card ${idx === selectedSlotIdx ? 'active' : ''}`;
         card.onclick = (e) => {
-          if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && !e.target.classList.contains('chk-slot-photo')) {
+          if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'OPTION' && !e.target.classList.contains('chk-slot-photo')) {
             selectedSlotIdx = idx;
             renderSidebar();
             renderCanvas();
@@ -505,7 +506,8 @@
             <select class="sel-path" data-idx="${idx}" style="font-size: 11px; padding: 2px 4px; background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 4px;">
               <option value="">+ Không có Path (Mặc định)</option>
               <option value="heart" ${slot.clipPath === CLIP_PATHS.heart ? 'selected' : ''}>+ Path: Trái Tim</option>
-              ${slot.clipPath && slot.clipPath !== CLIP_PATHS.heart ? '<option value="custom" selected>+ Path: Tùy Chỉnh (Custom)</option>' : ''}
+              <option value="path2" ${slot.clipPath === CLIP_PATHS.path2 ? 'selected' : ''}>+ Path 2 (Rect)</option>
+              ${slot.clipPath && slot.clipPath !== CLIP_PATHS.heart && slot.clipPath !== CLIP_PATHS.path2 ? '<option value="custom" selected>+ Path: Tùy Chỉnh (Custom)</option>' : ''}
             </select>
             
             <button class="btn-sm btn-del" data-idx="${idx}" style="color: #f43f5e;">Xóa</button>
@@ -580,6 +582,8 @@
             delete currentSlots[idx].clipPath;
           } else if (val === 'heart') {
             currentSlots[idx].clipPath = CLIP_PATHS.heart;
+          } else if (val === 'path2') {
+            currentSlots[idx].clipPath = CLIP_PATHS.path2;
           }
           // if 'custom', we leave it alone (they can't select custom manually anyway, it's just for display if it already has one)
           renderSidebar();
