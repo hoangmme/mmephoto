@@ -543,9 +543,270 @@ if (typeof window !== "undefined") {
 if (typeof window !== "undefined") { window.ALL_TEMPLATES = ALL_TEMPLATES; }
 
 // [AUTO-SAVED TEMPLATE] 
-Object.assign(ALL_TEMPLATES, { "test": {
-    "canvas_width": 1200,
-    "canvas_height": 1800,
-    "slots": [],
-    "name": "test"
+Object.assign(ALL_TEMPLATES, { "A5-2 (Hearts)": {
+        "canvas_width": 1748,
+        "canvas_height": 2480,
+            "slots": [
+                    {
+                            "id": "slot_test_0",
+                            "color": "#ff3131",
+                            "cx": 203,
+                            "cy": 311,
+                            "w": 370,
+                            "h": 582,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_1",
+                            "color": "#ff3131",
+                            "cx": 592,
+                            "cy": 309,
+                            "w": 255,
+                            "h": 333,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_2",
+                            "color": "#ff3131",
+                            "cx": 910,
+                            "cy": 199,
+                            "w": 193,
+                            "h": 254,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_3",
+                            "color": "#ff3131",
+                            "cx": 1092,
+                            "cy": 154,
+                            "w": 155,
+                            "h": 164,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_4",
+                            "color": "#ff3131",
+                            "cx": 991,
+                            "cy": 470,
+                            "w": 357,
+                            "h": 266,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_5",
+                            "color": "#ff3131",
+                            "cx": 363,
+                            "cy": 848,
+                            "w": 189,
+                            "h": 198,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_6",
+                            "color": "#ff3131",
+                            "cx": 249,
+                            "cy": 1084,
+                            "w": 520,
+                            "h": 374,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_7",
+                            "color": "#ff3131",
+                            "cx": 641,
+                            "cy": 732,
+                            "w": 159,
+                            "h": 208,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_8",
+                            "color": "#ff3131",
+                            "cx": 643,
+                            "cy": 942,
+                            "w": 152,
+                            "h": 213,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_9",
+                            "color": "#ff3131",
+                            "cx": 639,
+                            "cy": 1153,
+                            "w": 151,
+                            "h": 209,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_10",
+                            "color": "#ff3131",
+                            "cx": 913,
+                            "cy": 855,
+                            "w": 126,
+                            "h": 139,
+                            "rotation": -14
+                    },
+                    {
+                            "id": "slot_test_11",
+                            "color": "#ff3131",
+                            "cx": 1072,
+                            "cy": 916,
+                            "w": 130,
+                            "h": 138,
+                            "rotation": 11
+                    },
+                    {
+                            "id": "slot_test_12",
+                            "color": "#ff3131",
+                            "cx": 960,
+                            "cy": 1052,
+                            "w": 122,
+                            "h": 135,
+                            "rotation": -7
+                    },
+                    {
+                            "id": "slot_test_13",
+                            "color": "#ff3131",
+                            "cx": 217,
+                            "cy": 1535,
+                            "w": 337,
+                            "h": 237,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_14",
+                            "color": "#ff3131",
+                            "cx": 597,
+                            "cy": 1406,
+                            "w": 235,
+                            "h": 188,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_15",
+                            "color": "#ff3131",
+                            "cx": 542,
+                            "cy": 1661,
+                            "w": 134,
+                            "h": 198,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_16",
+                            "color": "#ff3131",
+                            "cx": 936,
+                            "cy": 1475,
+                            "w": 144,
+                            "h": 105,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_17",
+                            "color": "#ff3131",
+                            "cx": 1105,
+                            "cy": 1473,
+                            "w": 96,
+                            "h": 125,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_18",
+                            "color": "#ff3131",
+                            "cx": 928,
+                            "cy": 1660,
+                            "w": 115,
+                            "h": 152,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_test_19",
+                            "color": "#ff3131",
+                            "cx": 1094,
+                            "cy": 1652,
+                            "w": 115,
+                            "h": 133,
+                            "rotation": 0
+                    }
+            ],
+            "name": "A5-2 (Hearts)",
+            "frame_url": "templates/A5-2.png",
+            "branches": [
+                    "hangkhay",
+                    "hang  khay"
+            ],
+            "tags": [
+                    "a5"
+            ]
+    } });
+
+// [AUTO-SAVED TEMPLATE] 
+Object.assign(ALL_TEMPLATES, { "template 5": {
+    "canvas_width": 2480,
+    "canvas_height": 3507,
+    "slots": [
+        {
+            "id": "slot_template 5_0",
+            "color": "#ff3131",
+            "cx": 1240,
+            "cy": 1395,
+            "w": 2040,
+            "h": 2397,
+            "rotation": 0
+        },
+        {
+            "id": "slot_template 5_1",
+            "color": "#ff3131",
+            "cx": 666,
+            "cy": 2941,
+            "w": 541,
+            "h": 418,
+            "rotation": 0
+        }
+    ],
+    "name": "Template 5",
+    "frame_url": "templates/template-5.png",
+    "branches": [
+        "hangkhay",
+        "hang  khay"
+    ],
+    "tags": [
+        "a5"
+    ]
+} });
+
+// [AUTO-SAVED TEMPLATE] 
+Object.assign(ALL_TEMPLATES, { "Template 6": {
+    "canvas_width": 2480,
+    "canvas_height": 3507,
+    "slots": [
+        {
+            "id": "slot_Template 6_0",
+            "color": "#ff3131",
+            "cx": 1242,
+            "cy": 1628,
+            "w": 2299,
+            "h": 1385,
+            "rotation": 0
+        },
+        {
+            "id": "slot_Template 6_1",
+            "color": "#ff3131",
+            "cx": 565,
+            "cy": 2975,
+            "w": 873,
+            "h": 600,
+            "rotation": 0
+        },
+        {
+            "id": "slot_Template 6_2",
+            "color": "#ff3131",
+            "cx": 2139,
+            "cy": 2977,
+            "w": 502,
+            "h": 649,
+            "rotation": 0
+        }
+    ],
+    "name": "Template 6",
+    "frame_url": "templates/template-6.png"
 } });
