@@ -1,12 +1,15 @@
 ﻿<!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MME Slot & Frame Visual Calibration Tool</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet">
   <style>
     :root {
       --bg: #090d16;
@@ -19,7 +22,13 @@
       --text: #f1f5f9;
       --text-muted: #94a3b8;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       background: var(--bg);
       color: var(--text);
@@ -29,6 +38,7 @@
       flex-direction: column;
       overflow: hidden;
     }
+
     header {
       height: 60px;
       background: rgba(15, 23, 42, 0.95);
@@ -40,6 +50,7 @@
       padding: 0 20px;
       z-index: 100;
     }
+
     .brand {
       display: flex;
       align-items: center;
@@ -47,13 +58,21 @@
       font-weight: 700;
       font-size: 16px;
     }
-    .brand span { color: var(--accent); }
+
+    .brand span {
+      color: var(--accent);
+    }
+
     .controls-top {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    select, button, input[type="text"], input[type="number"] {
+
+    select,
+    button,
+    input[type="text"],
+    input[type="number"] {
       background: rgba(30, 41, 59, 0.8);
       border: 1px solid var(--border);
       color: var(--text);
@@ -63,10 +82,14 @@
       outline: none;
       transition: all 0.2s;
     }
-    select:focus, button:hover, input:focus {
+
+    select:focus,
+    button:hover,
+    input:focus {
       border-color: var(--accent);
       box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
     }
+
     button.btn-primary {
       background: linear-gradient(135deg, var(--accent), var(--accent-purple));
       color: white;
@@ -74,6 +97,7 @@
       border: none;
       cursor: pointer;
     }
+
     button.btn-save {
       background: linear-gradient(135deg, #10b981, #059669);
       color: white;
@@ -81,12 +105,19 @@
       border: none;
       cursor: pointer;
     }
-    button.btn-save:hover, button.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    button.btn-save:hover,
+    button.btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
     .main-layout {
       flex: 1;
       display: flex;
       overflow: hidden;
     }
+
     .canvas-viewport {
       flex: 1;
       background: #030712;
@@ -98,6 +129,7 @@
       overflow: hidden;
       padding: 20px;
     }
+
     .view-toolbar {
       position: absolute;
       top: 16px;
@@ -113,6 +145,7 @@
       z-index: 10;
       font-size: 13px;
     }
+
     .canvas-container {
       max-width: 100%;
       max-height: 100%;
@@ -120,14 +153,16 @@
       align-items: center;
       justify-content: center;
     }
+
     canvas {
-      box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
       border-radius: 4px;
       background: #ffffff;
       max-width: 100%;
       max-height: calc(100vh - 120px);
       object-fit: contain;
     }
+
     .sidebar {
       width: 440px;
       background: var(--card-bg);
@@ -137,6 +172,7 @@
       flex-direction: column;
       overflow: hidden;
     }
+
     .sidebar-header {
       padding: 14px 18px;
       border-bottom: 1px solid var(--border);
@@ -146,6 +182,7 @@
       align-items: center;
       justify-content: space-between;
     }
+
     .slot-list {
       flex: 1;
       overflow-y: auto;
@@ -154,6 +191,7 @@
       flex-direction: column;
       gap: 10px;
     }
+
     .slot-card {
       background: rgba(30, 41, 59, 0.7);
       border: 1px solid var(--border);
@@ -161,10 +199,12 @@
       padding: 12px;
       transition: all 0.2s;
     }
+
     .slot-card.active {
       border-color: var(--accent);
       background: rgba(56, 189, 248, 0.12);
     }
+
     .slot-card-header {
       display: flex;
       align-items: center;
@@ -173,6 +213,7 @@
       font-weight: 600;
       font-size: 13px;
     }
+
     .badge-index {
       background: var(--accent);
       color: #000;
@@ -185,42 +226,49 @@
       font-size: 11px;
       font-weight: 700;
     }
+
     .grid-2x2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px;
       margin-bottom: 8px;
     }
+
     .field-group {
       display: flex;
       flex-direction: column;
       gap: 2px;
     }
+
     .field-group label {
       font-size: 10px;
       color: var(--text-muted);
       text-transform: uppercase;
     }
+
     .field-group input {
       font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
       padding: 5px 8px;
     }
+
     .slot-actions {
       display: flex;
       gap: 6px;
       align-items: center;
       flex-wrap: wrap;
     }
+
     .btn-sm {
       padding: 4px 8px;
       font-size: 11px;
       cursor: pointer;
     }
+
     .json-modal {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.85);
+      background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(10px);
       z-index: 200;
       display: none;
@@ -228,6 +276,7 @@
       justify-content: center;
       padding: 30px;
     }
+
     .json-box {
       background: #0f172a;
       border: 1px solid var(--border);
@@ -238,6 +287,7 @@
       display: flex;
       flex-direction: column;
     }
+
     textarea {
       flex: 1;
       min-height: 380px;
@@ -252,10 +302,14 @@
     }
   </style>
 </head>
+
 <body>
   <header>
     <div class="brand">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#38bdf8" stroke-width="2"/><path d="M12 6v12M6 12h12" stroke="#f43f5e" stroke-width="2"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="#38bdf8" stroke-width="2" />
+        <path d="M12 6v12M6 12h12" stroke="#f43f5e" stroke-width="2" />
+      </svg>
       MME Slot Editor <span>Visual Calibration</span>
     </div>
     <div class="controls-top">
@@ -293,7 +347,8 @@
     </div>
 
     <div class="sidebar">
-      <div class="sidebar-header" style="background: #1e293b; padding: 12px; border-bottom: 1px solid #334155; margin-bottom: 12px; border-radius: 6px; display: flex; flex-direction: column; gap: 8px;">
+      <div class="sidebar-header"
+        style="background: #1e293b; padding: 12px; border-bottom: 1px solid #334155; margin-bottom: 12px; border-radius: 6px; display: flex; flex-direction: column; gap: 8px;">
         <div class="field-group">
           <label>Tên Template (Hiển thị UI)</label>
           <input type="text" id="txtTmplName" placeholder="VD: Khung 4 Ảnh" style="width: 100%;">
@@ -328,8 +383,8 @@
   </div>
 
   <script type="module">
-    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=300';
-    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=300';
+    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=301';
+    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=301';
 
     let currentTmplId = 'a5-1';
     let currentSlots = [];
@@ -338,7 +393,8 @@
 
     const CLIP_PATHS = {
       "heart": "M -89.5 -157.0 L -121.5 -138.0 L -124.5 -126.0 L -139.5 -113.0 L -149.5 -79.0 L -161.5 -66.0 L -156.5 -48.0 L -160.5 -4.0 L -151.5 9.0 L -153.5 22.0 L -86.5 105.0 L -68.5 110.0 L 21.5 109.0 L 19.5 149.0 L -15.5 151.0 L -0.5 153.0 L 13.5 165.0 L 31.5 165.0 L 44.5 153.0 L 84.5 139.0 L 93.5 126.0 L 110.5 118.0 L 114.5 107.0 L 134.5 103.0 L 142.5 87.0 L 159.5 73.0 L 160.5 65.0 L 126.5 23.0 L 128.5 9.0 L 119.5 -2.0 L 123.5 -48.0 L 118.5 -62.0 L 140.5 -103.0 L 141.5 -116.0 L 161.5 -142.0 L 101.5 -166.0 L 83.5 -158.0 L 67.5 -160.0 L 22.5 -131.0 L -26.5 -161.0 L -39.5 -158.0 L -58.5 -166.0 L -72.5 -157.0 Z",
-      "path2": "M 0.0664062 -1.667969 L 91.109375 -1.667969 L 91.109375 81.398438 L 0.0664062 81.398438 Z M 0.0664062 -1.667969"
+      "path2": "M 0.0664062 -1.667969 L 91.109375 -1.667969 L 91.109375 81.398438 L 0.0664062 81.398438 Z M 0.0664062 -1.667969",
+      "heart2": "M -134.5 -55.2 L -133.2 -57.2 L -129.1 -77.7 L -123.1 -94.0 L -116.7 -106.5 L -108.5 -116.1 C -103.7 -119.9 -99.2 -123.7 -93.8 -126.8 L -85.7 -129.7 L -71.7 -131.5 C -65.3 -130.7 -58.8 -129.3 -52.9 -126.6 L -39.4 -118.5 L -28.9 -110.2 L -18.3 -101.2 L -10.4 -94.4 C -5.2 -89.3 1.6 -83.5 9.1 -82.8 C 13.7 -83.3 18.7 -85.2 22.8 -87.3 L 36.4 -92.8 L 48.7 -98.0 C 60.3 -101.5 70.8 -106.2 83.0 -107.7 L 89.1 -107.9 L 98.7 -106.3 C 105.0 -104.2 110.7 -100.4 115.9 -96.5 L 123.3 -89.1 L 129.7 -79.5 C 130.8 -76.0 131.2 -70.5 133.4 -67.6 L 134.5 -54.0 L 133.5 -50.7 C 133.2 -43.9 132.4 -35.9 131.0 -29.1 L 128.7 -23.5 L 123.6 -17.0 C 123.2 -11.9 124.1 -8.1 121.9 -3.2 L 119.0 2.6 C 117.3 3.8 117.7 3.1 116.1 3.4 L 114.0 5.4 L 112.2 5.8 L 110.7 7.2 C 109.3 10.1 107.7 12.5 106.7 15.8 L 108.6 20.6 L 107.6 23.5 C 103.9 29.0 99.4 34.4 96.1 39.8 C 94.1 41.0 92.5 43.2 91.5 45.4 L 85.6 51.6 C 82.3 55.4 78.9 59.6 74.6 62.3 C 70.2 67.7 64.7 72.9 58.9 77.4 C 56.0 80.7 53.1 83.3 49.2 85.6 C 46.5 88.3 43.3 90.8 39.7 92.6 C 34.8 95.6 30.5 100.4 25.0 102.1 L 18.8 105.9 L 18.1 107.6 L 9.0 112.0 L 2.4 115.4 L -18.1 126.6 L -19.5 126.2 L -26.2 129.9 L -34.9 131.5 C -40.0 130.3 -44.2 127.6 -47.6 123.6 C -49.4 122.9 -52.0 119.7 -52.9 118.0 C -55.2 116.9 -58.4 113.5 -59.6 111.2 L -62.9 108.6 L -63.5 106.6 C -66.0 105.6 -65.8 104.2 -67.5 102.3 C -69.8 101.1 -71.7 97.8 -73.3 95.6 C -75.2 94.1 -76.1 92.2 -77.3 90.1 C -79.5 88.1 -81.3 85.2 -83.5 83.2 L -83.5 81.2 L -86.5 78.8 C -87.4 76.9 -88.4 74.4 -90.4 73.8 L -95.7 64.1 C -97.4 62.0 -99.2 59.9 -99.5 57.8 L -100.4 58.1 L -100.0 56.5 L -103.5 49.7 L -105.3 49.0 L -104.7 47.4 L -106.2 46.4 C -105.8 44.8 -106.5 44.7 -107.7 44.5 L -107.4 42.6 L -108.6 40.2 L -110.3 39.3 L -109.7 38.3 C -111.0 35.1 -112.7 32.6 -113.6 29.2 L -118.6 19.6 C -121.2 10.5 -124.9 1.8 -127.0 -7.6 C -128.0 -8.5 -127.4 -2.3 -129.8 -6.3 C -135.0 -20.8 -136.5 -38.7 -133.9 -53.6 Z M -134.5 -55.2"
     };
 
     let dragStartPos = { x: 0, y: 0 };
@@ -371,7 +427,7 @@
       const pc = document.createElement('canvas');
       pc.width = 1200; pc.height = 1200;
       const pctx = pc.getContext('2d');
-      
+
       // Gradient background
       const grad = pctx.createLinearGradient(0, 0, 1200, 1200);
       grad.addColorStop(0, bgColor);
@@ -461,7 +517,7 @@
 
       document.getElementById('txtTmplName').value = tmpl.name || '';
       document.getElementById('txtTmplFrameUrl').value = tmpl.frame_url || '';
-      
+
       document.querySelectorAll('.chk-tmpl-branch').forEach(chk => {
         chk.checked = tmpl.branches && tmpl.branches.includes(chk.value);
       });
@@ -515,8 +571,9 @@
             <select class="sel-path" data-idx="${idx}" style="font-size: 11px; padding: 2px 4px; background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 4px;">
               <option value="">+ Không có Path (Mặc định)</option>
               <option value="heart" ${slot.clipPath === CLIP_PATHS.heart ? 'selected' : ''}>+ Path: Trái Tim</option>
+              <option value="heart2" ${slot.clipPath === CLIP_PATHS.heart2 ? 'selected' : ''}>+ Path: Trái Tim 2</option>
               <option value="path2" ${slot.clipPath === CLIP_PATHS.path2 ? 'selected' : ''}>+ Path 2 (Rect)</option>
-              ${slot.clipPath && slot.clipPath !== CLIP_PATHS.heart && slot.clipPath !== CLIP_PATHS.path2 ? '<option value="custom" selected>+ Path: Tùy Chỉnh (Custom)</option>' : ''}
+              ${slot.clipPath && slot.clipPath !== CLIP_PATHS.heart && slot.clipPath !== CLIP_PATHS.path2 && slot.clipPath !== CLIP_PATHS.heart2 ? '<option value="custom" selected>+ Path: Tùy Chỉnh (Custom)</option>' : ''}
             </select>
             
             <button class="btn-sm btn-del" data-idx="${idx}" style="color: #f43f5e;">Xóa</button>
@@ -591,6 +648,8 @@
             delete currentSlots[idx].clipPath;
           } else if (val === 'heart') {
             currentSlots[idx].clipPath = CLIP_PATHS.heart;
+          } else if (val === 'heart2') {
+            currentSlots[idx].clipPath = CLIP_PATHS.heart2;
           } else if (val === 'path2') {
             currentSlots[idx].clipPath = CLIP_PATHS.path2;
           }
@@ -668,7 +727,7 @@
             ctx.save();
             ctx.translate(slot.cx, slot.cy);
             if (slot.rotation) ctx.rotate(slot.rotation * Math.PI / 180);
-            
+
             const p = new Path2D(slot.clipPath);
             ctx.strokeStyle = '#f43f5e';
             ctx.lineWidth = 5;
@@ -709,13 +768,13 @@
           const hh = slot.h / 2;
           const handlePts = [
             { x: -hw, y: -hh }, // Top-Left
-            { x:  hw, y: -hh }, // Top-Right
-            { x: -hw, y:  hh }, // Bottom-Left
-            { x:  hw, y:  hh }, // Bottom-Right
-            { x:   0, y: -hh }, // Top
-            { x:   0, y:  hh }, // Bottom
-            { x: -hw, y:   0 }, // Left
-            { x:  hw, y:   0 }  // Right
+            { x: hw, y: -hh }, // Top-Right
+            { x: -hw, y: hh }, // Bottom-Left
+            { x: hw, y: hh }, // Bottom-Right
+            { x: 0, y: -hh }, // Top
+            { x: 0, y: hh }, // Bottom
+            { x: -hw, y: 0 }, // Left
+            { x: hw, y: 0 }  // Right
           ];
 
           handlePts.forEach(pt => {
@@ -747,10 +806,10 @@
         { name: 'tr', x: slot.cx + hw, y: slot.cy - hh, cursor: 'nesw-resize' },
         { name: 'bl', x: slot.cx - hw, y: slot.cy + hh, cursor: 'nesw-resize' },
         { name: 'br', x: slot.cx + hw, y: slot.cy + hh, cursor: 'nwse-resize' },
-        { name: 't',  x: slot.cx,      y: slot.cy - hh, cursor: 'ns-resize' },
-        { name: 'b',  x: slot.cx,      y: slot.cy + hh, cursor: 'ns-resize' },
-        { name: 'l',  x: slot.cx - hw, y: slot.cy,      cursor: 'ew-resize' },
-        { name: 'r',  x: slot.cx + hw, y: slot.cy,      cursor: 'ew-resize' }
+        { name: 't', x: slot.cx, y: slot.cy - hh, cursor: 'ns-resize' },
+        { name: 'b', x: slot.cx, y: slot.cy + hh, cursor: 'ns-resize' },
+        { name: 'l', x: slot.cx - hw, y: slot.cy, cursor: 'ew-resize' },
+        { name: 'r', x: slot.cx + hw, y: slot.cy, cursor: 'ew-resize' }
       ];
 
       for (const h of handles) {
@@ -862,7 +921,7 @@
     };
 
     selTemplate.onchange = () => loadTemplate(selTemplate.value);
-    
+
     document.getElementById('txtTmplFrameUrl').onchange = (e) => {
       const url = e.target.value.trim();
       if (url) {
@@ -879,11 +938,11 @@
       if (!file) return;
       const formData = new FormData();
       formData.append('frame', file);
-      
+
       const btn = document.getElementById('btnUploadFrame');
       const oldText = btn.textContent;
       btn.textContent = 'Đang tải...';
-      
+
       try {
         const res = await fetch('/api/admin/upload-frame', { method: 'POST', body: formData });
         const data = await res.json();
@@ -919,11 +978,11 @@
     btnSaveDirect.onclick = async () => {
       try {
         localStorage.setItem(`mme_slot_draft_${currentTmplId}`, JSON.stringify(currentSlots));
-        
+
         const tmplName = document.getElementById('txtTmplName').value.trim();
         const frameUrl = document.getElementById('txtTmplFrameUrl').value.trim();
         let branchesArr = Array.from(document.querySelectorAll('.chk-tmpl-branch:checked')).map(c => c.value);
-        
+
         const fallbackInput = document.getElementById('txtTmplBranchesFallback');
         if (fallbackInput) {
           const branchesStr = fallbackInput.value.trim();
@@ -937,7 +996,7 @@
         if (frameUrl) ALL_TEMPLATES[currentTmplId].frame_url = frameUrl;
         ALL_TEMPLATES[currentTmplId].branches = branchesArr.length > 0 ? branchesArr : undefined;
         ALL_TEMPLATES[currentTmplId].tags = tagsArr.length > 0 ? tagsArr : undefined;
-        
+
         if (!ALL_TEMPLATES[currentTmplId].branches) delete ALL_TEMPLATES[currentTmplId].branches;
         if (!ALL_TEMPLATES[currentTmplId].tags) delete ALL_TEMPLATES[currentTmplId].tags;
         ALL_TEMPLATES[currentTmplId].slots = currentSlots;
@@ -1007,24 +1066,24 @@
         alert('Template ID này đã tồn tại!');
         return;
       }
-      
+
       const w = parseInt(prompt('Nhập chiều rộng (Width) theo pixel:', '1200'));
       const h = parseInt(prompt('Nhập chiều cao (Height) theo pixel:', '1800'));
       if (isNaN(w) || isNaN(h)) return;
-      
+
       ALL_TEMPLATES[id] = {
         canvas_width: w,
         canvas_height: h,
         slots: []
       };
-      
+
       const selTemplate = document.getElementById('selTemplate');
       const opt = document.createElement('option');
       opt.value = id;
       opt.textContent = `${id} (${w}x${h}) [Local]`;
       selTemplate.appendChild(opt);
       selTemplate.value = id;
-      
+
       loadTemplate(id);
     };
 
@@ -1042,9 +1101,9 @@
             c.innerHTML += `<label style="cursor:pointer;"><input type="checkbox" value="${b}" class="chk-tmpl-branch"> ${b}</label>`;
           });
         } else if (data && data.branches) {
-           Object.keys(data.branches).forEach(b => {
-             c.innerHTML += `<label style="cursor:pointer;"><input type="checkbox" value="${b}" class="chk-tmpl-branch"> ${b}</label>`;
-           });
+          Object.keys(data.branches).forEach(b => {
+            c.innerHTML += `<label style="cursor:pointer;"><input type="checkbox" value="${b}" class="chk-tmpl-branch"> ${b}</label>`;
+          });
         }
       })
       .catch(e => {
@@ -1059,4 +1118,5 @@
 
   </script>
 </body>
+
 </html>
