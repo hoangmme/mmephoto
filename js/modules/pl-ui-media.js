@@ -1,12 +1,12 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=297';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=297';
-import { LightboxComponent } from '../components/LightboxComponent.js?v=297';
-import { HeaderActions } from '../components/HeaderActions.js?v=297';
-import { CrossSellBanner } from '../components/CrossSellBanner.js?v=297';
-import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=297';
-import { QueueModalComponent } from '../components/QueueModalComponent.js?v=297';
-import { StepBannerComponent } from '../components/StepBannerComponent.js?v=297';
-import { ImageListUI } from '../components/ImageListUI.js?v=297';
+﻿import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=298';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=298';
+import { LightboxComponent } from '../components/LightboxComponent.js?v=298';
+import { HeaderActions } from '../components/HeaderActions.js?v=298';
+import { CrossSellBanner } from '../components/CrossSellBanner.js?v=298';
+import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=298';
+import { QueueModalComponent } from '../components/QueueModalComponent.js?v=298';
+import { StepBannerComponent } from '../components/StepBannerComponent.js?v=298';
+import { ImageListUI } from '../components/ImageListUI.js?v=298';
 
 export const UIMediaMixin = {
   _initOverlays() {
@@ -188,12 +188,39 @@ this._syncLayoutSelection = () => {
           updateUI();
           
           const templateKey = (allowedType === 'a4') ? 'a4' : (frameIndex === '0' ? 'a5_top' : 'a5_bottom');
-          const tmpls = (typeof ALL_TEMPLATES !== 'undefined' ? ALL_TEMPLATES : null) || (typeof window !== 'undefined' ? window.ALL_TEMPLATES : null) || {};
+          let tmpls = (typeof ALL_TEMPLATES !== 'undefined' ? ALL_TEMPLATES : null) || (typeof window !== 'undefined' ? window.ALL_TEMPLATES : null) || {};
+          
+          if (allowedType === 'a5') {
+            const filteredTmpls = {};
+            if (frameIndex === '0') {
+              ['a5-1', 'A5-2 (Hearts)'].forEach(k => { if(tmpls[k]) filteredTmpls[k] = tmpls[k]; });
+              tmpls = filteredTmpls;
+            } else if (frameIndex === '1') {
+              const topKey = this.selectedLayoutTemplates.a5_top;
+              let allowedKeys = [];
+              if (topKey === 'a5-1') {
+                allowedKeys = ['template-3', 'template-4'];
+              } else if (topKey === 'A5-2 (Hearts)') {
+                allowedKeys = ['template 5', 'Template 6'];
+              }
+              if (allowedKeys.length > 0) {
+                 allowedKeys.forEach(k => { if(tmpls[k]) filteredTmpls[k] = tmpls[k]; });
+                 tmpls = filteredTmpls;
+              }
+            }
+          }
           
           this._templatePickerModal.templates = tmpls;
-          const excludeKey = (allowedType === 'a5') ? this.selectedLayoutTemplates.a5_top : null;
+          const excludeKey = null; 
           this._templatePickerModal.showModal(allowedType, (selectedKey) => {
             this.selectedLayoutTemplates[templateKey] = selectedKey;
+            
+            // Auto update bottom template if top is changed to keep it consistent
+            if (templateKey === 'a5_top') {
+              if (selectedKey === 'a5-1') this.selectedLayoutTemplates.a5_bottom = 'template-3';
+              else if (selectedKey === 'A5-2 (Hearts)') this.selectedLayoutTemplates.a5_bottom = 'template 5';
+            }
+            
             updateUI();
           }, excludeKey);
           return;
