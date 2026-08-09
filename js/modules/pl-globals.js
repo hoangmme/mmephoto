@@ -776,37 +776,44 @@ Object.assign(ALL_TEMPLATES, { "template 5": {
 
 // [AUTO-SAVED TEMPLATE] 
 Object.assign(ALL_TEMPLATES, { "Template 6": {
-    "canvas_width": 2480,
-    "canvas_height": 3507,
-    "slots": [
-        {
-            "id": "slot_Template 6_0",
-            "color": "#ff3131",
-            "cx": 1242,
-            "cy": 1628,
-            "w": 2299,
-            "h": 1385,
-            "rotation": 0
-        },
-        {
-            "id": "slot_Template 6_1",
-            "color": "#ff3131",
-            "cx": 565,
-            "cy": 2975,
-            "w": 873,
-            "h": 600,
-            "rotation": 0
-        },
-        {
-            "id": "slot_Template 6_2",
-            "color": "#ff3131",
-            "cx": 2139,
-            "cy": 2977,
-            "w": 502,
-            "h": 649,
-            "rotation": 0
-        }
-    ],
-    "name": "Template 6",
-    "frame_url": "templates/template-6.png"
-} });
+            "canvas_width": 2480,
+            "canvas_height": 3507,
+            "slots": [
+                    {
+                            "id": "slot_Template 6_0",
+                            "color": "#ff3131",
+                            "cx": 1242,
+                            "cy": 1628,
+                            "w": 2299,
+                            "h": 1385,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_Template 6_1",
+                            "color": "#ff3131",
+                            "cx": 565,
+                            "cy": 2975,
+                            "w": 873,
+                            "h": 600,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_Template 6_2",
+                            "color": "#ff3131",
+                            "cx": 2139,
+                            "cy": 2977,
+                            "w": 502,
+                            "h": 649,
+                            "rotation": 0
+                    }
+            ],
+            "name": "Template 6",
+            "frame_url": "templates/template-6.png",
+            "branches": [
+                    "hangkhay",
+                    "hang  khay"
+            ],
+            "tags": [
+                    "a5"
+            ]
+    } });
