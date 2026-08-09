@@ -544,8 +544,8 @@ if (typeof window !== "undefined") { window.ALL_TEMPLATES = ALL_TEMPLATES; }
 
 // [AUTO-SAVED TEMPLATE] 
 Object.assign(ALL_TEMPLATES, { "A5-2 (Hearts)": {
-        "canvas_width": 2475,
-        "canvas_height": 3500,
+        "canvas_width": 1748,
+        "canvas_height": 2480,
             "slots": [
                     {
                             "id": "slot_test_0",
