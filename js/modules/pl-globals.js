@@ -729,7 +729,7 @@ Object.assign(ALL_TEMPLATES, { "A5-2 (Hearts)": {
                     }
             ],
             "name": "A5-2 (Hearts)",
-            "frame_url": "templates/B___n_sao_c___a__Linh_Linh__Frame_self-booth__N__u_hoa_.png",
+            "frame_url": "templates/A5-2.png",
             "branches": [
                     "hangkhay",
                     "hang  khay"
