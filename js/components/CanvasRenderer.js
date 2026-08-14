@@ -1,9 +1,9 @@
-﻿/**
+/**
  * CanvasRenderer.js
  * High-performance Canvas rendering engine for Photobooth templates, slots, and HiDPI exports.
  */
 
-import { ALL_TEMPLATES, A5_WIDTH, A5_HEIGHT } from '../modules/pl-globals.js?v=301';
+import { ALL_TEMPLATES, A5_WIDTH, A5_HEIGHT } from '../modules/pl-globals.js?v=302';
 
 export class CanvasRenderer {
   static calcCover(imgW, imgH, slotW, slotH, zoom = 1.0, rotation = 0) {
