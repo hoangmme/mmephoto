@@ -203,7 +203,7 @@ export const UIMediaMixin = {
               } else if (topKey === 'A5-2 (Hearts)') {
                 allowedKeys = ['template 5', 'Template 6'];
               } else if (topKey === 'A5-3 (Hearts)') {
-                allowedKeys = ['template 7', 'Template 8'];
+                allowedKeys = ['template 7', 'template 8'];
               }
               if (allowedKeys.length > 0) {
                 allowedKeys.forEach(k => { if (tmpls[k]) filteredTmpls[k] = tmpls[k]; });

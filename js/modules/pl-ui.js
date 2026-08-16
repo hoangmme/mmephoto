@@ -2,7 +2,7 @@ import { UICoreMixin } from './pl-ui-core.js?v=303';
 import { UIStepsMixin } from './pl-ui-steps.js?v=303';
 import { UIDraftsMixin } from './pl-ui-drafts.js?v=303';
 import { UIInteractionsMixin } from './pl-ui-interactions.js?v=303';
-import { UIMediaMixin } from './pl-ui-media.js?v=303';
+import { UIMediaMixin } from './pl-ui-media.js?v=304';
 
 export const UIMixin = Object.assign(
   {},
