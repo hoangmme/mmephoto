@@ -123,10 +123,10 @@
       background: #030712;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      /*align-items: center;*/
+      /*justify-content: center;*/
       position: relative;
-      overflow: hidden;
+      overflow: scroll;
       padding: 20px;
     }
 
@@ -148,19 +148,19 @@
 
     .canvas-container {
       max-width: 100%;
-      max-height: 100%;
+      /*max-height: 100%;*/
       display: flex;
-      align-items: center;
-      justify-content: center;
+      /*align-items: center;*/
+      /*justify-content: center;*/
     }
 
     canvas {
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
       border-radius: 4px;
       background: #ffffff;
-      max-width: 100%;
-      max-height: calc(100vh - 120px);
-      object-fit: contain;
+      /*max-width: 100%;*/
+      /*max-height: calc(100vh - 120px);*/
+      /*object-fit: contain;*/
     }
 
     .sidebar {
@@ -383,8 +383,8 @@
   </div>
 
   <script type="module">
-    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=302';
-    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=302';
+    import { ALL_TEMPLATES } from './js/modules/pl-globals.js?v=303';
+    import { CanvasRenderer } from './js/components/CanvasRenderer.js?v=303';
 
     let currentTmplId = 'a5-1';
     let currentSlots = [];

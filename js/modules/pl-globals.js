@@ -1018,3 +1018,706 @@ Object.assign(ALL_TEMPLATES, { "A4-2 (Hearts)": {
                         "a4"
                 ]
         } });
+
+// [AUTO-SAVED TEMPLATE] 
+Object.assign(ALL_TEMPLATES, { "A4-3 (Hearts)": {
+            "canvas_width": 2475,
+            "canvas_height": 3500,
+            "slots": [
+                    {
+                            "id": "slot_A4-3 (Hearts)_0",
+                            "color": "#ff3131",
+                            "cx": 420,
+                            "cy": 193,
+                            "w": 294,
+                            "h": 268,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_1",
+                            "color": "#ff3131",
+                            "cx": 690,
+                            "cy": 193,
+                            "w": 294,
+                            "h": 268,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_2",
+                            "color": "#ff3131",
+                            "cx": 960,
+                            "cy": 193,
+                            "w": 294,
+                            "h": 268,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_3",
+                            "color": "#ff3131",
+                            "cx": 420,
+                            "cy": 493,
+                            "w": 294,
+                            "h": 268,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_4",
+                            "color": "#ff3131",
+                            "cx": 690,
+                            "cy": 493,
+                            "w": 294,
+                            "h": 268,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_5",
+                            "color": "#ff3131",
+                            "cx": 960,
+                            "cy": 493,
+                            "w": 294,
+                            "h": 268,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_6",
+                            "color": "#ff3131",
+                            "cx": 420,
+                            "cy": 791,
+                            "w": 294,
+                            "h": 268,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_7",
+                            "color": "#ff3131",
+                            "cx": 960,
+                            "cy": 791,
+                            "w": 294,
+                            "h": 268,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_8",
+                            "color": "#ff3131",
+                            "cx": 1597,
+                            "cy": 495,
+                            "w": 651,
+                            "h": 908,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_9",
+                            "color": "#ff3131",
+                            "cx": 2323,
+                            "cy": 191,
+                            "w": 238,
+                            "h": 302,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_10",
+                            "color": "#ff3131",
+                            "cx": 2324,
+                            "cy": 495,
+                            "w": 238,
+                            "h": 302,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_11",
+                            "color": "#ff3131",
+                            "cx": 2324,
+                            "cy": 796,
+                            "w": 238,
+                            "h": 302,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_12",
+                            "color": "#ff3131",
+                            "cx": 686,
+                            "cy": 791,
+                            "w": 294,
+                            "h": 268,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_13",
+                            "color": "#ff3131",
+                            "cx": 454,
+                            "cy": 1373,
+                            "w": 910,
+                            "h": 490,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_14",
+                            "color": "#ff3131",
+                            "cx": 164,
+                            "cy": 2037,
+                            "w": 276,
+                            "h": 196,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_15",
+                            "color": "#ff3131",
+                            "cx": 452,
+                            "cy": 2037,
+                            "w": 277,
+                            "h": 195,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_16",
+                            "color": "#ff3131",
+                            "cx": 736,
+                            "cy": 2037,
+                            "w": 277,
+                            "h": 196,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_17",
+                            "color": "#ff3131",
+                            "cx": 165,
+                            "cy": 2288,
+                            "w": 277,
+                            "h": 200,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_18",
+                            "color": "#ff3131",
+                            "cx": 452,
+                            "cy": 2288,
+                            "w": 276,
+                            "h": 196,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_19",
+                            "color": "#ff3131",
+                            "cx": 737,
+                            "cy": 2288,
+                            "w": 275,
+                            "h": 195,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_20",
+                            "color": "#ff3131",
+                            "cx": 166,
+                            "cy": 2539,
+                            "w": 278,
+                            "h": 198,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_21",
+                            "color": "#ff3131",
+                            "cx": 452,
+                            "cy": 2538,
+                            "w": 277,
+                            "h": 199,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_22",
+                            "color": "#ff3131",
+                            "cx": 735,
+                            "cy": 2538,
+                            "w": 276,
+                            "h": 200,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_23",
+                            "color": "#ff3131",
+                            "cx": 452,
+                            "cy": 3057,
+                            "w": 766,
+                            "h": 569,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_24",
+                            "color": "#ff3131",
+                            "cx": 1186,
+                            "cy": 1185,
+                            "w": 283,
+                            "h": 361,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_25",
+                            "color": "#ff3131",
+                            "cx": 1188,
+                            "cy": 1544,
+                            "w": 279,
+                            "h": 356,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_26",
+                            "color": "#ff3131",
+                            "cx": 1188,
+                            "cy": 1907,
+                            "w": 280,
+                            "h": 360,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_27",
+                            "color": "#ff3131",
+                            "cx": 1188,
+                            "cy": 2270,
+                            "w": 280,
+                            "h": 359,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_28",
+                            "color": "#ff3131",
+                            "cx": 1259,
+                            "cy": 2664,
+                            "w": 305,
+                            "h": 208,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_29",
+                            "color": "#ff3131",
+                            "cx": 1258,
+                            "cy": 2875,
+                            "w": 303,
+                            "h": 206,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_30",
+                            "color": "#ff3131",
+                            "cx": 1185,
+                            "cy": 3252,
+                            "w": 501,
+                            "h": 455,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_31",
+                            "color": "#ff3131",
+                            "cx": 1699,
+                            "cy": 1651,
+                            "w": 491,
+                            "h": 593,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_32",
+                            "color": "#ff3131",
+                            "cx": 1699,
+                            "cy": 2204,
+                            "w": 490,
+                            "h": 342,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_33",
+                            "color": "#ff3131",
+                            "cx": 2276,
+                            "cy": 1300,
+                            "w": 268,
+                            "h": 356,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_34",
+                            "color": "#ff3131",
+                            "cx": 2298,
+                            "cy": 1882,
+                            "w": 359,
+                            "h": 307,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_35",
+                            "color": "#ff3131",
+                            "cx": 2298,
+                            "cy": 2239,
+                            "w": 358,
+                            "h": 307,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_36",
+                            "color": "#ff3131",
+                            "cx": 1849,
+                            "cy": 2770,
+                            "w": 810,
+                            "h": 426,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_37",
+                            "color": "#ff3131",
+                            "cx": 1692,
+                            "cy": 3252,
+                            "w": 500,
+                            "h": 453,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A4-3 (Hearts)_38",
+                            "color": "#ff3131",
+                            "cx": 2196,
+                            "cy": 3252,
+                            "w": 499,
+                            "h": 454,
+                            "rotation": 0
+                    }
+            ],
+            "name": "A4-3 (Hearts)",
+            "frame_url": "templates/A4-3.png",
+            "branches": [
+                    "hangkhay"
+            ],
+            "tags": [
+                    "a4"
+            ]
+    } });
+
+// [AUTO-SAVED TEMPLATE] 
+Object.assign(ALL_TEMPLATES, { "A5-3 (Hearts)": {
+            "canvas_width": 1762,
+            "canvas_height": 2500,
+            "slots": [
+                    {
+                            "id": "slot_A5-3 (Hearts)_0",
+                            "color": "#ff3131",
+                            "cx": 456,
+                            "cy": 382,
+                            "w": 933,
+                            "h": 524,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_1",
+                            "color": "#ff3131",
+                            "cx": 1176,
+                            "cy": 395,
+                            "w": 482,
+                            "h": 712,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_2",
+                            "color": "#ff3131",
+                            "cx": 1655,
+                            "cy": 130,
+                            "w": 174,
+                            "h": 178,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_3",
+                            "color": "#ff3131",
+                            "cx": 1655,
+                            "cy": 307,
+                            "w": 174,
+                            "h": 178,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_4",
+                            "color": "#ff3131",
+                            "cx": 1656,
+                            "cy": 483,
+                            "w": 175,
+                            "h": 179,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_5",
+                            "color": "#ff3131",
+                            "cx": 1655,
+                            "cy": 660,
+                            "w": 174,
+                            "h": 180,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_6",
+                            "color": "#ff3131",
+                            "cx": 237,
+                            "cy": 2208,
+                            "w": 431,
+                            "h": 336,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_7",
+                            "color": "#ff3131",
+                            "cx": 669,
+                            "cy": 2205,
+                            "w": 431,
+                            "h": 334,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_8",
+                            "color": "#ff3131",
+                            "cx": 1102,
+                            "cy": 2208,
+                            "w": 432,
+                            "h": 333,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_9",
+                            "color": "#ff3131",
+                            "cx": 1537,
+                            "cy": 2205,
+                            "w": 431,
+                            "h": 334,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_10",
+                            "color": "#ff3131",
+                            "cx": 1608,
+                            "cy": 1027,
+                            "w": 211,
+                            "h": 279,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_11",
+                            "color": "#ff3131",
+                            "cx": 1626,
+                            "cy": 1478,
+                            "w": 280,
+                            "h": 242,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_12",
+                            "color": "#ff3131",
+                            "cx": 1626,
+                            "cy": 1754,
+                            "w": 280,
+                            "h": 242,
+                            "rotation": -90
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_13",
+                            "color": "#ff3131",
+                            "cx": 456,
+                            "cy": 1014,
+                            "w": 304,
+                            "h": 334,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_14",
+                            "color": "#ff3131",
+                            "cx": 761,
+                            "cy": 1011,
+                            "w": 304,
+                            "h": 327,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_15",
+                            "color": "#ff3131",
+                            "cx": 1069,
+                            "cy": 1013,
+                            "w": 323,
+                            "h": 336,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_16",
+                            "color": "#ff3131",
+                            "cx": 455,
+                            "cy": 1352,
+                            "w": 304,
+                            "h": 334,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_17",
+                            "color": "#ff3131",
+                            "cx": 761,
+                            "cy": 1352,
+                            "w": 304,
+                            "h": 334,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_18",
+                            "color": "#ff3131",
+                            "cx": 1066,
+                            "cy": 1352,
+                            "w": 306,
+                            "h": 332,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_19",
+                            "color": "#ff3131",
+                            "cx": 456,
+                            "cy": 1691,
+                            "w": 308,
+                            "h": 333,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_20",
+                            "color": "#ff3131",
+                            "cx": 761,
+                            "cy": 1693,
+                            "w": 304,
+                            "h": 333,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_A5-3 (Hearts)_21",
+                            "color": "#ff3131",
+                            "cx": 1066,
+                            "cy": 1691,
+                            "w": 307,
+                            "h": 334,
+                            "rotation": 0
+                    }
+            ],
+            "name": "A5-3 (Hearts)",
+            "frame_url": "templates/a5-3.png",
+            "branches": [
+                    "hangkhay"
+            ],
+            "tags": [
+                    "a5"
+            ]
+    } });
+
+// [AUTO-SAVED TEMPLATE] 
+Object.assign(ALL_TEMPLATES, { "template 7": {
+            "canvas_width": 2475,
+            "canvas_height": 3500,
+            "slots": [
+                    {
+                            "id": "slot_template 7_0",
+                            "color": "#ff3131",
+                            "cx": 1242,
+                            "cy": 1696,
+                            "w": 2012,
+                            "h": 2929,
+                            "rotation": -2
+                    },
+                    {
+                            "id": "slot_template 7_1",
+                            "color": "#ff3131",
+                            "cx": 545,
+                            "cy": 2848,
+                            "w": 950,
+                            "h": 720,
+                            "rotation": -6
+                    }
+            ],
+            "name": "Template 7",
+            "frame_url": "templates/template-7.png",
+            "branches": [
+                    "hangkhay"
+            ],
+            "tags": [
+                    "a5"
+            ]
+    } });
+
+// [AUTO-SAVED TEMPLATE] 
+Object.assign(ALL_TEMPLATES, { "template 8": {
+            "canvas_width": 2475,
+            "canvas_height": 3500,
+            "slots": [
+                    {
+                            "id": "slot_template 8_0",
+                            "color": "#ff3131",
+                            "cx": 426,
+                            "cy": 563,
+                            "w": 799,
+                            "h": 1050,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_template 8_1",
+                            "color": "#ff3131",
+                            "cx": 1235,
+                            "cy": 564,
+                            "w": 794,
+                            "h": 1049,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_template 8_2",
+                            "color": "#ff3131",
+                            "cx": 2050,
+                            "cy": 563,
+                            "w": 796,
+                            "h": 1048,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_template 8_3",
+                            "color": "#ff3131",
+                            "cx": 426,
+                            "cy": 1722,
+                            "w": 799,
+                            "h": 1055,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_template 8_4",
+                            "color": "#ff3131",
+                            "cx": 1238,
+                            "cy": 1719,
+                            "w": 801,
+                            "h": 1046,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_template 8_5",
+                            "color": "#ff3131",
+                            "cx": 426,
+                            "cy": 2877,
+                            "w": 794,
+                            "h": 1047,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_template 8_6",
+                            "color": "#ff3131",
+                            "cx": 1239,
+                            "cy": 2876,
+                            "w": 799,
+                            "h": 1048,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_template 8_7",
+                            "color": "#ff3131",
+                            "cx": 2049,
+                            "cy": 2877,
+                            "w": 803,
+                            "h": 1051,
+                            "rotation": 0
+                    }
+            ],
+            "name": "Template 8",
+            "frame_url": "templates/template-8.png",
+            "branches": [
+                    "hangkhay"
+            ],
+            "tags": [
+                    "a5"
+            ]
+    } });

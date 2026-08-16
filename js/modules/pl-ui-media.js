@@ -1,12 +1,12 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=302';
-import { TemplatePicker } from '../components/TemplatePicker.js?v=302';
-import { LightboxComponent } from '../components/LightboxComponent.js?v=302';
-import { HeaderActions } from '../components/HeaderActions.js?v=302';
-import { CrossSellBanner } from '../components/CrossSellBanner.js?v=302';
-import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=302';
-import { QueueModalComponent } from '../components/QueueModalComponent.js?v=302';
-import { StepBannerComponent } from '../components/StepBannerComponent.js?v=302';
-import { ImageListUI } from '../components/ImageListUI.js?v=302';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=303';
+import { TemplatePicker } from '../components/TemplatePicker.js?v=303';
+import { LightboxComponent } from '../components/LightboxComponent.js?v=303';
+import { HeaderActions } from '../components/HeaderActions.js?v=303';
+import { CrossSellBanner } from '../components/CrossSellBanner.js?v=303';
+import { RoomTabsComponent } from '../components/RoomTabsComponent.js?v=303';
+import { QueueModalComponent } from '../components/QueueModalComponent.js?v=303';
+import { StepBannerComponent } from '../components/StepBannerComponent.js?v=303';
+import { ImageListUI } from '../components/ImageListUI.js?v=303';
 
 export const UIMediaMixin = {
   _initOverlays() {
@@ -48,8 +48,8 @@ export const UIMediaMixin = {
     if (startOverlay) {
       const handleStartClick = async (e) => {
         if (e) {
-          try { e.preventDefault(); } catch (err) {}
-          try { e.stopPropagation(); } catch (err) {}
+          try { e.preventDefault(); } catch (err) { }
+          try { e.stopPropagation(); } catch (err) { }
         }
         startOverlay.style.display = 'none';
         startOverlay.classList.add('dismissed');
@@ -116,7 +116,7 @@ export const UIMediaMixin = {
   _initLayoutSelector() {
     const layoutSelector = document.getElementById('layoutSelector');
     if (!layoutSelector) return;
-    
+
     this.selectedLayoutOption = this.selectedLayoutOption || 1;
     this.selectedLayoutTemplates = this.selectedLayoutTemplates || {
       a4: 'a4-1',
@@ -126,8 +126,8 @@ export const UIMediaMixin = {
 
     const opt1 = document.getElementById('layoutOpt1');
     const opt2 = document.getElementById('layoutOpt2');
-    
-this._syncLayoutSelection = () => {
+
+    this._syncLayoutSelection = () => {
       if (this.selectedLayoutOption === 1) {
         this.paperSize = 'A4';
         this.selectedTemplates = [this.selectedLayoutTemplates.a4];
@@ -142,25 +142,25 @@ this._syncLayoutSelection = () => {
       this._syncLayoutSelection();
       if (opt1) opt1.classList.toggle('active', this.selectedLayoutOption === 1);
       if (opt2) opt2.classList.toggle('active', this.selectedLayoutOption === 2);
-      
+
       const tmpls = (typeof ALL_TEMPLATES !== 'undefined' ? ALL_TEMPLATES : null) || (typeof window !== 'undefined' ? window.ALL_TEMPLATES : null) || {};
-      
+
       const img1 = document.getElementById('imgLayout1_0');
       if (img1 && tmpls[this.selectedLayoutTemplates.a4]) {
         img1.src = tmpls[this.selectedLayoutTemplates.a4].frame_url;
       }
-      
+
       const img2_0 = document.getElementById('imgLayout2_0');
       if (img2_0 && tmpls[this.selectedLayoutTemplates.a5_top]) {
         img2_0.src = tmpls[this.selectedLayoutTemplates.a5_top].frame_url;
       }
-      
+
       const img2_1 = document.getElementById('imgLayout2_1');
       if (img2_1 && tmpls[this.selectedLayoutTemplates.a5_bottom]) {
         img2_1.src = tmpls[this.selectedLayoutTemplates.a5_bottom].frame_url;
       }
     };
-    
+
     updateUI();
     setTimeout(updateUI, 100);
 
@@ -183,17 +183,17 @@ this._syncLayoutSelection = () => {
           e.stopPropagation();
           const allowedType = frameEl.getAttribute('data-frame-type');
           const frameIndex = frameEl.getAttribute('data-frame-index');
-          
+
           this.selectedLayoutOption = (allowedType === 'a4') ? 1 : 2;
           updateUI();
-          
+
           const templateKey = (allowedType === 'a4') ? 'a4' : (frameIndex === '0' ? 'a5_top' : 'a5_bottom');
           let tmpls = (typeof ALL_TEMPLATES !== 'undefined' ? ALL_TEMPLATES : null) || (typeof window !== 'undefined' ? window.ALL_TEMPLATES : null) || {};
-          
+
           if (allowedType === 'a5') {
             const filteredTmpls = {};
             if (frameIndex === '0') {
-              ['a5-1', 'A5-2 (Hearts)'].forEach(k => { if(tmpls[k]) filteredTmpls[k] = tmpls[k]; });
+              ['a5-1', 'A5-2 (Hearts)', 'A5-3 (Hearts)'].forEach(k => { if (tmpls[k]) filteredTmpls[k] = tmpls[k]; });
               tmpls = filteredTmpls;
             } else if (frameIndex === '1') {
               const topKey = this.selectedLayoutTemplates.a5_top;
@@ -202,25 +202,28 @@ this._syncLayoutSelection = () => {
                 allowedKeys = ['template-3', 'template-4'];
               } else if (topKey === 'A5-2 (Hearts)') {
                 allowedKeys = ['template 5', 'Template 6'];
+              } else if (topKey === 'A5-3 (Hearts)') {
+                allowedKeys = ['template 7', 'Template 8'];
               }
               if (allowedKeys.length > 0) {
-                 allowedKeys.forEach(k => { if(tmpls[k]) filteredTmpls[k] = tmpls[k]; });
-                 tmpls = filteredTmpls;
+                allowedKeys.forEach(k => { if (tmpls[k]) filteredTmpls[k] = tmpls[k]; });
+                tmpls = filteredTmpls;
               }
             }
           }
-          
+
           this._templatePickerModal.templates = tmpls;
-          const excludeKey = null; 
+          const excludeKey = null;
           this._templatePickerModal.showModal(allowedType, (selectedKey) => {
             this.selectedLayoutTemplates[templateKey] = selectedKey;
-            
+
             // Auto update bottom template if top is changed to keep it consistent
             if (templateKey === 'a5_top') {
               if (selectedKey === 'a5-1') this.selectedLayoutTemplates.a5_bottom = 'template-3';
               else if (selectedKey === 'A5-2 (Hearts)') this.selectedLayoutTemplates.a5_bottom = 'template 5';
+              else if (selectedKey === 'A5-3 (Hearts)') this.selectedLayoutTemplates.a5_bottom = 'template 7';
             }
-            
+
             updateUI();
           }, excludeKey);
           return;
@@ -270,7 +273,7 @@ this._syncLayoutSelection = () => {
               if (!this.canvasesState[activeCIdx]) this.canvasesState[activeCIdx] = { templateId: this.currentTemplate, slots: [], selectedSlotIndex: -1 };
             }
             this.slots = this.canvasesState[activeCIdx].slots || [];
-            
+
             let targetSlot = this.canvasesState[activeCIdx].selectedSlotIndex;
             if (targetSlot === undefined || targetSlot === null || targetSlot < 0) {
               targetSlot = this.selectedSlotIndex;
