@@ -224,6 +224,7 @@ export const UIMediaMixin = {
               if (selectedKey === 'a5-1') this.selectedLayoutTemplates.a5_bottom = 'template-3';
               else if (selectedKey === 'A5-2 (Hearts)') this.selectedLayoutTemplates.a5_bottom = 'template 5';
               else if (selectedKey === 'A5-3 (Hearts)') this.selectedLayoutTemplates.a5_bottom = 'template 7';
+              else if (selectedKey === 'a5_ntt') this.selectedLayoutTemplates.a5_bottom = 'templatea5_ntt';
             }
 
             updateUI();
