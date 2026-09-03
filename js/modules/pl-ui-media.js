@@ -193,7 +193,7 @@ export const UIMediaMixin = {
           if (allowedType === 'a5') {
             const filteredTmpls = {};
             if (frameIndex === '0') {
-              ['a5-1', 'A5-2 (Hearts)', 'A5-3 (Hearts)'].forEach(k => { if (tmpls[k]) filteredTmpls[k] = tmpls[k]; });
+              ['a5-1', 'A5-2 (Hearts)', 'A5-3 (Hearts)', 'a5_ntt'].forEach(k => { if (tmpls[k]) filteredTmpls[k] = tmpls[k]; });
               tmpls = filteredTmpls;
             } else if (frameIndex === '1') {
               const topKey = this.selectedLayoutTemplates.a5_top;
@@ -204,6 +204,8 @@ export const UIMediaMixin = {
                 allowedKeys = ['template 5', 'Template 6'];
               } else if (topKey === 'A5-3 (Hearts)') {
                 allowedKeys = ['template 7', 'template 8'];
+              } else if (topKey === 'a5_ntt') {
+                allowedKeys = ['templatea5_ntt', 'templatea5_ntt_1'];
               }
               if (allowedKeys.length > 0) {
                 allowedKeys.forEach(k => { if (tmpls[k]) filteredTmpls[k] = tmpls[k]; });

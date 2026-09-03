@@ -1721,3 +1721,428 @@ Object.assign(ALL_TEMPLATES, { "template 8": {
                     "a5"
             ]
     } });
+
+// [AUTO-SAVED TEMPLATE] 
+Object.assign(ALL_TEMPLATES, { "a5_ntt": {
+            "canvas_width": 2475,
+            "canvas_height": 3500,
+            "slots": [
+                    {
+                            "id": "slot_a5_ntt_0",
+                            "color": "#ff3131",
+                            "cx": 415,
+                            "cy": 434,
+                            "w": 764,
+                            "h": 773,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_1",
+                            "color": "#ff3131",
+                            "cx": 416,
+                            "cy": 1386,
+                            "w": 601,
+                            "h": 577,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_2",
+                            "color": "#ff3131",
+                            "cx": 1034,
+                            "cy": 757,
+                            "w": 476,
+                            "h": 504,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_3",
+                            "color": "#ff3131",
+                            "cx": 1034,
+                            "cy": 1256,
+                            "w": 476,
+                            "h": 495,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_4",
+                            "color": "#ff3131",
+                            "cx": 1032,
+                            "cy": 1752,
+                            "w": 472,
+                            "h": 500,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_5",
+                            "color": "#ff3131",
+                            "cx": 579,
+                            "cy": 2391,
+                            "w": 799,
+                            "h": 781,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_6",
+                            "color": "#ff3131",
+                            "cx": 1577,
+                            "cy": 288,
+                            "w": 391,
+                            "h": 385,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_7",
+                            "color": "#ff3131",
+                            "cx": 1969,
+                            "cy": 278,
+                            "w": 392,
+                            "h": 387,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_8",
+                            "color": "#ff3131",
+                            "cx": 1575,
+                            "cy": 668,
+                            "w": 391,
+                            "h": 373,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_9",
+                            "color": "#ff3131",
+                            "cx": 1968,
+                            "cy": 663,
+                            "w": 394,
+                            "h": 385,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_10",
+                            "color": "#ff3131",
+                            "cx": 1856,
+                            "cy": 1253,
+                            "w": 1148,
+                            "h": 800,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_11",
+                            "color": "#ff3131",
+                            "cx": 1859,
+                            "cy": 2245,
+                            "w": 1047,
+                            "h": 995,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_12",
+                            "color": "#ff3131",
+                            "cx": 718,
+                            "cy": 3183,
+                            "w": 1368,
+                            "h": 569,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_13",
+                            "color": "#ff3131",
+                            "cx": 1709,
+                            "cy": 3104,
+                            "w": 474,
+                            "h": 506,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_a5_ntt_14",
+                            "color": "#ff3131",
+                            "cx": 2164,
+                            "cy": 3152,
+                            "w": 472,
+                            "h": 501,
+                            "rotation": 0
+                    }
+            ],
+            "name": "A5-NTT (Hearts)",
+            "frame_url": "templates/A5-ntt.png",
+            "branches": [
+                    "nguyenthithap"
+            ],
+            "tags": [
+                    "a5"
+            ]
+    } });
+
+// [AUTO-SAVED TEMPLATE] 
+Object.assign(ALL_TEMPLATES, { "templatea5_ntt": {
+            "canvas_width": 2475,
+            "canvas_height": 3500,
+            "slots": [
+                    {
+                            "id": "slot_templatea5_ntt_1",
+                            "color": "#ff3131",
+                            "cx": 1237,
+                            "cy": 1749,
+                            "w": 2482,
+                            "h": 3504,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_templatea5_ntt_0",
+                            "color": "#ff3131",
+                            "cx": 357,
+                            "cy": 813,
+                            "w": 604,
+                            "h": 604,
+                            "rotation": 0,
+                            "clipPath": "M -0.0000 -302.0000 C -169.2622 -302.0000 -306.5000 -166.7969 -306.5000 -0.0116 C -306.5000 166.7969 -169.2622 302.0000 -0.0000 302.0000 C 169.2855 302.0000 306.5000 166.7969 306.5000 -0.0116 C 306.5000 -166.7969 169.2855 -302.0000 -0.0000 -302.0000 Z"
+                    },
+                    {
+                            "id": "slot_templatea5_ntt_2",
+                            "color": "#ff3131",
+                            "cx": 223,
+                            "cy": 3060,
+                            "w": 361,
+                            "h": 442,
+                            "rotation": -2
+                    },
+                    {
+                            "id": "slot_templatea5_ntt_3",
+                            "color": "#ff3131",
+                            "cx": 586,
+                            "cy": 3049,
+                            "w": 363,
+                            "h": 440,
+                            "rotation": -2
+                    },
+                    {
+                            "id": "slot_templatea5_ntt_4",
+                            "color": "#ff3131",
+                            "cx": 948,
+                            "cy": 3037,
+                            "w": 362,
+                            "h": 439,
+                            "rotation": -2
+                    }
+            ],
+            "name": "Template a5 NTT",
+            "frame_url": "templates/template-a5-ntt.png",
+            "branches": [
+                    "nguyenthithap"
+            ],
+            "tags": [
+                    "a5"
+            ]
+    } });
+
+// [AUTO-SAVED TEMPLATE] 
+Object.assign(ALL_TEMPLATES, { "templatea5_ntt_1": {
+            "canvas_width": 3500,
+            "canvas_height": 2457,
+            "slots": [
+                    {
+                            "id": "slot_templatea5_ntt_1_0",
+                            "color": "#ff3131",
+                            "cx": 708,
+                            "cy": 895,
+                            "w": 1363,
+                            "h": 1773,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_templatea5_ntt_1_1",
+                            "color": "#ff3131",
+                            "cx": 2209,
+                            "cy": 527,
+                            "w": 747,
+                            "h": 1026,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_templatea5_ntt_1_2",
+                            "color": "#ff3131",
+                            "cx": 3048,
+                            "cy": 525,
+                            "w": 738,
+                            "h": 1029,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_templatea5_ntt_1_3",
+                            "color": "#ff3131",
+                            "cx": 655,
+                            "cy": 2121,
+                            "w": 1180,
+                            "h": 605,
+                            "rotation": 0
+                    },
+                    {
+                            "id": "slot_templatea5_ntt_1_4",
+                            "color": "#ff3131",
+                            "cx": 2441,
+                            "cy": 1632,
+                            "w": 1895,
+                            "h": 930,
+                            "rotation": 0
+                    }
+            ],
+            "name": "Template a5-1 NTT",
+            "frame_url": "templates/template-a5-ntt-1.png",
+            "branches": [
+                    "nguyenthithap"
+            ],
+            "tags": [
+                    "a5"
+            ]
+    } });
+
+// [AUTO-SAVED TEMPLATE]
+Object.assign(ALL_TEMPLATES, { "a4_ntt": {
+                "canvas_width": 2475,
+                "canvas_height": 3500,
+                "slots": [
+                        {
+                                "id": "slot_a5_ntt_0",
+                                "color": "#ff3131",
+                                "cx": 415,
+                                "cy": 434,
+                                "w": 764,
+                                "h": 773,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_1",
+                                "color": "#ff3131",
+                                "cx": 416,
+                                "cy": 1386,
+                                "w": 601,
+                                "h": 577,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_2",
+                                "color": "#ff3131",
+                                "cx": 1034,
+                                "cy": 757,
+                                "w": 476,
+                                "h": 504,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_3",
+                                "color": "#ff3131",
+                                "cx": 1034,
+                                "cy": 1256,
+                                "w": 476,
+                                "h": 495,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_4",
+                                "color": "#ff3131",
+                                "cx": 1032,
+                                "cy": 1752,
+                                "w": 472,
+                                "h": 500,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_5",
+                                "color": "#ff3131",
+                                "cx": 579,
+                                "cy": 2391,
+                                "w": 799,
+                                "h": 781,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_6",
+                                "color": "#ff3131",
+                                "cx": 1577,
+                                "cy": 288,
+                                "w": 391,
+                                "h": 385,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_7",
+                                "color": "#ff3131",
+                                "cx": 1969,
+                                "cy": 278,
+                                "w": 392,
+                                "h": 387,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_8",
+                                "color": "#ff3131",
+                                "cx": 1575,
+                                "cy": 668,
+                                "w": 391,
+                                "h": 373,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_9",
+                                "color": "#ff3131",
+                                "cx": 1968,
+                                "cy": 663,
+                                "w": 394,
+                                "h": 385,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_10",
+                                "color": "#ff3131",
+                                "cx": 1856,
+                                "cy": 1253,
+                                "w": 1148,
+                                "h": 800,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_11",
+                                "color": "#ff3131",
+                                "cx": 1859,
+                                "cy": 2245,
+                                "w": 1047,
+                                "h": 995,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_12",
+                                "color": "#ff3131",
+                                "cx": 718,
+                                "cy": 3183,
+                                "w": 1368,
+                                "h": 569,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_13",
+                                "color": "#ff3131",
+                                "cx": 1709,
+                                "cy": 3104,
+                                "w": 474,
+                                "h": 506,
+                                "rotation": 0
+                        },
+                        {
+                                "id": "slot_a5_ntt_14",
+                                "color": "#ff3131",
+                                "cx": 2164,
+                                "cy": 3152,
+                                "w": 472,
+                                "h": 501,
+                                "rotation": 0
+                        }
+                ],
+                "name": "A4-NTT (Hearts)",
+                "frame_url": "templates/A5-ntt.png",
+                "branches": [
+                        "nguyenthithap"
+                ],
+                "tags": [
+                        "a4"
+                ]
+        } });
