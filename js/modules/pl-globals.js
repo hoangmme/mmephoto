@@ -238,7 +238,8 @@ const TEMPLATES = {
                     "a4"
             ],
             "branches": [
-                    "hangkhay"
+                    "hangkhay",
+                    "nguyenthithap"
             ]
     },
     "a5-1": {
@@ -391,7 +392,8 @@ const TEMPLATES = {
                     "a5"
             ],
             "branches": [
-                    "hangkhay"
+                    "hangkhay",
+                    "nguyenthithap"
             ]
     },
     "template-3": {
@@ -455,7 +457,8 @@ const TEMPLATES = {
                     "a5"
             ],
             "branches": [
-                    "hangkhay"
+                    "hangkhay",
+                    "nguyenthithap"
             ]
     },
     "template-4": {
@@ -500,7 +503,8 @@ const TEMPLATES = {
                     }
             ],
             "branches": [
-                    "hangkhay"
+                    "hangkhay",
+                    "nguyenthithap"
             ]
     }
 };

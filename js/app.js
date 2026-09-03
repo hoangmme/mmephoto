@@ -2,11 +2,11 @@
 // MME Color Lab — Main Application
 // ============================================
 
-import { PRESETS, DEFAULT_PARAMS } from './presets.js?v=304';
-import { ImageProcessor } from './processor.js?v=304';
-import { parseCubeLUT, serializeLUT, deserializeLUT } from './lut-parser.js?v=304';
-import { BUILTIN_LUTS, LUT_CATEGORIES } from './builtin-luts.js?v=304';
-import { SkinRetoucher, RETOUCH_PRESETS, DEFAULT_RETOUCH } from './skin-retouch.js?v=304';
+import { PRESETS, DEFAULT_PARAMS } from './presets.js?v=305';
+import { ImageProcessor } from './processor.js?v=305';
+import { parseCubeLUT, serializeLUT, deserializeLUT } from './lut-parser.js?v=305';
+import { BUILTIN_LUTS, LUT_CATEGORIES } from './builtin-luts.js?v=305';
+import { SkinRetoucher, RETOUCH_PRESETS, DEFAULT_RETOUCH } from './skin-retouch.js?v=305';
 
 class PhotoTuneApp {
   constructor() {
