@@ -8,6 +8,26 @@ import { fileURLToPath } from 'url';
 import { createCanvas, loadImage, Image } from 'canvas';
 import crypto from 'crypto';
 import sharp from 'sharp';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import dotenv from 'dotenv';
+dotenv.config();
+
+// R2 Configuration (Load from .env file)
+const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
+const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
+const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
+const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME;
+const R2_PUBLIC_DOMAIN = process.env.R2_PUBLIC_DOMAIN;
+
+const s3Client = new S3Client({
+  region: 'auto',
+  endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: R2_ACCESS_KEY_ID,
+    secretAccessKey: R2_SECRET_ACCESS_KEY,
+  }
+});
 
 // Setup global mocks for DOM objects used in processor.js and lut-parser.js
 global.document = {
@@ -229,47 +249,59 @@ function scanDiskSessions() {
 scanDiskSessions();
 autoCleanOldSessions(48);
 
-// Auto cleanup session files older than maxAgeHours (default 24 hours)
+// Auto cleanup session files older than maxAgeHours (default 48 hours)
 function autoCleanOldSessions(maxAgeHours = 48) {
-  if (!fs.existsSync(UPLOADS_DIR)) return 0;
   let deletedCount = 0;
   const now = Date.now();
   const maxAgeMs = maxAgeHours * 60 * 60 * 1000;
 
   try {
-    const branches = fs.readdirSync(UPLOADS_DIR);
-    branches.forEach(b => {
-      const bPath = path.join(UPLOADS_DIR, b);
-      if (!fs.statSync(bPath).isDirectory()) return;
-      const rooms = fs.readdirSync(bPath);
-      rooms.forEach(r => {
-        const rPath = path.join(bPath, r);
-        if (!fs.statSync(rPath).isDirectory()) return;
-        const sessions = fs.readdirSync(rPath);
-        sessions.forEach(s => {
-          const sPath = path.join(rPath, s);
-          if (!fs.statSync(sPath).isDirectory()) return;
-          try {
-            const stat = fs.statSync(sPath);
-            if (now - stat.mtimeMs > maxAgeMs) {
-              fs.rmSync(sPath, { recursive: true, force: true });
-              deletedCount++;
-              console.log(`[CLEANUP] Deleted old session folder (> ${maxAgeHours}h): ${sPath}`);
+    if (fs.existsSync(UPLOADS_DIR)) {
+      const branches = fs.readdirSync(UPLOADS_DIR);
+      branches.forEach(b => {
+        const bPath = path.join(UPLOADS_DIR, b);
+        if (!fs.statSync(bPath).isDirectory()) return;
+        const rooms = fs.readdirSync(bPath);
+        rooms.forEach(r => {
+          const rPath = path.join(bPath, r);
+          if (!fs.statSync(rPath).isDirectory()) return;
+          const sessions = fs.readdirSync(rPath);
+          sessions.forEach(s => {
+            const sPath = path.join(rPath, s);
+            if (!fs.statSync(sPath).isDirectory()) return;
+            try {
+              const stat = fs.statSync(sPath);
+              if (now - stat.mtimeMs > maxAgeMs) {
+                fs.rmSync(sPath, { recursive: true, force: true });
+                console.log(`[CLEANUP] Deleted old session folder (> ${maxAgeHours}h): ${sPath}`);
+              }
+            } catch (err) {
+              console.error(`[CLEANUP ERROR] Failed to delete ${sPath}:`, err);
             }
-          } catch (err) {
-            console.error(`[CLEANUP ERROR] Failed to delete ${sPath}:`, err);
-          }
+          });
         });
       });
-    });
+    }
 
-    // Also clean roomState sessions array
+    // Also clean roomState sessions array (supports R2 sessions without disk presence)
     Object.keys(roomState).forEach(b => {
       Object.keys(roomState[b]).forEach(r => {
         if (roomState[b][r] && Array.isArray(roomState[b][r].sessions)) {
           roomState[b][r].sessions = roomState[b][r].sessions.filter(sess => {
-            const sessDir = path.join(UPLOADS_DIR, b, r, sess.id);
-            return fs.existsSync(sessDir);
+            const ageMs = now - (sess.createdAt || 0);
+            
+            // Delete if older than max age and has a createdAt
+            if (sess.createdAt && ageMs > maxAgeMs) {
+                deletedCount++;
+                return false;
+            }
+            
+            // For legacy sessions without createdAt, check disk existence
+            if (!sess.createdAt) {
+                const sessDir = path.join(UPLOADS_DIR, b, r, sess.id);
+                if (!fs.existsSync(sessDir)) return false; 
+            }
+            return true;
           });
         }
       });
@@ -661,6 +693,89 @@ app.post('/api/admin/save-slots', express.json({ limit: '10mb' }), (req, res) =>
   }
 });
 
+// ==========================================
+// R2 PRE-SIGNED URL & NOTIFY APIS
+// ==========================================
+app.post('/api/get-presigned-urls', async (req, res) => {
+  try {
+    const { branch, room, session, filenames } = req.body;
+    if (!branch || !room || !session || !filenames || !Array.isArray(filenames)) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    const urls = {};
+    for (const filename of filenames) {
+      const objectKey = `${branch}/${room}/${session}/${filename}`;
+      let contentType = 'image/jpeg';
+      const lowerFile = filename.toLowerCase();
+      if (lowerFile.endsWith('.webp')) contentType = 'image/webp';
+      else if (lowerFile.endsWith('.png')) contentType = 'image/png';
+      
+      const command = new PutObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: objectKey,
+        ContentType: contentType
+      });
+      // URL is valid for 15 minutes
+      const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 });
+      urls[filename] = signedUrl;
+    }
+
+    res.json({ success: true, urls });
+  } catch (error) {
+    console.error('Error generating pre-signed URLs:', error);
+    res.status(500).json({ error: 'Failed to generate pre-signed URLs' });
+  }
+});
+
+app.post('/api/notify-r2-upload/:branch/:room/:session', express.json(), (req, res) => {
+  const { branch, room, session } = req.params;
+  const { filename } = req.body;
+
+  if (!filename) return res.status(400).json({ error: 'No filename provided' });
+
+  // Update state
+  if (!roomState[branch]) roomState[branch] = {};
+  if (!roomState[branch][room]) roomState[branch][room] = { sessions: [], activeSessionId: null };
+
+  let sessionObj = roomState[branch][room].sessions.find(s => s.id === session);
+  if (!sessionObj) {
+    sessionObj = { id: session, images: [], createdAt: Date.now() };
+    roomState[branch][room].sessions.push(sessionObj);
+    if (!roomState[branch][room].activeSessionId) {
+      roomState[branch][room].activeSessionId = session;
+    }
+  } else if (sessionObj.finished) {
+    sessionObj.finished = false;
+  }
+
+  const imageUrl = `${R2_PUBLIC_DOMAIN}/${branch}/${room}/${session}/${filename}`;
+
+  if (filename.startsWith('00_frame')) {
+    if (!sessionObj.frameImages) sessionObj.frameImages = [];
+    if (!sessionObj.frameImages.includes(imageUrl)) {
+      sessionObj.frameImages.push(imageUrl);
+    }
+  } else {
+    // Only add original images to the array, not the thumbnails
+    if (!filename.includes('_thumb.webp') && !sessionObj.images.includes(imageUrl)) {
+      sessionObj.images.push(imageUrl);
+    }
+  }
+  saveRoomState();
+
+  // Notify SSE clients for original images (UI fetches thumbnails automatically)
+  if (!filename.includes('_thumb.webp')) {
+    if (clients[branch]) {
+      clients[branch].forEach(client => {
+        client.write(`data: ${JSON.stringify({ type: 'new_image', room, session, imageUrl })}\n\n`);
+      });
+    }
+  }
+
+  res.json({ success: true, imageUrl });
+});
+
 app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), async (req, res) => {
   const { branch, room, session } = req.params;
   
@@ -707,7 +822,7 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), as
   
   let sessionObj = roomState[branch][room].sessions.find(s => s.id === session);
   if (!sessionObj) {
-    sessionObj = { id: session, images: [] };
+    sessionObj = { id: session, images: [], createdAt: Date.now() };
     roomState[branch][room].sessions.push(sessionObj);
     if (!roomState[branch][room].activeSessionId) {
       roomState[branch][room].activeSessionId = session;
