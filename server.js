@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 import { createCanvas, loadImage, Image } from 'canvas';
 import crypto from 'crypto';
 import sharp from 'sharp';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -928,7 +928,7 @@ app.post('/api/finish-session/:branch/:room/:session', (req, res) => {
   res.json({ success: true, activeSessionId });
 });
 
-app.post('/api/delete-session/:branch/:room/:session', (req, res) => {
+app.post('/api/delete-session/:branch/:room/:session', async (req, res) => {
   const { branch, room, session } = req.params;
   
   if (roomState[branch] && roomState[branch][room]) {
@@ -949,6 +949,32 @@ app.post('/api/delete-session/:branch/:room/:session', (req, res) => {
     } catch (err) {
       console.error(`[DELETE ERROR] Failed to remove directory ${sessDir}:`, err);
     }
+  }
+
+  // Physically delete session objects from Cloudflare R2
+  try {
+    const prefix = `${branch}/${room}/${session}/`;
+    const listCommand = new ListObjectsV2Command({
+      Bucket: R2_BUCKET_NAME,
+      Prefix: prefix
+    });
+    
+    const listResult = await s3Client.send(listCommand);
+    if (listResult.Contents && listResult.Contents.length > 0) {
+      const objectsToDelete = listResult.Contents.map(obj => ({ Key: obj.Key }));
+      
+      const deleteCommand = new DeleteObjectsCommand({
+        Bucket: R2_BUCKET_NAME,
+        Delete: { Objects: objectsToDelete }
+      });
+      
+      await s3Client.send(deleteCommand);
+      console.log(`[DELETE] Removed ${objectsToDelete.length} objects from R2 prefix: ${prefix}`);
+    } else {
+      console.log(`[DELETE] No objects found in R2 for prefix: ${prefix}`);
+    }
+  } catch (err) {
+    console.error(`[DELETE ERROR] Failed to remove objects from R2 for prefix ${branch}/${room}/${session}/:`, err);
   }
   
   if (clients[branch]) {
