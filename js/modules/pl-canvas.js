@@ -1,6 +1,6 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=305';
-import { CanvasRenderer } from '../components/CanvasRenderer.js?v=305';
-import { CanvasExporter } from '../components/CanvasExporter.js?v=305';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=306';
+import { CanvasRenderer } from '../components/CanvasRenderer.js?v=306';
+import { CanvasExporter } from '../components/CanvasExporter.js?v=306';
 
 export const CanvasMixin = {
   _preloadImage(id, url, useThumb = true) {
@@ -14,6 +14,7 @@ export const CanvasMixin = {
       }
 
       const img = new Image();
+      img.crossOrigin = 'anonymous';
       img.onload = () => {
         this._imageCache[id] = img;
         resolve();
@@ -22,17 +23,28 @@ export const CanvasMixin = {
         if (targetUrl !== url) {
           // Fallback to original full-res image if thumbnail fails
           const fallbackImg = new Image();
+          fallbackImg.crossOrigin = 'anonymous';
           fallbackImg.onload = () => {
             this._imageCache[id] = fallbackImg;
             resolve();
           };
           fallbackImg.onerror = () => resolve();
-          fallbackImg.src = url;
+          if (url.startsWith('http')) {
+            // We previously had a cache-buster here, but it hurts performance.
+            // crossOrigin='anonymous' is enough if cache is cleared once.
+            fallbackImg.src = url;
+          } else {
+            fallbackImg.src = url;
+          }
         } else {
           resolve();
         }
       };
-      img.src = targetUrl;
+      if (targetUrl.startsWith('http')) {
+        img.src = targetUrl;
+      } else {
+        img.src = targetUrl;
+      }
     });
   },
 
@@ -106,7 +118,11 @@ export const CanvasMixin = {
                 cache.frame.crossOrigin = 'anonymous';
                 cache.frame.onload = () => { loadedCount++; checkDone(); };
                 cache.frame.onerror = () => { loadedCount++; checkDone(); };
-                cache.frame.src = tmpl.frame_url;
+                if (tmpl.frame_url.startsWith('http')) {
+                  cache.frame.src = tmpl.frame_url;
+                } else {
+                  cache.frame.src = tmpl.frame_url;
+                }
             }
             
             if (tmpl.background_image && !cache.bg) {
@@ -114,7 +130,11 @@ export const CanvasMixin = {
                 cache.bg.crossOrigin = 'anonymous';
                 cache.bg.onload = () => { loadedCount++; checkDone(); };
                 cache.bg.onerror = () => { loadedCount++; checkDone(); };
-                cache.bg.src = tmpl.background_image;
+                if (tmpl.background_image.startsWith('http')) {
+                  cache.bg.src = tmpl.background_image;
+                } else {
+                  cache.bg.src = tmpl.background_image;
+                }
             }
         });
         

@@ -27,6 +27,7 @@ export class ImageProcessor {
   async loadImage(file) {
     return new Promise((resolve, reject) => {
       const img = new Image();
+      img.crossOrigin = 'anonymous';
       img.onload = () => {
         let w = img.naturalWidth;
         let h = img.naturalHeight;

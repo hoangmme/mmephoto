@@ -404,6 +404,25 @@ app.post('/api/sessions/upload', upload.array('images', 20), async (req, res) =>
 // 2. Get Session Data for Download
 app.get('/api/download/:branch/:room/:session', (req, res) => {
   const { branch, room, session } = req.params;
+
+  // 1. Check RAM State (R2 Flow)
+  if (roomState[branch] && roomState[branch][room]) {
+    const sessionObj = roomState[branch][room].sessions.find(s => s.id === session);
+    if (sessionObj) {
+      const frames = sessionObj.frameImages || [];
+      const photos = sessionObj.images || [];
+      const images = [...frames, ...photos];
+      return res.json({
+        success: true,
+        session,
+        images,
+        frames,
+        photos
+      });
+    }
+  }
+
+  // 2. Fallback to Local Disk (Legacy Flow)
   const sessionDir = path.join(UPLOADS_DIR, branch, room, session);
   
   if (!fs.existsSync(sessionDir)) {
@@ -789,33 +808,32 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), as
   
   let filename = '';
   if (req.file && req.file.originalname) {
-    // Preserve original filename (e.g. IMG_0001.jpg or 00_frame_P1.png) to prevent duplicate uploads
     filename = path.basename(req.file.originalname).replace(/[^a-zA-Z0-9_\-\.]/g, '_');
   }
   if (!filename || filename === '_') {
     filename = `${Date.now()}_${Math.random().toString(36).substr(2, 6)}.png`;
   }
   const filepath = path.join(sessionDir, filename);
-  fs.writeFileSync(filepath, req.file.buffer);
+  fs.writeFileSync(filepath, req.file.buffer); // Local Backup
 
-  // Pre-generate WebP thumbnail for lightning-fast UI canvas rendering (AWAITED so thumb exists before SSE/REST)
-  if (!filename.startsWith('00_frame')) {
-    try {
-      const ext = path.extname(filename);
-      const baseName = path.basename(filename, ext);
-      const thumbFilepath = path.join(sessionDir, `${baseName}_thumb.webp`);
-      await sharp(req.file.buffer)
-        .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-        .webp({ quality: 85 })
-        .toFile(thumbFilepath)
-        .catch(err => console.error('[Sharp] Pre-generate thumb error:', err));
-    } catch (err) {
-      console.error('[Sharp] Sync error:', err);
-    }
+  let imageUrl = `/uploads/${branch}/${room}/${session}/${filename}`; // Default to local
+  
+  // UPLOAD TO R2 CLOUDFLARE
+  try {
+    const objectKey = `${branch}/${room}/${session}/${filename}`;
+    const contentType = filename.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+    const command = new PutObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: objectKey,
+      Body: req.file.buffer,
+      ContentType: contentType
+    });
+    await s3Client.send(command);
+    imageUrl = `${R2_PUBLIC_DOMAIN}/${objectKey}`; // Override with R2 URL!
+  } catch (err) {
+    console.error('Error uploading frame to R2:', err);
   }
 
-  const imageUrl = `/uploads/${branch}/${room}/${session}/${filename}`;
-  
   // Update state
   if (!roomState[branch]) roomState[branch] = {};
   if (!roomState[branch][room]) roomState[branch][room] = { sessions: [], activeSessionId: null };
