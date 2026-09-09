@@ -818,6 +818,23 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), as
 
   let imageUrl = `/uploads/${branch}/${room}/${session}/${filename}`; // Default to local
   
+  // Pre-generate WebP thumbnail
+  let thumbBuffer = null;
+  try {
+    thumbBuffer = await sharp(req.file.buffer)
+      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 85 })
+      .toBuffer();
+      
+    // Local backup for thumbnail
+    const ext = path.extname(filename);
+    const baseName = path.basename(filename, ext);
+    const thumbFilepath = path.join(sessionDir, `${baseName}_thumb.webp`);
+    fs.writeFileSync(thumbFilepath, thumbBuffer);
+  } catch (err) {
+    console.error('[Sharp] Pre-generate thumb error:', err);
+  }
+
   // UPLOAD TO R2 CLOUDFLARE
   try {
     const objectKey = `${branch}/${room}/${session}/${filename}`;
@@ -830,6 +847,19 @@ app.post('/api/stream-upload/:branch/:room/:session', upload.single('image'), as
     });
     await s3Client.send(command);
     imageUrl = `${R2_PUBLIC_DOMAIN}/${objectKey}`; // Override with R2 URL!
+    
+    if (thumbBuffer) {
+      const ext = path.extname(filename);
+      const baseName = path.basename(filename, ext);
+      const thumbObjectKey = `${branch}/${room}/${session}/${baseName}_thumb.webp`;
+      const thumbCommand = new PutObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: thumbObjectKey,
+        Body: thumbBuffer,
+        ContentType: 'image/webp'
+      });
+      await s3Client.send(thumbCommand);
+    }
   } catch (err) {
     console.error('Error uploading frame to R2:', err);
   }

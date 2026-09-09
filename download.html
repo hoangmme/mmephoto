@@ -232,7 +232,7 @@
               
               const fullResUrl = imgUrl + '?v=' + Date.now();
               const lastDot = imgUrl.lastIndexOf('.');
-              const thumbUrl = (lastDot !== -1 && !imgUrl.startsWith('00_frame')) 
+              const thumbUrl = (lastDot !== -1) 
                 ? (imgUrl.substring(0, lastDot) + '_thumb.webp?v=' + Date.now())
                 : fullResUrl;
 
