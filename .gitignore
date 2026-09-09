@@ -3,6 +3,6 @@ uploads/
 test_photo.png
 .DS_Store
 deploy.sh
-.env
+#.env
 data/
 .idea
