@@ -45,14 +45,31 @@ export class ImageListUI {
       thumb.dataset.id = img.id;
 
       const imgTag = document.createElement('img');
-      let thumbSrc = img.url || img.objectUrl;
-      if (typeof thumbSrc === 'string' && thumbSrc.includes('/uploads/') && !thumbSrc.includes('00_frame') && !thumbSrc.includes('_thumb.webp') && !thumbSrc.startsWith('data:')) {
+      const originalSrc = img.url || img.objectUrl;
+      let thumbSrc = originalSrc;
+      if (typeof thumbSrc === 'string' && !thumbSrc.includes('00_frame') && !thumbSrc.includes('_thumb.webp') && !thumbSrc.startsWith('data:')) {
         const lastDot = thumbSrc.lastIndexOf('.');
         if (lastDot !== -1) {
           thumbSrc = thumbSrc.substring(0, lastDot) + '_thumb.webp';
         }
       }
-      imgTag.src = thumbSrc;
+      
+      imgTag.crossOrigin = 'anonymous'; // Important for consistency with pl-canvas.js to prevent cache poisoning
+      
+      const getSrcWithBuster = (src) => {
+        if (typeof src === 'string' && src.startsWith('http')) {
+          return src + (src.includes('?') ? '&' : '?') + 'v=ios_cors_fix_2';
+        }
+        return src;
+      };
+
+      imgTag.src = getSrcWithBuster(thumbSrc);
+      imgTag.onerror = () => {
+        if (thumbSrc !== originalSrc) {
+          imgTag.src = getSrcWithBuster(originalSrc);
+        }
+      };
+      
       imgTag.alt = 'Photo';
 
       const label = document.createElement('span');

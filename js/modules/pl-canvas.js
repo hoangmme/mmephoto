@@ -1,6 +1,6 @@
-import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=307';
-import { CanvasRenderer } from '../components/CanvasRenderer.js?v=307';
-import { CanvasExporter } from '../components/CanvasExporter.js?v=307';
+import { ALL_TEMPLATES, customTemplates, isStaffMode, setStaffMode, A5_WIDTH, A5_HEIGHT, PADDING } from './pl-globals.js?v=308';
+import { CanvasRenderer } from '../components/CanvasRenderer.js?v=308';
+import { CanvasExporter } from '../components/CanvasExporter.js?v=308';
 
 export const CanvasMixin = {
   _preloadImage(id, url, useThumb = true) {
@@ -30,9 +30,7 @@ export const CanvasMixin = {
           };
           fallbackImg.onerror = () => resolve();
           if (url.startsWith('http')) {
-            // We previously had a cache-buster here, but it hurts performance.
-            // crossOrigin='anonymous' is enough if cache is cleared once.
-            fallbackImg.src = url;
+            fallbackImg.src = url + (url.includes('?') ? '&' : '?') + 'v=ios_cors_fix_2';
           } else {
             fallbackImg.src = url;
           }
@@ -41,7 +39,7 @@ export const CanvasMixin = {
         }
       };
       if (targetUrl.startsWith('http')) {
-        img.src = targetUrl;
+        img.src = targetUrl + (targetUrl.includes('?') ? '&' : '?') + 'v=ios_cors_fix_2';
       } else {
         img.src = targetUrl;
       }
